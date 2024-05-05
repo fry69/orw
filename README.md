@@ -4,7 +4,7 @@ This tool watches for changes in OpenRouter models and stores the changes in a S
 
 ## Installation
 
-To install dependencies (currently only [deep-diff](https://github.com/flitbit/diff)):
+You need the [Bun](https://bun.sh) runtime to run this tool. To install dependencies (currently only [deep-diff](https://github.com/flitbit/diff)):
 
 ```bash
 bun install
