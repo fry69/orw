@@ -140,4 +140,60 @@ describe("OpenRouterModelWatcher", () => {
       },
     ]);
   });
+
+  test("should not report changes between identical model lists", () => {
+    const oldModels: Model[] = [
+      {
+        id: "1",
+        name: "Model 1",
+        description: "Description 1",
+        pricing: {
+          prompt: "0.01",
+          completion: "0.02",
+          request: "0.03",
+          image: "0.04",
+        },
+        context_length: 1024,
+        architecture: {
+          modality: "text",
+          tokenizer: "gpt2",
+          instruct_type: null,
+        },
+        top_provider: {
+          max_completion_tokens: 2048,
+          is_moderated: true,
+        },
+        per_request_limits: null,
+      },
+    ];
+
+    const newModels: Model[] = [
+      {
+        id: "1",
+        name: "Model 1",
+        description: "Description 1",
+        pricing: {
+          prompt: "0.01",
+          completion: "0.02",
+          request: "0.03",
+          image: "0.04",
+        },
+        context_length: 1024,
+        architecture: {
+          modality: "text",
+          tokenizer: "gpt2",
+          instruct_type: null,
+        },
+        top_provider: {
+          max_completion_tokens: 2048,
+          is_moderated: true,
+        },
+        per_request_limits: null,
+      },
+    ];
+
+    const changes = watcher.findChanges(newModels, oldModels);
+
+    expect(changes).toBeEmpty;
+  });
 });
