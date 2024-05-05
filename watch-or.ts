@@ -139,7 +139,7 @@ export class OpenRouterModelWatcher {
    */
   loadLastModelList(): Model[] {
     return this.db
-      .query("SELECT data FROM models ORDER BY timestamp DESC LIMIT 1")
+      .query("SELECT data FROM models")
       .all()
       .map((row: any) => JSON.parse(row.data));
   }
