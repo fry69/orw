@@ -3,6 +3,10 @@ import fs from "node:fs";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
 
+// Don't query the acutal API during development
+import { data as fixedModelList } from "./models.json";
+const devMode = true;
+
 /**
  * Represents an OpenRouter model.
  */
@@ -151,6 +155,11 @@ export class OpenRouterModelWatcher {
    * @returns {Model[]} - A Promise that resolves to an array of Model objects.
    */
   async getModelList(): Promise<Model[]> {
+    if (devMode) {
+      console.log('Warning: using fixed model list, set devMode flag to false to load model list from API');
+      return fixedModelList;
+    }
+
     try {
       const response = await fetch("https://openrouter.ai/api/v1/models");
       if (response) {
