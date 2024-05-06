@@ -1,6 +1,13 @@
 // client/App.tsx
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Link,
+  Routes,
+  NavLink,
+  useLocation,
+} from "react-router-dom";
 import type { Model, ModelDiff } from "../watch-or";
 import "./nav.css";
 
@@ -14,13 +21,14 @@ const ModelList: React.FC = () => {
   }, []);
 
   return (
-    <div>
-      <h1>Model List</h1>
+    <div className="model-list">
       <ul>
         {models.map((model) => (
-          <li key={model.id}>
-            <Link to={`/model?id=${model.id}`}>{model.id}</Link>
-          </li>
+          <Link key={model.id} to={`/model?id=${model.id}`}>
+            <li className="model-list-item">
+              <span>{model.id}</span>
+            </li>
+          </Link>
         ))}
       </ul>
     </div>
@@ -48,22 +56,29 @@ const ModelDetails: React.FC = () => {
     return <div>Loading...</div>;
   }
 
+  // Create a new object that excludes the 'description' property
+  const modelDetails: any = { ...model };
+  delete modelDetails.description;
+
   return (
-    <div>
-      <h1>{model.id}</h1>
+    <div className="model-details">
       <h2>{model.name}</h2>
-      <h2>Description</h2>
+      <h3>Description</h3>
       <pre>{model.description}</pre>
-      <h2>Changes</h2>
+      <h3>Model Details</h3>
+      <pre>{JSON.stringify(modelDetails, null, 2)}</pre>
+      <h3>Changes</h3>
       {changes.map((change, index) => (
         <div key={index}>
           <h3>Change {index + 1}</h3>
           <p>Timestamp: {change.timestamp.toLocaleString()}</p>
-          {Object.entries(change.changes).map(([key, { old, new: newValue }]) => (
-            <p key={key}>
-              {key}: {old} → {newValue}
-            </p>
-          ))}
+          {Object.entries(change.changes).map(
+            ([key, { old, new: newValue }]) => (
+              <p key={key}>
+                {key}: {old} → {newValue}
+              </p>
+            )
+          )}
         </div>
       ))}
     </div>
@@ -80,18 +95,19 @@ const ChangeList: React.FC = () => {
   }, []);
 
   return (
-    <div>
-      <h1>Change List</h1>
+    <div className="change-list">
       {changes.map((change, index) => (
-        <div key={index}>
+        <div key={index} className="change-entry">
           <h2>Change {index + 1}</h2>
           <p>Model ID: {change.id}</p>
           <p>Timestamp: {change.timestamp.toLocaleString()}</p>
-          {Object.entries(change.changes).map(([key, { old, new: newValue }]) => (
-            <p key={key}>
-              {key}: {old} → {newValue}
-            </p>
-          ))}
+          {Object.entries(change.changes).map(
+            ([key, { old, new: newValue }]) => (
+              <p key={key}>
+                {key}: {old} → {newValue}
+              </p>
+            )
+          )}
         </div>
       ))}
     </div>
@@ -99,27 +115,42 @@ const ChangeList: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  return (
-    <Router>
-      <div>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/">Model List</Link>
-            </li>
-            <li>
-              <Link to="/changes">Change List</Link>
-            </li>
-          </ul>
-        </nav>
+  const location = useLocation();
+  const isModelDetailsActive = location.pathname.startsWith("/model");
+  const modelId = new URLSearchParams(location.search).get("id");
 
-        <Routes>
-          <Route path="/model" element={<ModelDetails />} />
-          <Route path="/changes" element={<ChangeList />} />
-          <Route path="/" element={<ModelList />} />
-        </Routes>
-      </div>
-    </Router>
+  return (
+    <div className="content-container">
+      <nav>
+        <ul>
+          <li>
+            <NavLink
+              to="/"
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
+              Model List
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/changes"
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
+              Change List
+            </NavLink>
+          </li>
+          {isModelDetailsActive && modelId && (
+            <li className="model-id">Model ID: {modelId}</li>
+          )}
+        </ul>
+      </nav>
+
+      <Routes>
+        <Route path="/model" element={<ModelDetails />} />
+        <Route path="/changes" element={<ChangeList />} />
+        <Route path="/" element={<ModelList />} />
+      </Routes>
+    </div>
   );
 };
 
