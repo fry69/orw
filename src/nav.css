@@ -40,7 +40,7 @@ nav a:hover {
 
 pre {
   padding: 10px;
-  background-color: #f4f4f4;
+  background-color: #e4e4e4;
   text-wrap: balance;
 }
 
@@ -62,8 +62,8 @@ pre {
 }
 
 .model-list ul {
-  column-width: 300px; /* Set the desired column width */
-  column-gap: 20px; /* Adjust the gap between columns */
+  column-width: 300px;
+  column-gap: 20px;
 }
 
 .model-list li {
@@ -95,6 +95,11 @@ pre {
 .model-details h2 {
   text-align: center;
   margin-top: 0;
+}
+
+.model-details-col-container {
+  display: flex;
+  gap: 2em;
 }
 
 .change-list {

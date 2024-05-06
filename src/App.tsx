@@ -10,6 +10,7 @@ import {
 } from "react-router-dom";
 import type { Model, ModelDiff } from "../watch-or";
 import "./nav.css";
+import { SignatureKind } from "typescript";
 
 const ModelList: React.FC = () => {
   const [models, setModels] = useState<Model[]>([]);
@@ -58,15 +59,33 @@ const ModelDetails: React.FC = () => {
 
   // Create a new object that excludes the 'description' property
   const modelDetails: any = { ...model };
-  delete modelDetails.description;
-
+  modelDetails["description"] = "[...]";
+  const calcCost = (floatString: string) => {
+    return Math.round(parseFloat(floatString) * 1000000 * 100) / 100;
+  };
+  const costInput = calcCost(model.pricing.prompt);
+  const costOutput = calcCost(model.pricing.completion);
   return (
     <div className="model-details">
       <h2>{model.name}</h2>
       <h3>Description</h3>
       <pre>{model.description}</pre>
+      <div className="model-details-col-container">
+        <div>
+          <h3>Price</h3>
+          <p>
+            Input: ${costInput} per million tokens
+            <br />
+            Output: ${costOutput} per million tokens
+          </p>
+        </div>
+        <div>
+          <h3>Context Length</h3>
+          <p>{model.context_length}</p>
+        </div>
+      </div>
       <h3>Model Details</h3>
-      <pre>{JSON.stringify(modelDetails, null, 2)}</pre>
+      <pre>{JSON.stringify(modelDetails, null, 4)}</pre>
       <h3>Changes</h3>
       {changes.map((change, index) => (
         <div key={index}>
