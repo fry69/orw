@@ -85,7 +85,9 @@ export class OpenRouterModelWatcher {
     if (lastModelList.length === 0) {
       this.initFlag = true;
       this.getModelList().then((newModels) => {
-        this.storeModelList(newModels, new Date());
+        if (newModels.length > 0) {
+          this.storeModelList(newModels, new Date());
+        }
       });
     }
   }
@@ -95,9 +97,20 @@ export class OpenRouterModelWatcher {
    * @returns A Promise that resolves to an array of Model objects.
    */
   async getModelList(): Promise<Model[]> {
-    const response = await fetch("https://openrouter.ai/api/v1/models");
-    const { data } = await response.json();
-    return data;
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/models");
+      if (response) {
+        const { data } = await response.json();
+        if (data) {
+          return data;
+        } else {
+          return [];
+        }
+      }
+    } catch {
+      console.log(`Error fetching model list ${new Date().toLocaleDateString}`);
+    }
+    return [];
   }
 
   /**
@@ -222,14 +235,16 @@ export class OpenRouterModelWatcher {
         this.initFlag = false;
       } else {
         const newModels = await this.getModelList();
-        const oldModels = this.loadLastModelList();
-        const changes = this.findChanges(newModels, oldModels);
+        if (newModels.length > 0) {
+          const oldModels = this.loadLastModelList();
+          const changes = this.findChanges(newModels, oldModels);
 
-        if (changes.length > 0) {
-          const timestamp = new Date();
-          this.storeModelList(newModels, timestamp);
-          this.storeChanges(changes);
-          console.log("Changes detected:", changes);
+          if (changes.length > 0) {
+            const timestamp = new Date();
+            this.storeModelList(newModels, timestamp);
+            this.storeChanges(changes);
+            console.log("Changes detected:", changes);
+          }
         }
       }
       await new Promise((resolve) => setTimeout(resolve, 3600000)); // 1 hour
