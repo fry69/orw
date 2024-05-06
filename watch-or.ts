@@ -215,7 +215,7 @@ export class OpenRouterModelWatcher {
    */
   loadLastModelList(): Model[] {
     return this.db
-      .query("SELECT data FROM models")
+      .query("SELECT data FROM models ORDER BY id")
       .all()
       .map((row: any) => JSON.parse(row.data));
   }

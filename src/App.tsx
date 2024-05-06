@@ -19,7 +19,7 @@ const ModelList: React.FC = () => {
       <ul>
         {models.map((model) => (
           <li key={model.id}>
-            <Link to={`/model?id=${model.id}`}>{model.name}</Link>
+            <Link to={`/model?id=${model.id}`}>{model.id}</Link>
           </li>
         ))}
       </ul>
@@ -50,8 +50,10 @@ const ModelDetails: React.FC = () => {
 
   return (
     <div>
-      <h1>{model.name}</h1>
-      <p>{model.description}</p>
+      <h1>{model.id}</h1>
+      <h2>{model.name}</h2>
+      <h2>Description</h2>
+      <pre>{model.description}</pre>
       <h2>Changes</h2>
       {changes.map((change, index) => (
         <div key={index}>
