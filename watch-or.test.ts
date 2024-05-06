@@ -1,3 +1,4 @@
+// watch-or.test.ts
 import { describe, beforeEach, afterEach, test, expect } from "bun:test";
 import { OpenRouterModelWatcher, type Model, type ModelDiff } from "./watch-or";
 import { Database } from "bun:sqlite";

@@ -2,14 +2,28 @@
   "name": "watch-or",
   "module": "watch-or.ts",
   "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "web": "bun run server.js",
+    "query": "bun run watch-or.ts --query",
+    "once": "bun run watch-or.ts --once",
+    "dist-clean": "rm *.log *.db *.sql && rm -fR dist"
+  },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/deep-diff": "^1.0.5"
+    "@types/deep-diff": "^1.0.5",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "deep-diff": "^1.0.2"
+    "@vitejs/plugin-react": "^4.2.1",
+    "deep-diff": "^1.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.23.0",
+    "vite": "^5.2.11"
   }
 }
