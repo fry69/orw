@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
 
@@ -51,12 +52,64 @@ export class OpenRouterModelWatcher {
   private initFlag: boolean = false;
 
   /**
-   * Creates a new instance of the OpenRouterModelWatcher class.
-   * @param db - The SQLite database to use for storing model changes.
+   * Path to the logfile, log only if set
    */
-  constructor(db: Database) {
+  private logFile?: string;
+
+  /**
+   * Creates a new instance of the OpenRouterModelWatcher class.
+   * @param {Database} db  - The SQLite database to use for storing model changes.
+   * @param {string} [logFile]  - Path to the logfile
+   */
+  constructor(db: Database, logFile?: string) {
     this.db = db;
     this.createTablesIfNotExists();
+
+    if (logFile) {
+      this.logFile = logFile;
+      // Check if the log file exists, if not, create it
+      if (!fs.existsSync(this.logFile)) {
+        fs.writeFileSync(this.logFile, "");
+      }
+      this.log("watcher started");
+    }
+  }
+
+  /**
+   * Receives error messages and outputs to console and logfile
+   * @param {string} message - Error message
+   */
+  error(message: string) {
+    const timestamp = new Date().toISOString();
+    const logMessage = `[${timestamp}] Error: ${message}`;
+
+    // Log the message to the console
+    console.error(logMessage);
+
+    // Log the message to the log file
+    if (this.logFile) {
+      fs.appendFileSync(this.logFile, `${logMessage}\n`);
+    }
+  }
+
+  /**
+   * Receives informational messages and outputs to console and logfile
+   * @param {string} [message] - Message text
+   */
+  log(message: string = "") {
+    const timestamp = new Date().toISOString();
+    let logMessage = ""; // just generate a newline by default, without timestamp
+    if (!(message === "")) {
+      logMessage = `[${timestamp}] ${message}`;
+    }
+
+    // Log the message to the console
+    console.log(logMessage);
+
+    // Log the message to the log file
+    if (this.logFile) {
+      fs.appendFileSync(this.logFile, `${logMessage}\n`);
+    }
   }
 
   /**
@@ -94,7 +147,7 @@ export class OpenRouterModelWatcher {
 
   /**
    * Fetches the current list of OpenRouter models from the API.
-   * @returns A Promise that resolves to an array of Model objects.
+   * @returns {Model[]} - A Promise that resolves to an array of Model objects.
    */
   async getModelList(): Promise<Model[]> {
     try {
@@ -108,15 +161,15 @@ export class OpenRouterModelWatcher {
         }
       }
     } catch {
-      console.log(`Error fetching model list ${new Date().toLocaleDateString}`);
+      this.error(`fetching model list failed`);
     }
     return [];
   }
 
   /**
    * Stores the current list of OpenRouter models in the SQLite database.
-   * @param models - An array of Model objects to store.
-   * @param timestamp - The timestamp to associate with the model list.
+   * @param {Model[]} models - An array of Model objects to store.
+   * @param {Date} [timestamp] - The timestamp to associate with the model list.
    */
   storeModelList(models: Model[], timestamp: Date = new Date()) {
     this.db.run("DELETE FROM models");
@@ -131,7 +184,7 @@ export class OpenRouterModelWatcher {
 
   /**
    * Stores a list of model changes in the SQLite database.
-   * @param changes - An array of ModelDiff objects to store.
+   * @param {ModelDiff[]} changes - An array of ModelDiff objects to store.
    */
   storeChanges(changes: ModelDiff[]) {
     for (const change of changes) {
@@ -159,8 +212,8 @@ export class OpenRouterModelWatcher {
 
   /**
    * Loads the most recent model changes from the SQLite database.
-   * @param n - The maximum number of changes to load.
-   * @returns An array of ModelDiff objects.
+   * @param {number} n - The maximum number of changes to load.
+   * @returns {ModelDiff[]} - An array of ModelDiff objects.
    */
   loadChanges(n: number): ModelDiff[] {
     return this.db
@@ -226,27 +279,41 @@ export class OpenRouterModelWatcher {
   }
 
   /**
+   * High level check logic
+   */
+  private async check() {
+    // skip check on initialization
+    if (this.initFlag) {
+      this.initFlag = false;
+    } else {
+      const newModels = await this.getModelList();
+      if (newModels.length > 0) {
+        const oldModels = this.loadLastModelList();
+        const changes = this.findChanges(newModels, oldModels);
+
+        if (changes.length > 0) {
+          const timestamp = new Date();
+          this.storeModelList(newModels, timestamp);
+          this.storeChanges(changes);
+          console.log("Changes detected:", changes);
+        }
+      }
+    }
+  }
+
+  /**
+   * Runs the OpenRouterModelWatcher only once
+   */
+  public async runOnce() {
+    await this.check();
+  }
+
+  /**
    * Runs the OpenRouterModelWatcher in background mode, continuously checking for model changes.
    */
   public async runBackgroundMode() {
     while (true) {
-      // skip check on initialization
-      if (this.initFlag) {
-        this.initFlag = false;
-      } else {
-        const newModels = await this.getModelList();
-        if (newModels.length > 0) {
-          const oldModels = this.loadLastModelList();
-          const changes = this.findChanges(newModels, oldModels);
-
-          if (changes.length > 0) {
-            const timestamp = new Date();
-            this.storeModelList(newModels, timestamp);
-            this.storeChanges(changes);
-            console.log("Changes detected:", changes);
-          }
-        }
-      }
+      await this.check();
       await new Promise((resolve) => setTimeout(resolve, 3600000)); // 1 hour
     }
   }
@@ -259,27 +326,41 @@ export class OpenRouterModelWatcher {
     const changes = this.loadChanges(n);
 
     changes.forEach((change) => {
-      console.log(`Change detected at ${change.timestamp.toLocaleString()}:`);
+      this.log(`Change detected at ${change.timestamp.toLocaleString()}:`);
       for (const [key, { old, new: newValue }] of Object.entries(
         change.changes
       )) {
-        console.log(`  ${key}: ${old} -> ${newValue}`);
+        this.log(`  ${key}: ${old} -> ${newValue}`);
       }
-      console.log();
+      this.log();
     });
   }
 }
 
+const logFile = "watch-or.log";
+const databaseFile = "watch-or.db";
+
 // Usage:
 if (Bun.argv.includes("--query")) {
+  if (!fs.existsSync(databaseFile)) {
+    console.error(`Error: database ${databaseFile} not found`);
+    process.exit(1);
+  }
   const n = parseInt(Bun.argv[Bun.argv.indexOf("--query") + 1] || "10", 10);
-  const db = new Database("openrouter.db");
+  const db = new Database(databaseFile);
   const watcher = new OpenRouterModelWatcher(db);
   watcher.runQueryMode(n);
   db.close();
+  process.exit(0);
+} else if (Bun.argv.includes("--once")) {
+  const db = new Database(databaseFile);
+  const watcher = new OpenRouterModelWatcher(db, logFile);
+  watcher.runOnce();
+  db.close();
+  process.exit(0);
 } else {
-  const db = new Database("openrouter.db");
-  const watcher = new OpenRouterModelWatcher(db);
+  const db = new Database(databaseFile);
+  const watcher = new OpenRouterModelWatcher(db, logFile);
   watcher.runBackgroundMode();
   // db.close(); // Don't close the database here, as the background mode runs indefinitely
 }

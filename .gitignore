@@ -180,5 +180,6 @@ dist
 # Temporary ignore
 bun.lockb
 
-# Generated database
-openrouter.db
+# Generated files
+*.db
+*.log
