@@ -183,3 +183,4 @@ bun.lockb
 # Generated files
 *.db
 *.log
+*.sql
