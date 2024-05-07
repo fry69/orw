@@ -1,8 +1,9 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import type { ModelDiff } from "../watch-or";
 import { FilterComponent } from "./FilterComponent";
 import { DynamicElementContext } from "./App";
 import { Link } from "react-router-dom";
+import type { ModelDiff } from "./types";
+import { dateString, dateStringDuration } from "./utils";
 
 export const ChangeList: React.FC = () => {
   const [changes, setChanges] = useState<ModelDiff[]>([]);
@@ -48,7 +49,12 @@ export const ChangeList: React.FC = () => {
     <div className="change-list">
       {filteredChanges.map((change, index) => (
         <div key={index} className="change-entry">
-          <p><Link to={`/model?id=${change.id}`}><b>{change.id}</b></Link> {change.type} at <b>{change.timestamp.toString()}</b></p>
+          <p>
+            <Link to={`/model?id=${change.id}`}>
+              <b>{change.id}</b>
+            </Link>{" "}
+            {change.type} at {dateStringDuration(change.timestamp)}
+          </p>
           {Object.entries(change.changes).map(
             ([key, { old, new: newValue }]) => (
               <p key={key}>

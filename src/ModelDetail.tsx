@@ -1,6 +1,9 @@
 import { useContext, useEffect, useState } from "react";
-import type { Model, ModelDiff } from "../watch-or";
+import type { Model } from "../watch-or";
 import { DynamicElementContext } from "./App";
+import type { ModelDiff } from "./types";
+import { DateTime } from "luxon";
+import { dateString, dateStringDuration, durationAgo } from "./utils";
 
 export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
@@ -43,7 +46,7 @@ export const ModelDetail: React.FC = () => {
         {changes.map((change, index) => (
           <div key={index} className="change-entry">
             <p>
-              {change.type} at <b>{change.timestamp.toLocaleString()}</b>
+              {change.type} at {dateStringDuration(change.timestamp)}
             </p>
             {Object.entries(change.changes).map(
               ([key, { old, new: newValue }]) => (
