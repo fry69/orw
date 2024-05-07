@@ -5,12 +5,14 @@ import path from "node:path";
 import fs from "node:fs";
 
 const databaseFile = "watch-or.db";
+const logfile = "watch-or.log";
 const db = new Database(databaseFile);
-const watcher = new OpenRouterModelWatcher(db);
+const watcher = new OpenRouterModelWatcher(db, logfile);
 const clientDistDir = path.join(".", "dist");
 
 const server = Bun.serve({
-  port: 3000,
+  port: 0,
+  hostname: "0.0.0.0",
   fetch(request) {
     const url = new URL(request.url);
     switch (url.pathname) {
@@ -46,4 +48,5 @@ const server = Bun.serve({
   },
 });
 
+// watcher.runBackgroundMode();
 watcher.log(`Webinterface running at URL ${server.url}`);
