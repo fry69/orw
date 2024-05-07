@@ -41,10 +41,16 @@ export interface Model {
 }
 
 /**
+ * Represents the type of change for a model.
+ */
+export type ModelChangeType = "added" | "removed" | "changed";
+
+/**
  * Represents a change in an OpenRouter model.
  */
 export interface ModelDiff {
   id: string;
+  type: ModelChangeType;
   changes: { [key: string]: { old: any; new: any } };
   timestamp: Date;
 }
@@ -150,12 +156,12 @@ export class OpenRouterModelWatcher {
     // Seed the database with the current model list if it's a fresh database
     const lastModelList = this.loadLastModelList();
     if (lastModelList.length === 0) {
-      this.log('empty model list in database');
+      this.log("empty model list in database");
       this.initFlag = true;
       this.getModelList().then((newModels) => {
         if (newModels.length > 0) {
           this.storeModelList(newModels, new Date());
-          this.log('seeded database with model list from API');
+          this.log("seeded database with model list from API");
         }
       });
     }
@@ -216,9 +222,10 @@ export class OpenRouterModelWatcher {
   storeChanges(changes: ModelDiff[]) {
     for (const change of changes) {
       this.db.run(
-        "INSERT INTO changes (id, changes, timestamp) VALUES (?, ?, ?)",
+        "INSERT INTO changes (id, type, changes, timestamp) VALUES (?, ?, ?, ?)",
         [
           change.id,
+          change.type,
           JSON.stringify(change.changes),
           change.timestamp.toISOString(),
         ]
@@ -245,11 +252,12 @@ export class OpenRouterModelWatcher {
   loadChanges(n: number): ModelDiff[] {
     return this.db
       .query(
-        "SELECT id, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?"
+        "SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?"
       )
       .all(n)
       .map((row: any) => ({
         id: row.id,
+        type: row.type,
         changes: JSON.parse(row.changes),
         timestamp: new Date(row.timestamp),
       }));
@@ -264,15 +272,45 @@ export class OpenRouterModelWatcher {
   findChanges(newModels: Model[], oldModels: Model[]): ModelDiff[] {
     const changes: ModelDiff[] = [];
 
+    // Check for new models
+    for (const newModel of newModels) {
+      const oldModel = oldModels.find((m) => m.id === newModel.id);
+      if (!oldModel) {
+        changes.push({
+          id: newModel.id,
+          type: "added",
+          changes: {},
+          timestamp: new Date(),
+        });
+      }
+    }
+
+    // Check for removed models
+    for (const oldModel of oldModels) {
+      const newModel = newModels.find((m) => m.id === oldModel.id);
+      if (!newModel) {
+        changes.push({
+          id: oldModel.id,
+          type: "removed",
+          changes: {},
+          timestamp: new Date(),
+        });
+      }
+    }
+
+    // Check for changes in existing models
     for (const newModel of newModels) {
       const oldModel = oldModels.find((m) => m.id === newModel.id);
       if (oldModel) {
         const diff = this.diffModels(newModel, oldModel);
         if (Object.keys(diff.changes).length > 0) {
-          changes.push({ ...diff, id: newModel.id, timestamp: new Date() });
+          changes.push({
+            ...diff,
+            id: newModel.id,
+            type: "changed",
+            timestamp: new Date(),
+          });
         }
-      } else {
-        changes.push({ id: newModel.id, changes: {}, timestamp: new Date() });
       }
     }
 
@@ -357,13 +395,31 @@ export class OpenRouterModelWatcher {
     const changes = this.loadChanges(n);
 
     changes.forEach((change) => {
-      this.log(`Change detected at ${change.timestamp.toLocaleString()}:`);
-      for (const [key, { old, new: newValue }] of Object.entries(
-        change.changes
-      )) {
-        this.log(`  ${key}: ${old} -> ${newValue}`);
+      if (change.type === "added") {
+        console.log(
+          `New model added with id ${
+            change.id
+          } at ${change.timestamp.toLocaleString()}`
+        );
+      } else if (change.type === "removed") {
+        console.log(
+          `Model id ${
+            change.id
+          } removed at ${change.timestamp.toLocaleString()}`
+        );
+      } else if (change.type === "changed") {
+        console.log(
+          `Change detected for model ${
+            change.id
+          } at ${change.timestamp.toLocaleString()}:`
+        );
+        for (const [key, { old, new: newValue }] of Object.entries(
+          change.changes
+        )) {
+          console.log(`  ${key}: ${old} -> ${newValue}`);
+        }
       }
-      this.log();
+      console.log();
     });
   }
 }
