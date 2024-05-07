@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
 import { runMigrations } from "./db-migration";
+import { createServer } from "./server";
 
 const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
 
@@ -433,6 +434,7 @@ if (Bun.argv.includes("--query")) {
 } else {
   const db = new Database(databaseFile);
   const watcher = new OpenRouterModelWatcher(db, logFile);
+  const server = createServer(watcher);
   watcher.runBackgroundMode();
   // db.close(); // Don't close the database here, as the background mode runs indefinitely
 }

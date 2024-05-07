@@ -61,26 +61,32 @@ export const ModelList: React.FC = () => {
       name: "ID",
       selector: (row) => row.id,
       sortable: true,
+      grow: 2,
     },
     {
       name: "Name",
       selector: (row) => row.name,
       sortable: true,
+      grow: 2,
     },
     {
       name: "Context",
       selector: (row) => row.context_length,
       sortable: true,
+      right: true,
+
     },
     {
       name: "Price/MT",
       selector: (row) => calcCost(row.pricing.completion),
       sortable: true,
+      right: true,
     },
     {
       name: "Token Limit",
       selector: (row) => row.top_provider.max_completion_tokens ?? 0,
       sortable: true,
+      right: true,
       sortFunction: (a, b) => {
         if (
           a.top_provider.max_completion_tokens === 0 ||

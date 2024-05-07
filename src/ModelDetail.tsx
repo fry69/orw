@@ -35,6 +35,31 @@ export const ModelDetail: React.FC = () => {
     return cost > 0 ? cost : 0;
   };
 
+  let Changes;
+  if (changes.length > 0) {
+    Changes = (
+      <>
+        <h3>Changes</h3>
+        {changes.map((change, index) => (
+          <div key={index} className="change-entry">
+            <p>
+              {change.type} at <b>{change.timestamp.toLocaleString()}</b>
+            </p>
+            {Object.entries(change.changes).map(
+              ([key, { old, new: newValue }]) => (
+                <p key={key}>
+                  {key}: {old} → {newValue}
+                </p>
+              )
+            )}
+          </div>
+        ))}
+      </>
+    );
+  } else {
+    Changes = <></>;
+  }
+
   return (
     <div className="model-details">
       <h2>{model.name}</h2>
@@ -59,22 +84,7 @@ export const ModelDetail: React.FC = () => {
       </div>
       <h3>Model Details</h3>
       <pre>{JSON.stringify(modelDetails, null, 4)}</pre>
-      <h3>Changes</h3>
-      {changes.map((change, index) => (
-        <div key={index} className="change-entry">
-          <p>
-            {change.type} at {' '}
-            <b>{change.timestamp.toLocaleString()}</b>
-          </p>
-          {Object.entries(change.changes).map(
-            ([key, { old, new: newValue }]) => (
-              <p key={key}>
-                {key}: {old} → {newValue}
-              </p>
-            )
-          )}
-        </div>
-      ))}
+      {Changes}
     </div>
   );
 };
