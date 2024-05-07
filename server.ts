@@ -4,15 +4,16 @@ import { Database } from "bun:sqlite";
 import path from "node:path";
 import fs from "node:fs";
 
-const databaseFile = "watch-or.db";
-const logfile = "watch-or.log";
+const databaseFile = import.meta.env.WATCHOR_DB_PATH ?? "watch-or.db";
+const logfile = import.meta.env.WATCHOR_LOG_PATH ?? "watch-or.log";
 const db = new Database(databaseFile);
 const watcher = new OpenRouterModelWatcher(db, logfile);
-const clientDistDir = path.join(".", "dist");
+const clientDistDir =
+  import.meta.env.WATCHOR_CLIENT_PATH ?? path.join(".", "dist");
 
 const server = Bun.serve({
-  port: 0,
-  hostname: "0.0.0.0",
+  port: import.meta.env.WATCHOR_PORT ?? 0,
+  hostname: import.meta.env.WATCHOR_HOSTNAME ?? "0.0.0.0",
   fetch(request) {
     const url = new URL(request.url);
     switch (url.pathname) {

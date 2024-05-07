@@ -11,7 +11,7 @@ if (isDevelopment) {
   // generate a current model list snapshot with
   // `curl https://openrouter.ai/api/v1/models > models.json`
   fixedModelList = (await import("./models.json")).data;
-  console.log('watcher initializing in development mode');
+  console.log("watcher initializing in development mode");
 }
 
 /**
@@ -150,10 +150,12 @@ export class OpenRouterModelWatcher {
     // Seed the database with the current model list if it's a fresh database
     const lastModelList = this.loadLastModelList();
     if (lastModelList.length === 0) {
+      this.log('empty model list in database');
       this.initFlag = true;
       this.getModelList().then((newModels) => {
         if (newModels.length > 0) {
           this.storeModelList(newModels, new Date());
+          this.log('seeded database with model list from API');
         }
       });
     }
@@ -313,7 +315,7 @@ export class OpenRouterModelWatcher {
     } else {
       const newModels = await this.getModelList();
       if (newModels.length === 0) {
-        this.error('empty model list from API, skipping check');
+        this.error("empty model list from API, skipping check");
       } else {
         const oldModels = this.loadLastModelList();
         const changes = this.findChanges(newModels, oldModels);
@@ -366,8 +368,8 @@ export class OpenRouterModelWatcher {
   }
 }
 
-const logFile = "watch-or.log";
-const databaseFile = "watch-or.db";
+const logFile = import.meta.env.WATCHOR_LOG_PATH ?? "watch-or.log";
+const databaseFile = import.meta.env.WATCHOR_DB_PATH ?? "watch-or.db";
 
 // Usage:
 if (Bun.argv.includes("--query")) {
