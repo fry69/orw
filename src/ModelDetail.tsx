@@ -62,7 +62,10 @@ export const ModelDetail: React.FC = () => {
       <h3>Changes</h3>
       {changes.map((change, index) => (
         <div key={index} className="change-entry">
-          <p>Timestamp: <b>{change.timestamp.toLocaleString()}</b></p>
+          <p>
+            {change.type} at {' '}
+            <b>{change.timestamp.toLocaleString()}</b>
+          </p>
           {Object.entries(change.changes).map(
             ([key, { old, new: newValue }]) => (
               <p key={key}>

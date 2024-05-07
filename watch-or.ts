@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
+import { runMigrations } from "./db-migration";
 
 const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
 
@@ -81,7 +82,8 @@ export class OpenRouterModelWatcher {
    */
   constructor(db: Database, logFile?: string) {
     this.db = db;
-    this.createTablesIfNotExists();
+    runMigrations(db);
+    this.seedDB();
 
     if (logFile) {
       this.logFile = logFile;
@@ -133,26 +135,9 @@ export class OpenRouterModelWatcher {
   }
 
   /**
-   * Creates the necessary tables in the SQLite database if they don't already exist.
-   * Also seeds the database with the current model list if it's a fresh database.
+   * Seeds the database with the current model list if it's a fresh database.
    */
-  createTablesIfNotExists() {
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS models (
-        id TEXT PRIMARY KEY,
-        data TEXT,
-        timestamp TEXT
-      )
-    `);
-
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS changes (
-        id TEXT,
-        changes TEXT,
-        timestamp TEXT
-      )
-    `);
-
+  seedDB() {
     // Seed the database with the current model list if it's a fresh database
     const lastModelList = this.loadLastModelList();
     if (lastModelList.length === 0) {

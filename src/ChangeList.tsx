@@ -47,7 +47,7 @@ export const ChangeList: React.FC = () => {
     <div className="change-list">
       {filteredChanges.map((change, index) => (
         <div key={index} className="change-entry">
-          <p>Changes for <b>{change.id}</b> at <b>{change.timestamp.toString()}</b></p>
+          <p><b>{change.id}</b> {change.type} at <b>{change.timestamp.toString()}</b></p>
           {Object.entries(change.changes).map(
             ([key, { old, new: newValue }]) => (
               <p key={key}>

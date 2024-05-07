@@ -49,5 +49,4 @@ const server = Bun.serve({
   },
 });
 
-// watcher.runBackgroundMode();
 watcher.log(`Webinterface running at URL ${server.url}`);
