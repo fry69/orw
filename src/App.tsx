@@ -1,48 +1,33 @@
 // client/App.tsx
-import React from "react";
-import { Route, Routes, NavLink, useLocation } from "react-router-dom";
+import React, { createContext, useState } from "react";
+import { Route, Routes } from "react-router-dom";
 import "./nav.css";
+import { NavBar } from "./NavBar";
 import { ModelDetail } from "./ModelDetail";
 import { ChangeList } from "./ChangeList";
 import { ModelList } from "./ModelList";
 
+export const DynamicElementContext = createContext({
+  dynamicElement: null as React.ReactNode,
+  setDynamicElement: (value: React.ReactNode) => {},
+});
+
 const App: React.FC = () => {
-  const location = useLocation();
-  const isModelDetailsActive = location.pathname.startsWith("/model");
-  const modelId = new URLSearchParams(location.search).get("id");
+  const [dynamicElement, setDynamicElement] = useState<React.ReactNode>(null);
 
   return (
-    <div className="content-container">
-      <nav>
-        <ul>
-          <li>
-            <NavLink
-              to="/"
-              className={({ isActive }) => (isActive ? "active" : "")}
-            >
-              Model List
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/changes"
-              className={({ isActive }) => (isActive ? "active" : "")}
-            >
-              Change List
-            </NavLink>
-          </li>
-          {isModelDetailsActive && modelId && (
-            <li className="model-id">Model ID: {modelId}</li>
-          )}
-        </ul>
-      </nav>
-
-      <Routes>
-        <Route path="/model" element={<ModelDetail />} />
-        <Route path="/changes" element={<ChangeList />} />
-        <Route path="/" element={<ModelList />} />
-      </Routes>
-    </div>
+    <DynamicElementContext.Provider
+      value={{ dynamicElement, setDynamicElement }}
+    >
+      <div className="content-container">
+        <NavBar />
+        <Routes>
+          <Route path="/model" element={<ModelDetail />} />
+          <Route path="/changes" element={<ChangeList />} />
+          <Route path="/" element={<ModelList />} />
+        </Routes>
+      </div>
+    </DynamicElementContext.Provider>
   );
 };
 

@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import type { Model, ModelDiff } from "../watch-or";
+import { DynamicElementContext } from "./App";
 
 export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
   const [changes, setChanges] = useState<ModelDiff[]>([]);
+  const { setDynamicElement } = useContext(DynamicElementContext);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -21,6 +23,8 @@ export const ModelDetail: React.FC = () => {
   if (!model) {
     return <div>Loading...</div>;
   }
+
+  setDynamicElement(<div className="model-id"> Model ID: {model?.id} </div>);
 
   // Create a new object that hides the already shown 'description' property
   const modelDetails: any = { ...model };
@@ -42,7 +46,8 @@ export const ModelDetail: React.FC = () => {
           <p style={{ fontSize: "large" }}>
             Input: <b>$ {calcCost(model.pricing.prompt)}</b> per million tokens
             <br />
-            Output: <b>$ {calcCost(model.pricing.completion)}</b> per million tokens
+            Output: <b>$ {calcCost(model.pricing.completion)}</b> per million
+            tokens
           </p>
         </div>
         <div>
@@ -56,9 +61,8 @@ export const ModelDetail: React.FC = () => {
       <pre>{JSON.stringify(modelDetails, null, 4)}</pre>
       <h3>Changes</h3>
       {changes.map((change, index) => (
-        <div key={index}>
-          <h3>Change {index + 1}</h3>
-          <p>Timestamp: {change.timestamp.toLocaleString()}</p>
+        <div key={index} className="change-entry">
+          <p>Timestamp: <b>{change.timestamp.toLocaleString()}</b></p>
           {Object.entries(change.changes).map(
             ([key, { old, new: newValue }]) => (
               <p key={key}>

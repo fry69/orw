@@ -16,6 +16,8 @@ nav ul {
 }
 
 nav li {
+  align-self: center;
+  font-size: x-large;
   margin-right: 1rem;
 }
 
@@ -35,6 +37,7 @@ nav a:hover {
 }
 
 .model-id {
+  font-weight: bold;
   color: skyblue;
 }
 
