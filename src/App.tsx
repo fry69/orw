@@ -1,137 +1,10 @@
 // client/App.tsx
-import React, { useState, useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Link,
-  Routes,
-  NavLink,
-  useLocation,
-} from "react-router-dom";
-import type { Model, ModelDiff } from "../watch-or";
+import React from "react";
+import { Route, Routes, NavLink, useLocation } from "react-router-dom";
 import "./nav.css";
-import { SignatureKind } from "typescript";
-
-const ModelList: React.FC = () => {
-  const [models, setModels] = useState<Model[]>([]);
-
-  useEffect(() => {
-    fetch("/api/models")
-      .then((res) => res.json())
-      .then((data) => setModels(data));
-  }, []);
-
-  return (
-    <div className="model-list">
-      <ul>
-        {models.map((model) => (
-          <Link key={model.id} to={`/model?id=${model.id}`}>
-            <li className="model-list-item">
-              <span>{model.id}</span>
-            </li>
-          </Link>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-const ModelDetails: React.FC = () => {
-  const [model, setModel] = useState<Model | null>(null);
-  const [changes, setChanges] = useState<ModelDiff[]>([]);
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get("id");
-    if (id) {
-      fetch(`/api/model?id=${id}`)
-        .then((res) => res.json())
-        .then(({ model, changes }) => {
-          setModel(model);
-          setChanges(changes);
-        });
-    }
-  }, []);
-
-  if (!model) {
-    return <div>Loading...</div>;
-  }
-
-  // Create a new object that excludes the 'description' property
-  const modelDetails: any = { ...model };
-  modelDetails["description"] = "[...]";
-  const calcCost = (floatString: string) => {
-    return Math.round(parseFloat(floatString) * 1000000 * 100) / 100;
-  };
-  const costInput = calcCost(model.pricing.prompt);
-  const costOutput = calcCost(model.pricing.completion);
-  return (
-    <div className="model-details">
-      <h2>{model.name}</h2>
-      <h3>Description</h3>
-      <pre>{model.description}</pre>
-      <div className="model-details-col-container">
-        <div>
-          <h3>Price</h3>
-          <p>
-            Input: ${costInput} per million tokens
-            <br />
-            Output: ${costOutput} per million tokens
-          </p>
-        </div>
-        <div>
-          <h3>Context Length</h3>
-          <p>{model.context_length}</p>
-        </div>
-      </div>
-      <h3>Model Details</h3>
-      <pre>{JSON.stringify(modelDetails, null, 4)}</pre>
-      <h3>Changes</h3>
-      {changes.map((change, index) => (
-        <div key={index}>
-          <h3>Change {index + 1}</h3>
-          <p>Timestamp: {change.timestamp.toLocaleString()}</p>
-          {Object.entries(change.changes).map(
-            ([key, { old, new: newValue }]) => (
-              <p key={key}>
-                {key}: {old} → {newValue}
-              </p>
-            )
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const ChangeList: React.FC = () => {
-  const [changes, setChanges] = useState<ModelDiff[]>([]);
-
-  useEffect(() => {
-    fetch("/api/changes")
-      .then((res) => res.json())
-      .then((data) => setChanges(data));
-  }, []);
-
-  return (
-    <div className="change-list">
-      {changes.map((change, index) => (
-        <div key={index} className="change-entry">
-          <h2>Change {index + 1}</h2>
-          <p>Model ID: {change.id}</p>
-          <p>Timestamp: {change.timestamp.toLocaleString()}</p>
-          {Object.entries(change.changes).map(
-            ([key, { old, new: newValue }]) => (
-              <p key={key}>
-                {key}: {old} → {newValue}
-              </p>
-            )
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
+import { ModelDetail } from "./ModelDetail";
+import { ChangeList } from "./ChangeList";
+import { ModelList } from "./ModelList";
 
 const App: React.FC = () => {
   const location = useLocation();
@@ -165,7 +38,7 @@ const App: React.FC = () => {
       </nav>
 
       <Routes>
-        <Route path="/model" element={<ModelDetails />} />
+        <Route path="/model" element={<ModelDetail />} />
         <Route path="/changes" element={<ChangeList />} />
         <Route path="/" element={<ModelList />} />
       </Routes>

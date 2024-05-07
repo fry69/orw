@@ -98,6 +98,7 @@ pre {
 }
 
 .model-details-col-container {
+  justify-content: space-evenly;
   display: flex;
   gap: 2em;
 }
