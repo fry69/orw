@@ -31,9 +31,19 @@ const ClearButton = styled(Button)`
   justify-content: center;
 `;
 
-// @ts-ignore
-// prettier-ignore
-export const FilterComponent = ({ filterText, onFilter, onClear, onKeydown }) => {
+interface FilterComponentProps {
+  filterText: string;
+  onFilter: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onClear: () => void;
+  onKeydown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+}
+
+export const FilterComponent = ({
+  filterText,
+  onFilter,
+  onClear,
+  onKeydown,
+}: FilterComponentProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {

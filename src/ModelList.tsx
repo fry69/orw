@@ -11,7 +11,6 @@ export const ModelList: React.FC = () => {
   const [models, setModels] = useState<Model[]>([]);
   const { setDynamicElement } = useContext(DynamicElementContext);
 
-
   const [filterText, setFilterText] = useState("");
   const filteredModels = models.filter(
     (item) =>
@@ -27,12 +26,14 @@ export const ModelList: React.FC = () => {
 
     return (
       <FilterComponent
-        onFilter={(e: any) => setFilterText(e.target.value)}
+        onFilter={(e: React.ChangeEvent<HTMLInputElement>) =>
+          setFilterText(e.target.value)
+        }
         onClear={handleClear}
         filterText={filterText}
-        onKeydown={(e: any) => {
+        onKeydown={(e: React.KeyboardEvent<HTMLInputElement>) => {
           if (e.key === "Escape") {
-            e.target.blur();
+            e.currentTarget.blur();
             handleClear();
           }
         }}

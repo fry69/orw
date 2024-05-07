@@ -3,9 +3,16 @@ import fs from "node:fs";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
 
-// Don't query the acutal API during development
-// import { data as fixedModelList } from "./models.json";
-const devMode = false;
+const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
+
+let fixedModelList: Model[];
+if (isDevelopment) {
+  // Don't query the acutal API during development, use a fixed model list instead
+  // generate a current model list snapshot with
+  // `curl https://openrouter.ai/api/v1/models > models.json`
+  fixedModelList = (await import("./models.json")).data;
+  console.log('watcher initializing in development mode');
+}
 
 /**
  * Represents an OpenRouter model.
@@ -76,7 +83,9 @@ export class OpenRouterModelWatcher {
       if (!fs.existsSync(this.logFile)) {
         fs.writeFileSync(this.logFile, "");
       }
-      // this.log("watcher started");
+      if (isDevelopment) {
+        this.log("watcher initialized");
+      }
     }
   }
 
@@ -155,10 +164,12 @@ export class OpenRouterModelWatcher {
    * @returns {Model[]} - A Promise that resolves to an array of Model objects.
    */
   async getModelList(): Promise<Model[]> {
-    // if (devMode) {
-    //   console.log('Warning: using fixed model list, set devMode flag to false to load model list from API');
-    //   return fixedModelList;
-    // }
+    if (isDevelopment) {
+      console.log(
+        "Warning: using fixed model list, switch to production mode to load live model list from API"
+      );
+      return fixedModelList;
+    }
 
     try {
       const response = await fetch("https://openrouter.ai/api/v1/models");
@@ -170,8 +181,12 @@ export class OpenRouterModelWatcher {
           return [];
         }
       }
-    } catch {
-      this.error(`fetching model list failed`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        this.error(`model list fetch failed with ${err.message}`);
+      } else {
+        this.error(`model list fetch failed with unknown error ${err}`);
+      }
     }
     return [];
   }
@@ -297,7 +312,9 @@ export class OpenRouterModelWatcher {
       this.initFlag = false;
     } else {
       const newModels = await this.getModelList();
-      if (newModels.length > 0) {
+      if (newModels.length === 0) {
+        this.error('empty model list from API, skipping check');
+      } else {
         const oldModels = this.loadLastModelList();
         const changes = this.findChanges(newModels, oldModels);
 
@@ -305,7 +322,7 @@ export class OpenRouterModelWatcher {
           const timestamp = new Date();
           this.storeModelList(newModels, timestamp);
           this.storeChanges(changes);
-          this.log("Changes detected:")
+          this.log("Changes detected:");
           this.log(JSON.stringify(changes, null, 4));
         }
       }
