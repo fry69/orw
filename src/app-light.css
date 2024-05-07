@@ -1,4 +1,9 @@
-/* client/nav.css */
+/* src/app-light.css */
+body {
+  margin: 0;
+  padding: 0;
+}
+
 nav {
   background-color: #333;
   color: #fff;
@@ -50,8 +55,10 @@ pre {
 /* ... */
 
 .content-container {
+  align-self: center;
   max-width: 1200px;
-  margin: 0;
+  margin-top: 0;
+  margin-inline: auto;
   padding: 0;
 }
 
