@@ -1,31 +1,66 @@
-# watch-or
+# watch-or: OpenRouter API Watcher
 
-This tool watches for changes in OpenRouter models and stores the changes in a SQLite database. It queries the model list via API every hour.
+The OpenRouter API Watcher is a tool that monitors changes in OpenRouter models and stores those changes in a SQLite database. It queries the model list via the API every hour and includes a simple web interface for viewing the changes.
 
 ## Installation
 
-You need the [Bun](https://bun.sh) runtime to run this tool. To install dependencies (currently only [deep-diff](https://github.com/flitbit/diff)):
+To run the OpenRouter API Watcher, you'll need the [Bun](https://bun.sh) runtime. Install the dependencies with the following command:
 
 ```bash
 bun install
 ```
+
 ## Usage
 
-To run in background mode:
+The tool can be run in three different modes:
 
-```bash
-bun run watch-or.ts
-```
+1. **Background Mode**: To run the watcher in the background, use the following command:
 
-List recent changes, defaults to 10:
+   ```bash
+   bun run watch-or.ts
+   ```
 
-```bash
-bun run watch-or.ts --query [number]
-```
+   The watcher will continuously monitor the OpenRouter API and store any changes in the database.
+
+2. **Query Mode**: To view the most recent changes, use the following command:
+
+   ```bash
+   bun run watch-or.ts --query [number]
+   ```
+
+   Replace `[number]` with the maximum number of changes you want to display (default is 10).
+
+3. **One-Time Mode**: To run the watcher just once, use the following command:
+
+   ```bash
+   bun run watch-or.ts --once
+   ```
+
+   This will perform a single check and update the database if any changes are detected.
+
+## Web Interface
+
+The OpenRouter API Watcher includes a simple web interface that allows you to view the list of models and the changes that have been detected. By default, the web interface starts on a random, available port. Check the console output for the URL.
+
+## Screenshots
+
+Model List:
+
+![Model List](screenshots/ModelList.png)
+
+Model List with Search:
+
+![Model List with search](screenshots/ModelList-search.png)
+
+Model Details:
+![Model Details](screenshots/ModelDetail.png)
+
+Change List:
+![Change List](screenshots/ChangeList.png)
 
 ## Testing
 
-A test script with a few simple test cases can be run with:
+You can run a set of simple test cases with the following command:
 
 ```bash
 bun test
