@@ -5,6 +5,7 @@ import DataTable, { type TableColumn } from "react-data-table-component";
 import type { Model } from "../watch-or";
 import { DynamicElementContext } from "./App";
 import { FilterComponent } from "./FilterComponent";
+import { calcCost } from "./utils";
 
 export const ModelList: React.FC = () => {
   const navigate = useNavigate();
@@ -51,9 +52,8 @@ export const ModelList: React.FC = () => {
   setDynamicElement(filterComponentMemo);
   // }, [setDynamicElement]);
 
-  const calcCost = (floatString: string) => {
-    const cost = Math.round(parseFloat(floatString) * 1000000 * 100) / 100;
-    return cost > 0 ? cost : 0;
+  const roundContext = (context: number) => {
+    return `${Math.ceil(context / 1024)}k`
   };
 
   const columns: TableColumn<Model>[] = [
@@ -72,13 +72,15 @@ export const ModelList: React.FC = () => {
     {
       name: "Context",
       selector: (row) => row.context_length,
+      format: (row) => roundContext(row.context_length),
       sortable: true,
       right: true,
 
     },
     {
       name: "Price/MT",
-      selector: (row) => calcCost(row.pricing.completion),
+      selector: (row) => row.pricing.completion,
+      format: (row) => calcCost(row.pricing.completion).toFixed(2),
       sortable: true,
       right: true,
     },

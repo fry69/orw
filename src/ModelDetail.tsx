@@ -3,7 +3,7 @@ import type { Model } from "../watch-or";
 import { DynamicElementContext } from "./App";
 import type { ModelDiff } from "./types";
 import { DateTime } from "luxon";
-import { dateString, dateStringDuration, durationAgo } from "./utils";
+import { calcCost, dateString, dateStringDuration, durationAgo } from "./utils";
 
 export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
@@ -32,11 +32,6 @@ export const ModelDetail: React.FC = () => {
   // Create a new object that hides the already shown 'description' property
   const modelDetails: any = { ...model };
   modelDetails["description"] = "[...]";
-
-  const calcCost = (floatString: string) => {
-    const cost = Math.round(parseFloat(floatString) * 1000000 * 100) / 100;
-    return cost > 0 ? cost : 0;
-  };
 
   let Changes;
   if (changes.length > 0) {
@@ -72,9 +67,9 @@ export const ModelDetail: React.FC = () => {
         <div>
           <h3>Price</h3>
           <p style={{ fontSize: "large" }}>
-            Input: <b>$ {calcCost(model.pricing.prompt)}</b> per million tokens
+            Input: <b>$ {calcCost(model.pricing.prompt).toFixed(2)}</b> per million tokens
             <br />
-            Output: <b>$ {calcCost(model.pricing.completion)}</b> per million
+            Output: <b>$ {calcCost(model.pricing.completion).toFixed(2)}</b> per million
             tokens
           </p>
         </div>

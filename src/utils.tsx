@@ -21,3 +21,8 @@ export const dateStringDuration = (timestamp: string) => (
     {` ( ${durationAgo(DateTime.fromISO(timestamp))} ago )`}
   </>
 );
+
+export const calcCost = (floatString: string) => {
+  const cost = Math.round(parseFloat(floatString) * 1000000 * 100) / 100;
+  return cost > 0 ? cost : 0;
+};
