@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "web": "bun run server.js",
+    "watch": "vite build --watch --mode development",
+    "web": "bun run watch-or.ts",
     "query": "bun run watch-or.ts --query",
     "once": "bun run watch-or.ts --once",
     "dist-clean": "rm *.log *.db *.sql && rm -fR dist"

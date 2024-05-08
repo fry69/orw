@@ -1,9 +1,8 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import type { Model } from "../watch-or";
 import { DynamicElementContext } from "./App";
 import type { ModelDiff } from "./types";
-import { DateTime } from "luxon";
-import { calcCost, dateString, dateStringDuration, durationAgo } from "./utils";
+import { calcCost, dateStringDuration } from "./utils";
 
 export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
@@ -23,40 +22,45 @@ export const ModelDetail: React.FC = () => {
     }
   }, []);
 
+  const modelStringMemo = useMemo(() => <div className="model-id"> Model ID: {model?.id} </div>, [model] );
+
+  // setDynamicElement(<div className="model-id"> Model ID: {model?.id} </div>); // <- 100% browser CPU
+
+  setDynamicElement(modelStringMemo); // <- using the memoized string is fine
+
   if (!model) {
     return <div>Loading...</div>;
   }
-
-  setDynamicElement(<div className="model-id"> Model ID: {model?.id} </div>);
 
   // Create a new object that hides the already shown 'description' property
   const modelDetails: any = { ...model };
   modelDetails["description"] = "[...]";
 
-  let Changes;
-  if (changes.length > 0) {
-    Changes = (
-      <>
-        <h3>Changes</h3>
-        {changes.map((change, index) => (
-          <div key={index} className="change-entry">
-            <p>
-              {change.type} at {dateStringDuration(change.timestamp)}
-            </p>
-            {Object.entries(change.changes).map(
-              ([key, { old, new: newValue }]) => (
-                <p key={key}>
-                  {key}: {old} → {newValue}
-                </p>
-              )
-            )}
-          </div>
-        ))}
-      </>
-    );
-  } else {
-    Changes = <></>;
-  }
+  const Changes = () => {
+    if (changes.length > 0) {
+      return (
+        <>
+          <h3>Changes</h3>
+          {changes.map((change, index) => (
+            <div key={index} className="change-entry">
+              <p>
+                {change.type} at {dateStringDuration(change.timestamp)}
+              </p>
+              {Object.entries(change.changes).map(
+                ([key, { old, new: newValue }]) => (
+                  <p key={key}>
+                    {key}: {old} → {newValue}
+                  </p>
+                )
+              )}
+            </div>
+          ))}
+        </>
+      );
+    } else {
+      return <></>;
+    }
+  };
 
   return (
     <div className="model-details">
@@ -85,7 +89,7 @@ export const ModelDetail: React.FC = () => {
       <pre>{model.description}</pre>
       <h3>Model Details</h3>
       <pre>{JSON.stringify(modelDetails, null, 4)}</pre>
-      {Changes}
+      {Changes()}
     </div>
   );
 };
