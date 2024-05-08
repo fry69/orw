@@ -1,7 +1,7 @@
 // client/App.tsx
 import React, { createContext, useState } from "react";
 import { Route, Routes } from "react-router-dom";
-import "./app-light.css";
+import "./app-dark.css";
 import { NavBar } from "./NavBar";
 import { ModelDetail } from "./ModelDetail";
 import { ChangeList } from "./ChangeList";

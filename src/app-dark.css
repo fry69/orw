@@ -104,7 +104,7 @@ pre {
 }
 
 .model-details {
-  padding:0;
+  padding-inline: 0.7em;
   border-radius: 4px;
 }
 
