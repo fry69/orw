@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
+import type { Model, ModelDiff } from "./types";
 import { runMigrations } from "./db-migration";
 import { createServer } from "./server";
 
@@ -14,47 +15,6 @@ if (isDevelopment) {
   // `curl https://openrouter.ai/api/v1/models > models.json`
   fixedModelList = (await import("./models.json")).data;
   console.log("watcher initializing in development mode");
-}
-
-/**
- * Represents an OpenRouter model.
- */
-export interface Model {
-  id: string;
-  name: string;
-  description: string;
-  pricing: {
-    prompt: string;
-    completion: string;
-    request: string;
-    image: string;
-  };
-  context_length: number;
-  architecture: {
-    modality: string;
-    tokenizer: string;
-    instruct_type: string | null;
-  };
-  top_provider: {
-    max_completion_tokens: number | null;
-    is_moderated: boolean;
-  };
-  per_request_limits: object | null;
-}
-
-/**
- * Represents the type of change for a model.
- */
-export type ModelChangeType = "added" | "removed" | "changed";
-
-/**
- * Represents a change in an OpenRouter model.
- */
-export interface ModelDiff {
-  id: string;
-  type: ModelChangeType;
-  changes: { [key: string]: { old: any; new: any } };
-  timestamp: Date;
 }
 
 /**
@@ -77,6 +37,33 @@ export class OpenRouterModelWatcher {
   private logFile?: string;
 
   /**
+   * Memeory cache for the last model list from the database
+   */
+  private lastModelList: Model[];
+
+  get getLastModelList() {
+    return this.lastModelList;
+  }
+
+  /**
+   * Timestamp of the last API check
+   */
+  private apiLastCheck!: Date;
+
+  get getAPILastCheck() {
+    return this.apiLastCheck;
+  }
+
+  /**
+   * Timestamp of the data in the database
+   */
+  private dbLastChange!: Date;
+
+  get getDBLastChange() {
+    return this.dbLastChange;
+  }
+
+  /**
    * Creates a new instance of the OpenRouterModelWatcher class.
    * @param {Database} db  - The SQLite database to use for storing model changes.
    * @param {string} [logFile]  - Path to the logfile
@@ -84,7 +71,23 @@ export class OpenRouterModelWatcher {
   constructor(db: Database, logFile?: string) {
     this.db = db;
     runMigrations(db);
-    this.seedDB();
+
+    this.lastModelList = this.loadLastModelList();
+
+    if (this.lastModelList.length === 0) {
+      // Seed the database with the current model list if it's a fresh database
+      this.log("empty model list in database");
+      this.initFlag = true;
+
+      this.getModelList().then((newModels) => {
+        if (newModels.length > 0) {
+          this.lastModelList = newModels;
+          this.dbLastChange = new Date();
+          this.storeModelList(newModels, this.dbLastChange);
+          this.log("seeded database with model list from API");
+        }
+      });
+    }
 
     if (logFile) {
       this.logFile = logFile;
@@ -132,24 +135,6 @@ export class OpenRouterModelWatcher {
     // Log the message to the log file
     if (this.logFile) {
       fs.appendFileSync(this.logFile, `${logMessage}\n`);
-    }
-  }
-
-  /**
-   * Seeds the database with the current model list if it's a fresh database.
-   */
-  seedDB() {
-    // Seed the database with the current model list if it's a fresh database
-    const lastModelList = this.loadLastModelList();
-    if (lastModelList.length === 0) {
-      this.log("empty model list in database");
-      this.initFlag = true;
-      this.getModelList().then((newModels) => {
-        if (newModels.length > 0) {
-          this.storeModelList(newModels, new Date());
-          this.log("seeded database with model list from API");
-        }
-      });
     }
   }
 
@@ -224,10 +209,19 @@ export class OpenRouterModelWatcher {
    * @returns An array of Model objects.
    */
   loadLastModelList(): Model[] {
-    return this.db
-      .query("SELECT data FROM models ORDER BY id")
+    let mostRecentTimestamp = new Date(0);
+    const models: Model[] = this.db
+      .query("SELECT data, timestamp FROM models ORDER BY id")
       .all()
-      .map((row: any) => JSON.parse(row.data));
+      .map((row: any) => {
+        const currentTimestamp = new Date(row.timestamp);
+        if (currentTimestamp > mostRecentTimestamp) {
+          mostRecentTimestamp = currentTimestamp;
+        }
+        return JSON.parse(row.data);
+      });
+    this.dbLastChange = mostRecentTimestamp;
+    return models;
   }
 
   /**
@@ -341,7 +335,8 @@ export class OpenRouterModelWatcher {
       if (newModels.length === 0) {
         this.error("empty model list from API, skipping check");
       } else {
-        const oldModels = this.loadLastModelList();
+        this.apiLastCheck = new Date();
+        const oldModels = this.lastModelList;
         const changes = this.findChanges(newModels, oldModels);
 
         if (changes.length > 0) {
@@ -350,6 +345,8 @@ export class OpenRouterModelWatcher {
           this.storeChanges(changes);
           this.log("Changes detected:");
           this.log(JSON.stringify(changes, null, 4));
+          this.lastModelList = newModels;
+          this.dbLastChange = timestamp;
         }
       }
     }

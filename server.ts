@@ -2,10 +2,11 @@
 import { OpenRouterModelWatcher } from "./watch-or";
 import path from "node:path";
 import fs from "node:fs";
+import type { ChangesResponse, ModelResponse, ModelsResponse } from "./types";
 
 export const createServer = (watcher: OpenRouterModelWatcher) => {
   const clientDistDir =
-  import.meta.env.WATCHOR_CLIENT_PATH ?? path.join(".", "dist");
+    import.meta.env.WATCHOR_CLIENT_PATH ?? path.join(".", "dist");
 
   const server = Bun.serve({
     port: import.meta.env.WATCHOR_PORT ?? 0,
@@ -14,24 +15,54 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
       const url = new URL(request.url);
       switch (url.pathname) {
         case "/api/models":
-          return new Response(JSON.stringify(watcher.loadLastModelList()), {
+          const modelsResponse: ModelsResponse = {
+            apiLastCheck: watcher.getAPILastCheck,
+            dbLastChange: watcher.getDBLastChange,
+            data: watcher.getLastModelList,
+          };
+
+          return new Response(JSON.stringify(modelsResponse), {
             headers: { "Content-Type": "application/json" },
           });
+
         case "/api/model":
           const id = url.searchParams.get("id");
           if (id) {
-            const model = watcher.loadLastModelList().find((m) => m.id === id);
+            const model = watcher.getLastModelList.find((m) => m.id === id);
+            if (!model) {
+              return new Response("Model not found", { status: 404 });
+            }
             const changes = watcher.loadChanges(10).filter((c) => c.id === id);
-            return new Response(JSON.stringify({ model, changes }), {
+
+            const modelResponse: ModelResponse = {
+              apiLastCheck: watcher.getAPILastCheck,
+              dbLastChange: watcher.getDBLastChange,
+              data: {
+                model,
+                changes,
+              },
+            };
+
+            return new Response(JSON.stringify(modelResponse), {
               headers: { "Content-Type": "application/json" },
             });
           }
           return new Response("Model not found", { status: 404 });
+
         case "/api/changes":
           const changes = watcher.loadChanges(10);
-          return new Response(JSON.stringify(changes), {
+          const changesResponse: ChangesResponse = {
+            apiLastCheck: watcher.getAPILastCheck,
+            dbLastChange: watcher.getDBLastChange,
+            data: {
+              changes,
+            },
+          };
+
+          return new Response(JSON.stringify(changesResponse), {
             headers: { "Content-Type": "application/json" },
           });
+
         default:
           // Serve the React client application assets
           const filePath = path.join(clientDistDir, url.pathname.slice(1));

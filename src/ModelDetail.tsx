@@ -1,13 +1,13 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import type { Model } from "../watch-or";
-import { DynamicElementContext } from "./App";
-import type { ModelDiff } from "./types";
+import type { Model } from "../types";
+import { GlobalContext } from "./GlobalState";
+import type { ModelDiffClient } from "./types";
 import { calcCost, dateStringDuration } from "./utils";
 
 export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
-  const [changes, setChanges] = useState<ModelDiff[]>([]);
-  const { setDynamicElement } = useContext(DynamicElementContext);
+  const [changes, setChanges] = useState<ModelDiffClient[]>([]);
+  const { globalState, setGlobalState } = useContext(GlobalContext);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -15,18 +15,31 @@ export const ModelDetail: React.FC = () => {
     if (id) {
       fetch(`/api/model?id=${id}`)
         .then((res) => res.json())
-        .then(({ model, changes }) => {
-          setModel(model);
-          setChanges(changes);
+        .then((data) => {
+          setModel(data.data.model);
+          setChanges(data.data.changes);
+          setGlobalState((prevState) => ({
+            ...prevState,
+            apiLastCheck: data.apiLastCheck,
+            dbLastChange: data.dbLastChange,
+          }));
         });
     }
   }, []);
 
-  const modelStringMemo = useMemo(() => <div className="model-id"> Model ID: {model?.id} </div>, [model] );
+  const modelStringMemo = useMemo(
+    () => <div className="model-id"> Model ID: {model?.id} </div>,
+    [model]
+  );
 
   // setDynamicElement(<div className="model-id"> Model ID: {model?.id} </div>); // <- 100% browser CPU
 
-  setDynamicElement(modelStringMemo); // <- using the memoized string is fine
+  useEffect(() => {
+    setGlobalState((prevState) => ({
+      ...prevState,
+      navBarDynamicElement: modelStringMemo,
+    })); // <- using the memoized string is fine
+  }, [model]);
 
   if (!model) {
     return <div>Loading...</div>;

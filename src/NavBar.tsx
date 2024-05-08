@@ -1,9 +1,10 @@
 import React, { useContext } from "react";
 import { NavLink } from "react-router-dom";
-import { DynamicElementContext } from "./App";
+import { GlobalContext } from "./GlobalState";
+import { durationAgo } from "./utils";
 
 export const NavBar: React.FC = () => {
-  const { dynamicElement } = useContext(DynamicElementContext);
+  const { globalState } = useContext(GlobalContext);
 
   return (
     <nav>
@@ -24,7 +25,17 @@ export const NavBar: React.FC = () => {
             Change List
           </NavLink>
         </li>
-        <li className="dynamic-element">{dynamicElement}</li>
+        <li className="dynamic-element">{globalState.navBarDynamicElement}</li>
+        <li className="timestamp">
+          DB last change:{" "}
+          <b style={{ color: "skyblue" }}>
+            {durationAgo(globalState.dbLastChange)}
+          </b>{" "}
+          API last check:{" "}
+          <b style={{ color: "skyblue" }}>
+            {durationAgo(globalState.apiLastCheck)}
+          </b>
+        </li>
       </ul>
     </nav>
   );

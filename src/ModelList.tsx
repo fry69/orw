@@ -1,15 +1,15 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable, { type TableColumn } from "react-data-table-component";
-import type { Model } from "../watch-or";
-import { DynamicElementContext } from "./App";
+import type { Model, ModelsResponse } from "../types";
+import { GlobalContext } from "./GlobalState";
 import { FilterComponent } from "./FilterComponent";
 import { calcCost } from "./utils";
 
 export const ModelList: React.FC = () => {
   const navigate = useNavigate();
   const [models, setModels] = useState<Model[]>([]);
-  const { setDynamicElement } = useContext(DynamicElementContext);
+  const { setGlobalState } = useContext(GlobalContext);
 
   const [filterText, setFilterText] = useState("");
   const filteredModels = models.filter(
@@ -44,15 +44,25 @@ export const ModelList: React.FC = () => {
   useEffect(() => {
     fetch("/api/models")
       .then((res) => res.json())
-      .then((data) => setModels(data));
+      .then((data) => {
+        setModels(data.data);
+        setGlobalState((prevState) => ({
+          ...prevState,
+          apiLastCheck: data.apiLastCheck,
+          dbLastChange: data.dbLastChange,
+        }));
+      });
   }, []);
 
-  // useEffect(() => {
-  setDynamicElement(filterComponentMemo);
-  // }, [setDynamicElement]);
+  useEffect(() => {
+    setGlobalState((prevState) => ({
+      ...prevState,
+      navBarDynamicElement: filterComponentMemo,
+    }));
+  }, [filterText]);
 
   const roundContext = (context: number) => {
-    return `${Math.ceil(context / 1024)}k`
+    return `${Math.ceil(context / 1024)}k`;
   };
 
   const columns: TableColumn<Model>[] = [
@@ -74,7 +84,6 @@ export const ModelList: React.FC = () => {
       format: (row) => roundContext(row.context_length),
       sortable: true,
       right: true,
-
     },
     {
       name: "Price/MT",

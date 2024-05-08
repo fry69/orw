@@ -1,13 +1,14 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { FilterComponent } from "./FilterComponent";
-import { DynamicElementContext } from "./App";
+import { GlobalContext } from "./GlobalState";
 import { Link } from "react-router-dom";
-import type { ModelDiff } from "./types";
+import type { ModelDiffClient } from "./types";
 import { dateString, dateStringDuration } from "./utils";
+import type { ChangesResponse } from "../types";
 
 export const ChangeList: React.FC = () => {
-  const [changes, setChanges] = useState<ModelDiff[]>([]);
-  const { setDynamicElement } = useContext(DynamicElementContext);
+  const [changes, setChanges] = useState<ModelDiffClient[]>([]);
+  const { setGlobalState } = useContext(GlobalContext);
 
   const [filterText, setFilterText] = useState("");
   const filteredChanges = changes.filter(
@@ -40,10 +41,22 @@ export const ChangeList: React.FC = () => {
   useEffect(() => {
     fetch("/api/changes")
       .then((res) => res.json())
-      .then((data) => setChanges(data));
+      .then((data) => {
+        setChanges(data.data.changes);
+        setGlobalState((prevState) => ({
+          ...prevState,
+          apiLastCheck: data.apiLastCheck,
+          dbLastChange: data.dbLastChange,
+        }));
+      });
   }, []);
 
-  setDynamicElement(filterComponentMemo);
+  useEffect(() => {
+    setGlobalState((prevState) => ({
+      ...prevState,
+      navBarDynamicElement: filterComponentMemo,
+    }));
+  }, [filterText]);
 
   return (
     <div className="change-list">

@@ -6,9 +6,25 @@ export const dateString = (timestamp: string) =>
     .setLocale("en-us")
     .toLocaleString(DateTime.DATETIME_MED);
 
-export const durationAgo = (timestamp: DateTime) => {
-  const duration = timestamp.setLocale("en-us").diffNow();
-  return toHumanDurationExtended(duration);
+export const durationAgo = (timestamp: DateTime | string) => {
+  if (typeof timestamp === "string" && timestamp !== "") {
+    timestamp = DateTime.fromISO(timestamp);
+  }
+  if (DateTime.isDateTime(timestamp)) {
+    const duration = timestamp.setLocale("en-us").diffNow();
+    return toHumanDurationExtended(duration, {
+      human: {
+        unitDisplay: "narrow",
+        unit: "short",
+      },
+      rounding: {
+        numOfUnits: 2,
+        minUnit: 'minutes',
+        roundingMethod: 'round'
+      }
+    });
+  }
+  return "";
 };
 
 export const dateStringDuration = (timestamp: string) => (

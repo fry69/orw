@@ -1,24 +1,16 @@
 // client/App.tsx
-import React, { createContext, useState } from "react";
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 import "./app-dark.css";
 import { NavBar } from "./NavBar";
 import { ModelDetail } from "./ModelDetail";
 import { ChangeList } from "./ChangeList";
 import { ModelList } from "./ModelList";
-
-export const DynamicElementContext = createContext({
-  dynamicElement: null as React.ReactNode,
-  setDynamicElement: (value: React.ReactNode) => {},
-});
+import { GlobalProvider } from "./GlobalState";
 
 const App: React.FC = () => {
-  const [dynamicElement, setDynamicElement] = useState<React.ReactNode>(null);
-
   return (
-    <DynamicElementContext.Provider
-      value={{ dynamicElement, setDynamicElement }}
-    >
+    <GlobalProvider>
       <div className="content-container">
         <NavBar />
         <div className="main-content">
@@ -29,7 +21,7 @@ const App: React.FC = () => {
           </Routes>
         </div>
       </div>
-    </DynamicElementContext.Provider>
+    </GlobalProvider>
   );
 };
 
