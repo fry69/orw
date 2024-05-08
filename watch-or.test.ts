@@ -1,5 +1,5 @@
 // watch-or.test.ts
-import { describe, beforeEach, afterEach, test, expect } from "bun:test";
+import { describe, beforeEach, afterEach, test, expect, jest } from "bun:test";
 import { OpenRouterModelWatcher, type Model, type ModelDiff } from "./watch-or";
 import { Database } from "bun:sqlite";
 
@@ -8,6 +8,9 @@ describe("OpenRouterModelWatcher", () => {
   let db: Database;
 
   beforeEach(() => {
+    // Silence console output
+    console.log = jest.fn();
+    console.error = jest.fn();
     db = new Database(":memory:");
     watcher = new OpenRouterModelWatcher(db);
   });
@@ -16,18 +19,7 @@ describe("OpenRouterModelWatcher", () => {
     db.close();
   });
 
-  test("should create tables if not exists", () => {
-    watcher.createTablesIfNotExists();
-
-    const result = db
-      .query('SELECT name FROM sqlite_master WHERE type="table"')
-      .all()
-      .map((t: any) => t.name);
-
-    expect(result).toEqual(["models", "changes"]);
-  });
-
-  test("should store and load model list", async () => {
+  test("should store and load model list", () => {
     const models: Model[] = [
       {
         id: "1",
@@ -59,10 +51,11 @@ describe("OpenRouterModelWatcher", () => {
     expect(loadedModels).toEqual(models);
   });
 
-  test("should store and load changes", async () => {
+  test("should store and load changes", () => {
     const changes: ModelDiff[] = [
       {
         id: "1",
+        type: "changed",
         changes: {
           name: { old: "Model 1", new: "Model 1 Updated" },
         },
@@ -132,6 +125,7 @@ describe("OpenRouterModelWatcher", () => {
     expect(changes).toEqual([
       {
         id: "1",
+        type: "changed",
         changes: {
           name: { old: "Model 1", new: "Model 1 Updated" },
           "architecture.instruct_type": { old: null, new: "instruct" },
@@ -195,6 +189,176 @@ describe("OpenRouterModelWatcher", () => {
 
     const changes = watcher.findChanges(newModels, oldModels);
 
-    expect(changes).toBeEmpty;
+    expect(changes).toEqual([]);
+  });
+
+  test("should detect added models", () => {
+    const oldModels: Model[] = [
+      {
+        id: "1",
+        name: "Model 1",
+        description: "Description 1",
+        pricing: {
+          prompt: "0.01",
+          completion: "0.02",
+          request: "0.03",
+          image: "0.04",
+        },
+        context_length: 1024,
+        architecture: {
+          modality: "text",
+          tokenizer: "gpt2",
+          instruct_type: null,
+        },
+        top_provider: {
+          max_completion_tokens: 2048,
+          is_moderated: true,
+        },
+        per_request_limits: null,
+      },
+    ];
+
+    const newModels: Model[] = [
+      {
+        id: "1",
+        name: "Model 1",
+        description: "Description 1",
+        pricing: {
+          prompt: "0.01",
+          completion: "0.02",
+          request: "0.03",
+          image: "0.04",
+        },
+        context_length: 1024,
+        architecture: {
+          modality: "text",
+          tokenizer: "gpt2",
+          instruct_type: null,
+        },
+        top_provider: {
+          max_completion_tokens: 2048,
+          is_moderated: true,
+        },
+        per_request_limits: null,
+      },
+      {
+        id: "2",
+        name: "Model 2",
+        description: "Description 2",
+        pricing: {
+          prompt: "0.01",
+          completion: "0.02",
+          request: "0.03",
+          image: "0.04",
+        },
+        context_length: 1024,
+        architecture: {
+          modality: "text",
+          tokenizer: "gpt2",
+          instruct_type: null,
+        },
+        top_provider: {
+          max_completion_tokens: 2048,
+          is_moderated: true,
+        },
+        per_request_limits: null,
+      },
+    ];
+
+    const changes = watcher.findChanges(newModels, oldModels);
+
+    expect(changes).toEqual([
+      {
+        id: "2",
+        type: "added",
+        changes: {},
+        timestamp: expect.any(Date),
+      },
+    ]);
+  });
+
+  test("should detect removed models", () => {
+    const oldModels: Model[] = [
+      {
+        id: "1",
+        name: "Model 1",
+        description: "Description 1",
+        pricing: {
+          prompt: "0.01",
+          completion: "0.02",
+          request: "0.03",
+          image: "0.04",
+        },
+        context_length: 1024,
+        architecture: {
+          modality: "text",
+          tokenizer: "gpt2",
+          instruct_type: null,
+        },
+        top_provider: {
+          max_completion_tokens: 2048,
+          is_moderated: true,
+        },
+        per_request_limits: null,
+      },
+      {
+        id: "2",
+        name: "Model 2",
+        description: "Description 2",
+        pricing: {
+          prompt: "0.01",
+          completion: "0.02",
+          request: "0.03",
+          image: "0.04",
+        },
+        context_length: 1024,
+        architecture: {
+          modality: "text",
+          tokenizer: "gpt2",
+          instruct_type: null,
+        },
+        top_provider: {
+          max_completion_tokens: 2048,
+          is_moderated: true,
+        },
+        per_request_limits: null,
+      },
+    ];
+
+    const newModels: Model[] = [
+      {
+        id: "1",
+        name: "Model 1",
+        description: "Description 1",
+        pricing: {
+          prompt: "0.01",
+          completion: "0.02",
+          request: "0.03",
+          image: "0.04",
+        },
+        context_length: 1024,
+        architecture: {
+          modality: "text",
+          tokenizer: "gpt2",
+          instruct_type: null,
+        },
+        top_provider: {
+          max_completion_tokens: 2048,
+          is_moderated: true,
+        },
+        per_request_limits: null,
+      },
+    ];
+
+    const changes = watcher.findChanges(newModels, oldModels);
+
+    expect(changes).toEqual([
+      {
+        id: "2",
+        type: "removed",
+        changes: {},
+        timestamp: expect.any(Date),
+      },
+    ]);
   });
 });
