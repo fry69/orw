@@ -118,6 +118,7 @@ export const ModelList: React.FC = () => {
       dense
       highlightOnHover
       defaultSortFieldId={2}
+      theme="dark"
       // subHeader
       // subHeaderComponent={filterComponentMemo}
     />

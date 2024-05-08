@@ -2,6 +2,23 @@
 body {
   margin: 0;
   padding: 0;
+  background-color: #444;
+  color: #fff;
+}
+
+a:link {
+  color: lightskyblue;
+}
+a:visited {
+  color: lightskyblue;
+}
+a:hover {
+  color: #ffffff;
+}
+a:active {
+  color: #ff4040;
+  text-decoration: none;
+  font-weight: normal;
 }
 
 nav {
@@ -37,6 +54,10 @@ nav a {
   padding: 0.5rem;
 }
 
+nav a:visited {
+  color: #fff;
+}
+
 nav a:hover {
   background-color: #555;
 }
@@ -48,7 +69,8 @@ nav a:hover {
 
 pre {
   padding: 10px;
-  background-color: #e4e4e4;
+  background-color: #555;
+  color: #fff;
   text-wrap: balance;
 }
 
@@ -67,37 +89,7 @@ pre {
   padding: 0;
 }
 
-.model-list h1 {
-  text-align: center;
-}
-
-.model-list ul {
-  column-width: 300px;
-  column-gap: 20px;
-}
-
-.model-list li {
-  background-color: #f4f4f4;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 4px;
-}
-
-.model-list li:hover {
-  background-color: lightblue;
-}
-
-.model-list-item  {
-  color: #333;
-  text-decoration: none;
-}
-
-.model-list-item:hover {
-  color: red;
-}
-
 .model-details {
-  background-color: #f4f4f4;
   padding: 2rem;
   border-radius: 4px;
 }
@@ -114,17 +106,15 @@ pre {
 }
 
 .change-list {
-  padding: 0;
-}
-
-.change-list h1 {
-  text-align: center;
+  padding-top: 10px;
+  padding-inline: 20px;
 }
 
 .change-entry {
-  background-color: #fff;
+  background-color: #444;
+  color: #fff;
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px #888;
 }
