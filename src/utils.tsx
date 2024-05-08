@@ -1,19 +1,15 @@
 import { DateTime, type DurationUnit } from "luxon";
+import { toHumanDurationExtended } from "@kitsuyui/luxon-ext";
 
 export const dateString = (timestamp: string) =>
   DateTime.fromISO(timestamp)
     .setLocale("en-us")
     .toLocaleString(DateTime.DATETIME_MED);
 
-export const durationAgo = (
-  timestamp: DateTime,
-  round: DurationUnit = "hours"
-) =>
-  timestamp
-    .setLocale("en-us")
-    .diffNow([round])
-    .negate()
-    .toHuman({ maximumFractionDigits: 0 });
+export const durationAgo = (timestamp: DateTime) => {
+  const duration = timestamp.setLocale("en-us").diffNow();
+  return toHumanDurationExtended(duration);
+};
 
 export const dateStringDuration = (timestamp: string) => (
   <>

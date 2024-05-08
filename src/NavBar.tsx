@@ -24,7 +24,7 @@ export const NavBar: React.FC = () => {
             Change List
           </NavLink>
         </li>
-        <li>{dynamicElement}</li>
+        <li className="dynamic-element">{dynamicElement}</li>
       </ul>
     </nav>
   );

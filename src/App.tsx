@@ -21,11 +21,13 @@ const App: React.FC = () => {
     >
       <div className="content-container">
         <NavBar />
-        <Routes>
-          <Route path="/model" element={<ModelDetail />} />
-          <Route path="/changes" element={<ChangeList />} />
-          <Route path="/" element={<ModelList />} />
-        </Routes>
+        <div className="main-content">
+          <Routes>
+            <Route path="/model" element={<ModelDetail />} />
+            <Route path="/changes" element={<ChangeList />} />
+            <Route path="/" element={<ModelList />} />
+          </Routes>
+        </div>
       </div>
     </DynamicElementContext.Provider>
   );

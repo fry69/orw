@@ -60,18 +60,19 @@ export const ModelDetail: React.FC = () => {
 
   return (
     <div className="model-details">
-      <h2>{model.name}</h2>
-      <h3>Description</h3>
-      <pre>{model.description}</pre>
       <div className="model-details-col-container">
         <div>
           <h3>Price</h3>
           <p style={{ fontSize: "large" }}>
-            Input: <b>$ {calcCost(model.pricing.prompt).toFixed(2)}</b> per million tokens
+            Input: <b>$ {calcCost(model.pricing.prompt).toFixed(2)}</b> per
+            million tokens
             <br />
-            Output: <b>$ {calcCost(model.pricing.completion).toFixed(2)}</b> per million
-            tokens
+            Output: <b>$ {calcCost(model.pricing.completion).toFixed(2)}</b> per
+            million tokens
           </p>
+        </div>
+        <div className="change-model-name">
+          <h2>{model.name}</h2>
         </div>
         <div>
           <h3>Context Length</h3>
@@ -80,6 +81,8 @@ export const ModelDetail: React.FC = () => {
           </p>
         </div>
       </div>
+      <h3>Description</h3>
+      <pre>{model.description}</pre>
       <h3>Model Details</h3>
       <pre>{JSON.stringify(modelDetails, null, 4)}</pre>
       {Changes}
