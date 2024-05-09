@@ -34,6 +34,9 @@ nav {
   /* justify-content: space-between; */
   align-items: center;
   padding: 1rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: "";
 }
 
 nav ul {
@@ -71,13 +74,21 @@ nav a:hover {
   background-color: #555;
 }
 
-nav li.timestamp {
+nav li.dynamic-element {
   margin-left: auto;
-  font-size: medium;
 }
 
-.dynamic-element {
+nav li.timestamp-container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 0.5em;
   margin-left: auto;
+  font-size: small;
+  text-align: end;
+}
+
+nav li .timestamp {
+  color: skyblue;
 }
 
 /*
@@ -126,6 +137,10 @@ pre {
   justify-content: space-between;
   display: flex;
   gap: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: "";
+
 }
 
 .change-model-name {

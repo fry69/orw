@@ -26,15 +26,15 @@ export const NavBar: React.FC = () => {
           </NavLink>
         </li>
         <li className="dynamic-element">{globalState.navBarDynamicElement}</li>
-        <li className="timestamp">
-          DB last change:{" "}
-          <b style={{ color: "skyblue" }}>
-            {durationAgo(globalState.dbLastChange)}
-          </b>{" "}
-          API last check:{" "}
-          <b style={{ color: "skyblue" }}>
-            {durationAgo(globalState.apiLastCheck)}
-          </b>
+        <li className="timestamp-container">
+          DB last change:
+          <span className="timestamp">
+            <b>{durationAgo(globalState.dbLastChange)}</b>
+          </span>
+          API last check:
+          <span className="timestamp">
+            <b>{durationAgo(globalState.apiLastCheck)}</b>
+          </span>
         </li>
       </ul>
     </nav>
