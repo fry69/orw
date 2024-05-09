@@ -3,6 +3,7 @@ import { OpenRouterModelWatcher } from "./watch-or";
 import path from "node:path";
 import fs from "node:fs";
 import type { ChangesResponse, ModelResponse, ModelsResponse } from "./types";
+import RSS from "rss";
 
 export const createServer = (watcher: OpenRouterModelWatcher) => {
   const clientDistDir =
@@ -63,6 +64,32 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             headers: { "Content-Type": "application/json" },
           });
 
+        case "/rss":
+          const feed: RSS = new RSS({
+            title: "OpenRouter Model Changes",
+            description: "RSS feed for changes in OpenRouter models",
+            feed_url: `${publicURL}rss`,
+            site_url: publicURL,
+            pubDate: watcher.getDBLastChange,
+          });
+
+          // console.log("RSS feed object:", feed);
+
+          const changesRSS = watcher.loadChanges(20);
+          for (const change of changesRSS) {
+            feed.item({
+              title: `Model ${change.id} ${change.type}`,
+              description: JSON.stringify(change.changes, null, 2),
+              url: `${publicURL}model?id=${change.id}&timestamp=${change.timestamp.toISOString()}`,
+              date: change.timestamp,
+            });
+          }
+
+          // console.log("RSS feed XML:", feed.xml());
+
+          return new Response(feed.xml(), {
+            headers: { "Content-Type": "application/rss+xml" },
+          });
         default:
           // Serve the React client application assets
           const filePath = path.join(clientDistDir, url.pathname.slice(1));
@@ -78,5 +105,6 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
     },
   });
 
-  watcher.log(`Webinterface running at URL ${server.url}`);
+  const publicURL = import.meta.env.WATCHOR_URL ?? server.url.toString();
+  watcher.log(`Webinterface running at URL ${publicURL}`);
 };

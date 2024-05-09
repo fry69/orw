@@ -16,6 +16,7 @@
     "@types/luxon": "^3.4.2",
     "@types/react": "^18.3.1",
     "@types/react-dom": "^18.3.0",
+    "@types/rss": "^0.0.32",
     "luxon": "^3.4.4"
   },
   "peerDependencies": {
@@ -29,6 +30,7 @@
     "react-data-table-component": "^7.6.2",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.23.0",
+    "rss": "^1.2.2",
     "styled-components": "^6.1.9",
     "vite": "^5.2.11"
   }
