@@ -60,11 +60,17 @@ export const ModelDetail: React.FC = () => {
                 {change.type} at {dateStringDuration(change.timestamp)}
               </p>
               {Object.entries(change.changes).map(
-                ([key, { old, new: newValue }]) => (
-                  <p key={key}>
-                    {key}: {old} → {newValue}
-                  </p>
-                )
+                ([key, { old, new: newValue }]) => {
+                  if (key.includes("pricing")) {
+                    old = calcCost(old);
+                    newValue = calcCost(newValue);
+                  }
+                  return (
+                    <p key={key}>
+                      {key}: {old} → {newValue}
+                    </p>
+                  );
+                }
               )}
             </div>
           ))}
