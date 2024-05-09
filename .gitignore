@@ -189,6 +189,7 @@ bun.lockb
 !migrations/*.sql
 *.json
 
-# Backup and snapshot files
+# Backup and snapshot files and folder
+backup/
 *.backup*
 *.snapshot*
