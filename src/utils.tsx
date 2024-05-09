@@ -49,6 +49,20 @@ export const changeSnippet = (change: ModelDiffClient) => {
             old = calcCost(old);
             newValue = calcCost(newValue);
           }
+          if (key.includes("description")) {
+            return (
+              <div key={key}>
+                <p>
+                  Description (old):
+                  <pre>{old}</pre>
+                </p>
+                <p>
+                  Description (new):
+                  <pre>{newValue}</pre>
+                </p>
+              </div>
+            );
+          }
           return (
             <p key={key}>
               {key}: {old} → {newValue}
