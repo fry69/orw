@@ -129,7 +129,11 @@ export const ModelList: React.FC = () => {
     {
       name: "Price/MT",
       selector: (row) => row.pricing.completion,
-      format: (row) => calcCost(row.pricing.completion),
+      format: (row) => {
+        return row.id === "openrouter/auto"
+          ? "[N/A]"
+          : calcCost(row.pricing.completion);
+      },
       sortable: true,
       right: true,
     },

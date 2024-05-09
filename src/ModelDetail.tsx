@@ -70,6 +70,15 @@ export const ModelDetail: React.FC = () => {
   };
 
   const Price = () => {
+    if (model.id === "openrouter/auto") {
+      return (
+        <>
+          <p style={{ fontSize: "large" }}>
+            <b>See model</b>
+          </p>
+        </>
+      );
+    }
     if (parseFloat(model.pricing.completion) > 0) {
       return (
         <>
