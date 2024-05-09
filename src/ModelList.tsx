@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable, { type TableColumn } from "react-data-table-component";
-import type { Model, ModelsResponse } from "../types";
+import type { Model } from "../types";
 import { GlobalContext } from "./GlobalState";
 import { FilterComponent } from "./FilterComponent";
 import { calcCost } from "./utils";
@@ -65,18 +65,59 @@ export const ModelList: React.FC = () => {
     return `${Math.ceil(context / 1024)}k`;
   };
 
+  const customSort = (rows: Model[], selector: any, direction: string) => {
+    return rows.sort((a, b) => {
+      let comparison = 0;
+
+      // use the selector to resolve your field names by passing the sort comparators
+      const aField = selector(a);
+      const bField = selector(b);
+
+      if (typeof aField === "string" || typeof bField === "string") {
+        // String comparison
+        // empty string should stay at bottom to not clutter reverse sort (e.g. Instruct)
+        if (aField === "" && bField === "") {
+          return 0;
+        } else if (aField === "" || !aField) {
+          return 1;
+        } else if (bField === "" || !bField) {
+          return -1;
+        } else if (aField.toLowerCase() > bField.toLowerCase()) {
+          comparison = 1;
+        } else if (aField.toLowerCase() < bField.toLowerCase()) {
+          comparison = -1;
+        }
+      } else if (typeof aField === "number" || typeof bField === "number") {
+        // Number comparison
+        // 0 should stay at bottom to not clutter reverse sort (e.g. maxOut)
+        // pricing gets sorted via string sort and obeys 0 at top
+        if (aField === 0 && bField === 0) {
+          return 0;
+        } else if (aField === 0 || !aField) {
+          return 1;
+        } else if (bField === 0 || !bField) {
+          return -1;
+        } else {
+          comparison = aField - bField;
+        }
+      }
+
+      return direction === "desc" ? comparison * -1 : comparison;
+    });
+  };
+
   const columns: TableColumn<Model>[] = [
     {
       name: "ID",
       selector: (row) => row.id,
       sortable: true,
-      grow: 2,
+      grow: 3,
     },
     {
       name: "Name",
       selector: (row) => row.name,
       sortable: true,
-      grow: 2,
+      grow: 3,
     },
     {
       name: "Context",
@@ -93,28 +134,29 @@ export const ModelList: React.FC = () => {
       right: true,
     },
     {
-      name: "Token Limit",
+      name: "maxOut",
       selector: (row) => row.top_provider.max_completion_tokens ?? 0,
       sortable: true,
+      hide: 599,
       right: true,
-      sortFunction: (a, b) => {
-        if (
-          a.top_provider.max_completion_tokens === 0 ||
-          !a.top_provider.max_completion_tokens
-        ) {
-          return 1;
-        }
-        if (
-          b.top_provider.max_completion_tokens === 0 ||
-          !b.top_provider.max_completion_tokens
-        ) {
-          return -1;
-        }
-        return (
-          a.top_provider.max_completion_tokens -
-          b.top_provider.max_completion_tokens
-        );
-      },
+    },
+    {
+      name: "Modality",
+      selector: (row) => row.architecture.modality,
+      sortable: true,
+      hide: 959,
+    },
+    {
+      name: "Tokenizer",
+      selector: (row) => row.architecture.tokenizer,
+      sortable: true,
+      hide: 959,
+    },
+    {
+      name: "Instruct",
+      selector: (row) => row.architecture.instruct_type ?? "",
+      sortable: true,
+      hide: 959,
     },
   ];
 
@@ -127,8 +169,7 @@ export const ModelList: React.FC = () => {
       highlightOnHover
       defaultSortFieldId={2}
       theme="dark"
-      // subHeader
-      // subHeaderComponent={filterComponentMemo}
+      sortFunction={customSort}
     />
   );
 };

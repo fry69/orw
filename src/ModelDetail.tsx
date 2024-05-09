@@ -7,7 +7,7 @@ import { calcCost, dateStringDuration } from "./utils";
 export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
   const [changes, setChanges] = useState<ModelDiffClient[]>([]);
-  const { globalState, setGlobalState } = useContext(GlobalContext);
+  const { setGlobalState } = useContext(GlobalContext);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
