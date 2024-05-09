@@ -129,13 +129,17 @@ export const ModelList: React.FC = () => {
     {
       name: "Price/MT",
       selector: (row) => row.pricing.completion,
-      format: (row) => calcCost(row.pricing.completion).toFixed(2),
+      format: (row) => calcCost(row.pricing.completion),
       sortable: true,
       right: true,
     },
     {
       name: "maxOut",
       selector: (row) => row.top_provider.max_completion_tokens ?? 0,
+      format: (row) => {
+        const maxOut = row.top_provider.max_completion_tokens ?? 0;
+        return maxOut > 0 ? maxOut : "";
+      },
       sortable: true,
       hide: 599,
       right: true,

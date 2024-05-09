@@ -35,9 +35,9 @@ export const dateStringDuration = (timestamp: string) => (
   </>
 );
 
-export const calcCost = (floatString: string) => {
+export const calcCost = (floatString: string): string => {
   const cost = Math.round(parseFloat(floatString) * 1000000 * 100) / 100;
-  return cost > 0 ? cost : 0;
+  return cost > 0 ? cost.toFixed(2) : "[free]";
 };
 
 export const changeSnippet = (change: ModelDiffClient) => {

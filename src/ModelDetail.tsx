@@ -69,18 +69,34 @@ export const ModelDetail: React.FC = () => {
     }
   };
 
+  const Price = () => {
+    if (parseFloat(model.pricing.completion) > 0) {
+      return (
+        <>
+          <p style={{ fontSize: "large" }}>
+            Input: <b>$ {calcCost(model.pricing.prompt)}</b> per million tokens
+            <br />
+            Output: <b>$ {calcCost(model.pricing.completion)}</b> per million
+            tokens
+          </p>
+        </>
+      );
+    }
+    return (
+      <>
+        <p style={{ fontSize: "large", color: "green" }}>
+          <b>Free</b>
+        </p>
+      </>
+    );
+  };
+
   return (
     <div className="model-details">
       <div className="model-details-col-container">
         <div>
           <h3>Price</h3>
-          <p style={{ fontSize: "large" }}>
-            Input: <b>$ {calcCost(model.pricing.prompt).toFixed(2)}</b> per
-            million tokens
-            <br />
-            Output: <b>$ {calcCost(model.pricing.completion).toFixed(2)}</b> per
-            million tokens
-          </p>
+          {Price()}
         </div>
         <div className="change-model-name">
           <h2>{model.name}</h2>
