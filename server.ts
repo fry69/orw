@@ -33,8 +33,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             if (!model) {
               return new Response("Model not found", { status: 404 });
             }
-            const changes = watcher.loadChanges(10).filter((c) => c.id === id);
-
+            const changes = watcher.loadChangesForModel(id, 50);
             const modelResponse: ModelResponse = {
               apiLastCheck: watcher.getAPILastCheck,
               dbLastChange: watcher.getDBLastChange,
@@ -51,7 +50,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           return new Response("Model not found", { status: 404 });
 
         case "/api/changes":
-          const changes = watcher.loadChanges(10);
+          const changes = watcher.loadChanges(100);
           const changesResponse: ChangesResponse = {
             apiLastCheck: watcher.getAPILastCheck,
             dbLastChange: watcher.getDBLastChange,
@@ -73,19 +72,17 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             pubDate: watcher.getDBLastChange,
           });
 
-          // console.log("RSS feed object:", feed);
-
-          const changesRSS = watcher.loadChanges(20);
+          const changesRSS = watcher.loadChanges(100);
           for (const change of changesRSS) {
             feed.item({
               title: `Model ${change.id} ${change.type}`,
-              description: JSON.stringify(change.changes, null, 2),
-              url: `${publicURL}model?id=${change.id}&timestamp=${change.timestamp.toISOString()}`,
+              description: `<code style="display: block; white-space: pre-wrap; font-family: monospace;">${JSON.stringify(change, null, 2)}</code>`,
+              url: `${publicURL}model?id=${
+                change.id
+              }&timestamp=${change.timestamp.toISOString()}`,
               date: change.timestamp,
             });
           }
-
-          // console.log("RSS feed XML:", feed.xml());
 
           return new Response(feed.xml(), {
             headers: { "Content-Type": "application/rss+xml" },

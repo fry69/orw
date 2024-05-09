@@ -1,7 +1,8 @@
 export interface ModelDiffClient {
   id: string;
   type: string;
-  changes: any[];
+  changes?: any[];
+  model?: any;
   timestamp: string;
 }
 

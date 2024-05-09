@@ -187,24 +187,6 @@ export class OpenRouterModelWatcher {
   }
 
   /**
-   * Stores a list of model changes in the SQLite database.
-   * @param {ModelDiff[]} changes - An array of ModelDiff objects to store.
-   */
-  storeChanges(changes: ModelDiff[]) {
-    for (const change of changes) {
-      this.db.run(
-        "INSERT INTO changes (id, type, changes, timestamp) VALUES (?, ?, ?, ?)",
-        [
-          change.id,
-          change.type,
-          JSON.stringify(change.changes),
-          change.timestamp.toISOString(),
-        ]
-      );
-    }
-  }
-
-  /**
    * Loads the most recent list of OpenRouter models from the SQLite database.
    * @returns An array of Model objects.
    */
@@ -225,22 +207,74 @@ export class OpenRouterModelWatcher {
   }
 
   /**
+   * Transform a row from the changes table to an ModelDiff object
+   * @param {any} row - The row from the database to transform 
+   * @returns {ModelDiff}
+   */
+  private transformChangesRow = (row: any): ModelDiff => {
+    if (row.type === "changed") {
+      return {
+        id: row.id,
+        type: row.type,
+        changes: JSON.parse(row.changes),
+        timestamp: new Date(row.timestamp),
+      };
+    } else {
+      return {
+        id: row.id,
+        type: row.type,
+        model: JSON.parse(row.changes),
+        timestamp: new Date(row.timestamp),
+      };
+    }
+  }
+
+  /**
    * Loads the most recent model changes from the SQLite database.
    * @param {number} n - The maximum number of changes to load.
    * @returns {ModelDiff[]} - An array of ModelDiff objects.
    */
-  loadChanges(n: number): ModelDiff[] {
+  loadChanges(n: number = 10): ModelDiff[] {
     return this.db
       .query(
         "SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?"
       )
       .all(n)
-      .map((row: any) => ({
-        id: row.id,
-        type: row.type,
-        changes: JSON.parse(row.changes),
-        timestamp: new Date(row.timestamp),
-      }));
+      .map(this.transformChangesRow);
+  }
+
+  /**
+   * Loads the most recent model changes from the SQLite database.
+   * @param {number} n - The maximum number of changes to load.
+   * @returns {ModelDiff[]} - An array of ModelDiff objects.
+   */
+  loadChangesForModel(id: string, n: number = 10): ModelDiff[] {
+    return this.db
+      .query(
+        "SELECT id, type, changes, timestamp FROM changes WHERE id = ? ORDER BY timestamp DESC LIMIT ?"
+      )
+      .all(id, n)
+      .map(this.transformChangesRow);
+  }
+
+  /**
+   * Stores a list of model changes in the SQLite database.
+   * @param {ModelDiff[]} changes - An array of ModelDiff objects to store.
+   */
+  storeChanges(changes: ModelDiff[]) {
+    for (const change of changes) {
+      this.db.run(
+        "INSERT INTO changes (id, type, changes, timestamp) VALUES (?, ?, ?, ?)",
+        [
+          change.id,
+          change.type,
+          change.changes
+            ? JSON.stringify(change.changes)
+            : JSON.stringify(change.model),
+          change.timestamp.toISOString(),
+        ]
+      );
+    }
   }
 
   /**
@@ -259,7 +293,7 @@ export class OpenRouterModelWatcher {
         changes.push({
           id: newModel.id,
           type: "added",
-          changes: {},
+          model: newModel,
           timestamp: new Date(),
         });
       }
@@ -272,7 +306,7 @@ export class OpenRouterModelWatcher {
         changes.push({
           id: oldModel.id,
           type: "removed",
-          changes: {},
+          model: oldModel,
           timestamp: new Date(),
         });
       }
@@ -384,6 +418,7 @@ export class OpenRouterModelWatcher {
             change.id
           } at ${change.timestamp.toLocaleString()}`
         );
+        console.dir(change.model);
       } else if (change.type === "removed") {
         console.log(
           `Model id ${
@@ -397,7 +432,7 @@ export class OpenRouterModelWatcher {
           } at ${change.timestamp.toLocaleString()}:`
         );
         for (const [key, { old, new: newValue }] of Object.entries(
-          change.changes
+          change.changes!
         )) {
           console.log(`  ${key}: ${old} -> ${newValue}`);
         }

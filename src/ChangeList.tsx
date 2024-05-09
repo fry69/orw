@@ -3,7 +3,7 @@ import { FilterComponent } from "./FilterComponent";
 import { GlobalContext } from "./GlobalState";
 import { Link } from "react-router-dom";
 import type { ModelDiffClient } from "./types";
-import { calcCost, dateStringDuration } from "./utils";
+import { changeSnippet, dateStringDuration } from "./utils";
 
 export const ChangeList: React.FC = () => {
   const [changes, setChanges] = useState<ModelDiffClient[]>([]);
@@ -67,18 +67,7 @@ export const ChangeList: React.FC = () => {
             </Link>{" "}
             {change.type} at {dateStringDuration(change.timestamp)}
           </p>
-          {Object.entries(change.changes).map(
-            ([key, { old, new: newValue }]) => {
-              if (key.includes('pricing')) {
-                old = calcCost(old).toFixed(2);
-                newValue = calcCost(newValue).toFixed(2);
-              }
-              return (
-              <p key={key}>
-                {key}: {old} → {newValue}
-              </p>
-            )}
-          )}
+          {changeSnippet(change)}
         </div>
       ))}
     </div>

@@ -1,7 +1,8 @@
 // watch-or.test.ts
 import { describe, beforeEach, afterEach, test, expect, jest } from "bun:test";
-import { OpenRouterModelWatcher, type Model, type ModelDiff } from "./watch-or";
+import { OpenRouterModelWatcher } from "./watch-or";
 import { Database } from "bun:sqlite";
+import type { Model, ModelDiff } from "./types";
 
 describe("OpenRouterModelWatcher", () => {
   let watcher: OpenRouterModelWatcher;
@@ -271,7 +272,7 @@ describe("OpenRouterModelWatcher", () => {
       {
         id: "2",
         type: "added",
-        changes: {},
+        model: newModels[1],
         timestamp: expect.any(Date),
       },
     ]);
@@ -356,7 +357,7 @@ describe("OpenRouterModelWatcher", () => {
       {
         id: "2",
         type: "removed",
-        changes: {},
+        model: oldModels[1],
         timestamp: expect.any(Date),
       },
     ]);

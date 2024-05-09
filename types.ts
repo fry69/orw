@@ -35,7 +35,8 @@ export type ModelChangeType = "added" | "removed" | "changed";
 export interface ModelDiff {
   id: string;
   type: ModelChangeType;
-  changes: { [key: string]: { old: any; new: any } };
+  model?: Model;
+  changes?: { [key: string]: { old: any; new: any } };
   timestamp: Date;
 }
 

@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import type { Model } from "../types";
 import { GlobalContext } from "./GlobalState";
 import type { ModelDiffClient } from "./types";
-import { calcCost, dateStringDuration } from "./utils";
+import { calcCost, changeSnippet, dateStringDuration } from "./utils";
 
 export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
@@ -59,19 +59,7 @@ export const ModelDetail: React.FC = () => {
               <p>
                 {change.type} at {dateStringDuration(change.timestamp)}
               </p>
-              {Object.entries(change.changes).map(
-                ([key, { old, new: newValue }]) => {
-                  if (key.includes("pricing")) {
-                    old = calcCost(old);
-                    newValue = calcCost(newValue);
-                  }
-                  return (
-                    <p key={key}>
-                      {key}: {old} → {newValue}
-                    </p>
-                  );
-                }
-              )}
+              {changeSnippet(change)}
             </div>
           ))}
         </>
