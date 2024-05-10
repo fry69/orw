@@ -78,7 +78,7 @@ nav li.dynamic-element {
   margin-left: auto;
 }
 
-nav li.timestamp-container {
+nav li.info-container {
   display: grid;
   grid-template-columns: 1fr auto;
   column-gap: 0.5em;

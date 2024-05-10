@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
-import type { Model, ModelDiff } from "./types";
+import type { Model, ModelDiff, Status } from "./types";
 import { runMigrations } from "./db-migration";
 import { createServer } from "./server";
 
@@ -37,7 +37,7 @@ export class OpenRouterModelWatcher {
   private logFile?: string;
 
   /**
-   * Memeory cache for the last model list from the database
+   * Memory cache for the last model list from the database
    */
   private lastModelList: Model[];
 
@@ -46,21 +46,52 @@ export class OpenRouterModelWatcher {
   }
 
   /**
-   * Timestamp of the last API check
+   * Status object containing db / runtime stats
    */
-  private apiLastCheck!: Date;
+  private status: Status = {
+    /**
+     * Timestamp of the data in the database
+     */
+    dbLastChange: new Date(0),
 
-  get getAPILastCheck() {
-    return this.apiLastCheck;
-  }
+    /**
+     * Timestamp of the last API check
+     */
+    apiLastCheck: new Date(0),
+
+    /**
+     * Number of changes in database
+     */
+    dbChangesCount: 0,
+  };
 
   /**
-   * Timestamp of the data in the database
+   * Get last change timestamp recorded in the database
+   * @returns {Date} - Last change timestamp
    */
-  private dbLastChange!: Date;
-
   get getDBLastChange() {
-    return this.dbLastChange;
+    return this.status.dbLastChange;
+  }
+  /**
+   * Get timestamp of the last OpenRouter API check
+   * @returns {Date} - Last API check timestamp
+   */
+  get getAPILastCheck() {
+    return this.status.apiLastCheck;
+  }
+  /**
+   * Get number of changes recorded in the database
+   * @returns {number} - Number of changes recorded in database
+   */
+  get getDBChangesCount() {
+    return this.status.dbChangesCount;
+  }
+  /**
+   * Get number of models recorded in the database
+   * @returns {number} - Number of models recorded in database
+   */
+  get getDBModelCount() {
+    return this.lastModelList.length;
   }
 
   /**
@@ -82,8 +113,8 @@ export class OpenRouterModelWatcher {
       this.getModelList().then((newModels) => {
         if (newModels.length > 0) {
           this.lastModelList = newModels;
-          this.dbLastChange = new Date();
-          this.storeModelList(newModels, this.dbLastChange);
+          this.status.dbLastChange = new Date();
+          this.storeModelList(newModels, this.status.dbLastChange);
           this.log("seeded database with model list from API");
         }
       });
@@ -202,13 +233,24 @@ export class OpenRouterModelWatcher {
         }
         return JSON.parse(row.data);
       });
-    this.dbLastChange = mostRecentTimestamp;
+    this.status.dbLastChange = mostRecentTimestamp;
+    this.status.dbChangesCount = this.loadChangesCount();
     return models;
   }
 
   /**
+   * Loads the number of recorded changes in the database
+   */
+  loadChangesCount(): number {
+    const result: any = this.db
+      .query("SELECT count(id) as changesCount FROM changes")
+      .get();
+    return result.changesCount ?? 0;
+  }
+
+  /**
    * Transform a row from the changes table to an ModelDiff object
-   * @param {any} row - The row from the database to transform 
+   * @param {any} row - The row from the database to transform
    * @returns {ModelDiff}
    */
   private transformChangesRow = (row: any): ModelDiff => {
@@ -227,7 +269,7 @@ export class OpenRouterModelWatcher {
         timestamp: new Date(row.timestamp),
       };
     }
-  }
+  };
 
   /**
    * Loads the most recent model changes from the SQLite database.
@@ -235,6 +277,7 @@ export class OpenRouterModelWatcher {
    * @returns {ModelDiff[]} - An array of ModelDiff objects.
    */
   loadChanges(n: number = 10): ModelDiff[] {
+    this.status.dbChangesCount = this.loadChangesCount();
     return this.db
       .query(
         "SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?"
@@ -249,6 +292,7 @@ export class OpenRouterModelWatcher {
    * @returns {ModelDiff[]} - An array of ModelDiff objects.
    */
   loadChangesForModel(id: string, n: number = 10): ModelDiff[] {
+    this.status.dbChangesCount = this.loadChangesCount();
     return this.db
       .query(
         "SELECT id, type, changes, timestamp FROM changes WHERE id = ? ORDER BY timestamp DESC LIMIT ?"
@@ -369,7 +413,7 @@ export class OpenRouterModelWatcher {
       if (newModels.length === 0) {
         this.error("empty model list from API, skipping check");
       } else {
-        this.apiLastCheck = new Date();
+        this.status.apiLastCheck = new Date();
         const oldModels = this.lastModelList;
         const changes = this.findChanges(newModels, oldModels);
 
@@ -380,7 +424,7 @@ export class OpenRouterModelWatcher {
           this.log("Changes detected:");
           this.log(JSON.stringify(changes, null, 4));
           this.lastModelList = newModels;
-          this.dbLastChange = timestamp;
+          this.status.dbLastChange = timestamp;
         }
       }
     }

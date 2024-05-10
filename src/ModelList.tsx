@@ -48,8 +48,7 @@ export const ModelList: React.FC = () => {
         setModels(data.data);
         setGlobalState((prevState) => ({
           ...prevState,
-          apiLastCheck: data.apiLastCheck,
-          dbLastChange: data.dbLastChange,
+          status: data.status,
         }));
       });
   }, []);

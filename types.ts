@@ -40,19 +40,66 @@ export interface ModelDiff {
   timestamp: Date;
 }
 
-export interface APIResponse<T> {
+/**
+ * Represents the status information in an API response.
+ */
+type ResponseStatusSig = {
   apiLastCheck: Date;
   dbLastChange: Date;
+  dbModelCount: number;
+  dbChangesCount: number;
+};
+
+/**
+ * Represents the structure of the data object in an API response.
+ */
+export type ResponseDataSig =
+  | Model[]
+  | {
+      changes: ModelDiff[];
+      model?: Model;
+    };
+
+/**
+ * Represents a generic API response.
+ * @template T - The type of data in the response, must conform to ResponseDataSig.
+ */
+export interface APIResponse<T extends ResponseDataSig> {
+  status: ResponseStatusSig;
   data: T;
 }
 
+/**
+ * Represents a response containing a list of models.
+ */
 export type ModelsResponse = APIResponse<Model[]>;
 
-export type ModelResponse = APIResponse<{
-  model: Model;
-  changes: ModelDiff[];
-}>;
+/**
+ * Represents a response containing a model and its changes.
+ */
+export type ModelResponse = APIResponse<ResponseDataSig>;
 
-export type ChangesResponse = APIResponse<{
-  changes: ModelDiff[];
-}>;
+/**
+ * Represents a response containing a list of changes.
+ */
+export type ChangesResponse = APIResponse<ResponseDataSig>;
+
+/**
+ * Represents the private status object
+ */
+export interface Status {
+  /**
+   * Timestamp of the last API check
+   */
+  apiLastCheck: Date;
+
+  /**
+   * Timestamp of the data in the database
+   */
+  dbLastChange: Date;
+
+  /**
+   * Number of changes in database
+   */
+  dbChangesCount: number;
+}

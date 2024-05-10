@@ -2,12 +2,28 @@
 import { OpenRouterModelWatcher } from "./watch-or";
 import path from "node:path";
 import fs from "node:fs";
-import type { ChangesResponse, ModelResponse, ModelsResponse } from "./types";
+import type {
+  APIResponse,
+  ChangesResponse,
+  ModelResponse,
+  ModelsResponse,
+  ResponseDataSig,
+} from "./types";
 import RSS from "rss";
 
 export const createServer = (watcher: OpenRouterModelWatcher) => {
   const clientDistDir =
     import.meta.env.WATCHOR_CLIENT_PATH ?? path.join(".", "dist");
+
+  const apiRespone = <T extends ResponseDataSig>(data: T): APIResponse<T> => ({
+    status: {
+      apiLastCheck: watcher.getAPILastCheck,
+      dbLastChange: watcher.getDBLastChange,
+      dbModelCount: watcher.getDBModelCount,
+      dbChangesCount: watcher.getDBChangesCount,
+    },
+    data: data,
+  });
 
   const server = Bun.serve({
     port: import.meta.env.WATCHOR_PORT ?? 0,
@@ -16,17 +32,17 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
       const url = new URL(request.url);
       switch (url.pathname) {
         case "/api/models":
-          const modelsResponse: ModelsResponse = {
-            apiLastCheck: watcher.getAPILastCheck,
-            dbLastChange: watcher.getDBLastChange,
-            data: watcher.getLastModelList,
-          };
+          // Respond with complete model list
+          const modelsResponse: ModelsResponse = apiRespone(
+            watcher.getLastModelList
+          );
 
           return new Response(JSON.stringify(modelsResponse), {
             headers: { "Content-Type": "application/json" },
           });
 
         case "/api/model":
+          // Respond with single model id and its associated changes
           const id = url.searchParams.get("id");
           if (id) {
             const model = watcher.getLastModelList.find((m) => m.id === id);
@@ -34,15 +50,10 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
               return new Response("Model not found", { status: 404 });
             }
             const changes = watcher.loadChangesForModel(id, 50);
-            const modelResponse: ModelResponse = {
-              apiLastCheck: watcher.getAPILastCheck,
-              dbLastChange: watcher.getDBLastChange,
-              data: {
-                model,
-                changes,
-              },
-            };
-
+            const modelResponse: ModelResponse = apiRespone({
+              model,
+              changes,
+            });
             return new Response(JSON.stringify(modelResponse), {
               headers: { "Content-Type": "application/json" },
             });
@@ -50,20 +61,15 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           return new Response("Model not found", { status: 404 });
 
         case "/api/changes":
+          // Respond with changes for all models
           const changes = watcher.loadChanges(100);
-          const changesResponse: ChangesResponse = {
-            apiLastCheck: watcher.getAPILastCheck,
-            dbLastChange: watcher.getDBLastChange,
-            data: {
-              changes,
-            },
-          };
-
+          const changesResponse: ChangesResponse = apiRespone({ changes });
           return new Response(JSON.stringify(changesResponse), {
             headers: { "Content-Type": "application/json" },
           });
 
         case "/rss":
+          // Generate an RSS feed containing changes for all models
           const feed: RSS = new RSS({
             title: "OpenRouter Model Changes",
             description: "RSS feed for changes in OpenRouter models",
@@ -76,7 +82,11 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           for (const change of changesRSS) {
             feed.item({
               title: `Model ${change.id} ${change.type}`,
-              description: `<code style="display: block; white-space: pre-wrap; font-family: monospace;">${JSON.stringify(change, null, 2)}</code>`,
+              description: `<code style="display: block; white-space: pre-wrap; font-family: monospace;">${JSON.stringify(
+                change,
+                null,
+                2
+              )}</code>`,
               url: `${publicURL}model?id=${
                 change.id
               }&timestamp=${change.timestamp.toISOString()}`,

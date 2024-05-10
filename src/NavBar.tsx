@@ -26,14 +26,24 @@ export const NavBar: React.FC = () => {
           </NavLink>
         </li>
         <li className="dynamic-element">{globalState.navBarDynamicElement}</li>
-        <li className="timestamp-container">
+        <li className="info-container">
+          Models:
+          <span className="timestamp">
+            <b>{globalState.status.dbModelCount}</b>
+          </span>
+          Changes:
+          <span className="timestamp">
+            <b>{globalState.status.dbChangesCount}</b>
+          </span>
+        </li>
+        <li className="info-container">
           DB last change:
           <span className="timestamp">
-            <b>{durationAgo(globalState.dbLastChange)}</b>
+            <b>{durationAgo(globalState.status.dbLastChange)}</b>
           </span>
           API last check:
           <span className="timestamp">
-            <b>{durationAgo(globalState.apiLastCheck)}</b>
+            <b>{durationAgo(globalState.status.apiLastCheck)}</b>
           </span>
         </li>
       </ul>

@@ -6,8 +6,15 @@ export interface ModelDiffClient {
   timestamp: string;
 }
 
-export interface GlobalState {
+export interface StatusClient {
   apiLastCheck: string;
   dbLastChange: string;
+  dbModelCount: number;
+  dbChangesCount: number;
+}
+
+
+export interface GlobalState {
+  status: StatusClient;
   navBarDynamicElement: React.ReactElement;
 }

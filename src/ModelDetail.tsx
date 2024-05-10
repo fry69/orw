@@ -20,8 +20,7 @@ export const ModelDetail: React.FC = () => {
           setChanges(data.data.changes);
           setGlobalState((prevState) => ({
             ...prevState,
-            apiLastCheck: data.apiLastCheck,
-            dbLastChange: data.dbLastChange,
+            status: data.status,
           }));
         });
     }
