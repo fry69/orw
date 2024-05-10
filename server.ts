@@ -108,6 +108,17 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           return new Response(feed.xml(), {
             headers: { "Content-Type": "application/rss+xml" },
           });
+        case "/favicon.svg":
+          const faviconPath = path.join("static", "favicon.svg");
+          if (fs.existsSync(faviconPath)) {
+            return new Response(Bun.file(faviconPath), {
+              headers: {
+                "Content-Type": "image/svg+xml",
+              },
+            });
+          } else {
+            return new Response("Favicon not found", { status: 404 });
+          }
         default:
           // Serve the React client application assets
           const filePath = path.join(clientDistDir, url.pathname.slice(1));
