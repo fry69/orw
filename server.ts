@@ -108,6 +108,8 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           return new Response(feed.xml(), {
             headers: { "Content-Type": "application/rss+xml" },
           });
+
+        case "/favicon.ico":
         case "/favicon.svg":
           const faviconPath = path.join("static", "favicon.svg");
           if (fs.existsSync(faviconPath)) {
@@ -119,16 +121,19 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           } else {
             return new Response("Favicon not found", { status: 404 });
           }
+
+        case "/":
+          // Serve the index.html file
+          return new Response(Bun.file(path.join(clientDistDir, "index.html")));
+
         default:
+          // console.log(`pathname: ${url.pathname}`);
           // Serve the React client application assets
           const filePath = path.join(clientDistDir, url.pathname.slice(1));
           if (fs.existsSync(filePath) && !(filePath === "dist")) {
             return new Response(Bun.file(filePath));
           } else {
-            // Serve the index.html file for any other routes
-            return new Response(
-              Bun.file(path.join(clientDistDir, "index.html"))
-            );
+            return new Response("File not found", { status: 404 });
           }
       }
     },
