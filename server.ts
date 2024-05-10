@@ -21,6 +21,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
       dbLastChange: watcher.getDBLastChange,
       dbModelCount: watcher.getDBModelCount,
       dbChangesCount: watcher.getDBChangesCount,
+      dbRemovedModelCount: watcher.getDBRemovedModelCount,
     },
     data: data,
   });
@@ -38,6 +39,16 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           );
 
           return new Response(JSON.stringify(modelsResponse), {
+            headers: { "Content-Type": "application/json" },
+          });
+
+        case "/api/removed":
+          // Respond with removed model list
+          const removedResponse: ModelsResponse = apiRespone(
+            watcher.loadRemovedModelList()
+          );
+
+          return new Response(JSON.stringify(removedResponse), {
             headers: { "Content-Type": "application/json" },
           });
 

@@ -8,6 +8,7 @@ const defaultGlobalState: GlobalState = {
     dbLastChange: "",
     dbModelCount: 0,
     dbChangesCount: 0,
+    dbRemovedModelCount: 0,
   },
   navBarDynamicElement: <></>,
 };

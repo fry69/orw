@@ -58,7 +58,7 @@ export const ModelDetail: React.FC = () => {
               <p>
                 {change.type} at {dateStringDuration(change.timestamp)}
               </p>
-              {changeSnippet(change)}
+              {change.type === "added" ? "" : changeSnippet(change)}
             </div>
           ))}
         </>

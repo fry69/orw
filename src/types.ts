@@ -11,6 +11,7 @@ export interface StatusClient {
   dbLastChange: string;
   dbModelCount: number;
   dbChangesCount: number;
+  dbRemovedModelCount: number;
 }
 
 

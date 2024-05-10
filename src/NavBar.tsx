@@ -27,9 +27,12 @@ export const NavBar: React.FC = () => {
         </li>
         <li className="dynamic-element">{globalState.navBarDynamicElement}</li>
         <li className="info-container">
-          Models:
+          <span>(<NavLink to="/removed">removed</NavLink>) Models:</span>
           <span className="timestamp">
-            <b>{globalState.status.dbModelCount}</b>
+            <b>
+              ({globalState.status.dbRemovedModelCount}){" "}
+              {globalState.status.dbModelCount}
+            </b>
           </span>
           Changes:
           <span className="timestamp">

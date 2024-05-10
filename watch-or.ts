@@ -39,9 +39,13 @@ export class OpenRouterModelWatcher {
   /**
    * Memory cache for the last model list from the database
    */
-  private lastModelList: Model[];
+  private lastModelList: Model[] = [];
 
-  get getLastModelList() {
+  /**
+   * Get cached model list
+   * @returns {Model[]} - The cached model list
+   */
+  get getLastModelList(): Model[] {
     return this.lastModelList;
   }
 
@@ -63,35 +67,47 @@ export class OpenRouterModelWatcher {
      * Number of changes in database
      */
     dbChangesCount: 0,
+
+    /**
+     * Number of removed models in database
+     */
+    dbRemovedModelCount: 0,
   };
 
   /**
    * Get last change timestamp recorded in the database
    * @returns {Date} - Last change timestamp
    */
-  get getDBLastChange() {
+  get getDBLastChange(): Date {
     return this.status.dbLastChange;
   }
   /**
    * Get timestamp of the last OpenRouter API check
    * @returns {Date} - Last API check timestamp
    */
-  get getAPILastCheck() {
+  get getAPILastCheck(): Date {
     return this.status.apiLastCheck;
   }
   /**
    * Get number of changes recorded in the database
    * @returns {number} - Number of changes recorded in database
    */
-  get getDBChangesCount() {
+  get getDBChangesCount(): number {
     return this.status.dbChangesCount;
   }
   /**
    * Get number of models recorded in the database
    * @returns {number} - Number of models recorded in database
    */
-  get getDBModelCount() {
+  get getDBModelCount(): number {
     return this.lastModelList.length;
+  }
+  /**
+   * Get number of removed models recorded in the database
+   * @returns {number} - Number of removed models recorded in database
+   */
+  get getDBRemovedModelCount(): number {
+    return this.status.dbRemovedModelCount;
   }
 
   /**
@@ -218,34 +234,96 @@ export class OpenRouterModelWatcher {
   }
 
   /**
+   * Stores a removed model from the OpenRouter models list in the SQLite database.
+   * @param {Model} model - Removed Model object to store.
+   * @param {Date} [timestamp] - The timestamp to associate with the removal.
+   */
+  storeRemovedModel(model: Model, timestamp: Date = new Date()) {
+    this.db.run(
+      "INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)",
+      [model.id, JSON.stringify(model), timestamp.toISOString()]
+    );
+  }
+
+  /**
+   * Stores an added model to the OpenRouter models list in the SQLite database.
+   * @param {Model} model - Added Model object to store.
+   * @param {Date} [timestamp] - The timestamp to associate with the addition.
+   */
+  storeAddedModel(model: Model, timestamp: Date = new Date()) {
+    this.db.run(
+      "INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)",
+      [model.id, JSON.stringify(model), timestamp.toISOString()]
+    );
+  }
+
+  /**
    * Loads the most recent list of OpenRouter models from the SQLite database.
    * @returns An array of Model objects.
    */
   loadLastModelList(): Model[] {
     let mostRecentTimestamp = new Date(0);
+    const query = `
+    WITH latest_added_models AS (
+      SELECT id, MAX(timestamp) AS latest_timestamp
+      FROM added_models
+      GROUP BY id
+    )
+    SELECT
+      m.id,
+      m.data,
+      m.timestamp AS model_timestamp,
+      lam.latest_timestamp AS added_timestamp
+    FROM models m
+    LEFT JOIN latest_added_models lam
+      ON m.id = lam.id
+    `;
     const models: Model[] = this.db
-      .query("SELECT data, timestamp FROM models ORDER BY id")
+      .query(query)
       .all()
       .map((row: any) => {
-        const currentTimestamp = new Date(row.timestamp);
+        const currentTimestamp = new Date(row.model_timestamp);
         if (currentTimestamp > mostRecentTimestamp) {
           mostRecentTimestamp = currentTimestamp;
         }
-        return JSON.parse(row.data);
+        const parsedData = JSON.parse(row.data);
+        if (row.added_timestamp) {
+          return { ...parsedData, added_at: row.added_timestamp };
+        }
+        return parsedData;
       });
     this.status.dbLastChange = mostRecentTimestamp;
-    this.status.dbChangesCount = this.loadChangesCount();
+    this.loadDBCounter();
     return models;
   }
 
   /**
-   * Loads the number of recorded changes in the database
+   * Loads list of removed OpenRouter models from the SQLite database.
+   * @returns An array of Model objects.
    */
-  loadChangesCount(): number {
-    const result: any = this.db
+  loadRemovedModelList(): Model[] {
+    const removedModels: Model[] = this.db
+      .query("SELECT data FROM removed_models ORDER BY timestamp DESC")
+      .all()
+      .map((row: any) => JSON.parse(row.data));
+    this.loadDBCounter();
+    return removedModels;
+  }
+
+  /**
+   * Loads various counters from the database and updates the internal status
+   */
+  loadDBCounter() {
+    let result: any;
+    result = this.db
       .query("SELECT count(id) as changesCount FROM changes")
       .get();
-    return result.changesCount ?? 0;
+    this.status.dbChangesCount = result.changesCount ?? 0;
+
+    result = this.db
+      .query("SELECT count(id) as removedModelCount FROM removed_models")
+      .get();
+    this.status.dbRemovedModelCount = result.removedModelCount ?? 0;
   }
 
   /**
@@ -277,7 +355,7 @@ export class OpenRouterModelWatcher {
    * @returns {ModelDiff[]} - An array of ModelDiff objects.
    */
   loadChanges(n: number = 10): ModelDiff[] {
-    this.status.dbChangesCount = this.loadChangesCount();
+    this.loadDBCounter();
     return this.db
       .query(
         "SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?"
@@ -292,7 +370,7 @@ export class OpenRouterModelWatcher {
    * @returns {ModelDiff[]} - An array of ModelDiff objects.
    */
   loadChangesForModel(id: string, n: number = 10): ModelDiff[] {
-    this.status.dbChangesCount = this.loadChangesCount();
+    this.loadDBCounter();
     return this.db
       .query(
         "SELECT id, type, changes, timestamp FROM changes WHERE id = ? ORDER BY timestamp DESC LIMIT ?"
@@ -334,12 +412,14 @@ export class OpenRouterModelWatcher {
     for (const newModel of newModels) {
       const oldModel = oldModels.find((m) => m.id === newModel.id);
       if (!oldModel) {
+        const timestamp = new Date();
         changes.push({
           id: newModel.id,
           type: "added",
           model: newModel,
-          timestamp: new Date(),
+          timestamp,
         });
+        this.storeAddedModel(newModel, timestamp);
       }
     }
 
@@ -347,12 +427,14 @@ export class OpenRouterModelWatcher {
     for (const oldModel of oldModels) {
       const newModel = newModels.find((m) => m.id === oldModel.id);
       if (!newModel) {
+        const timestamp = new Date();
         changes.push({
           id: oldModel.id,
           type: "removed",
           model: oldModel,
-          timestamp: new Date(),
+          timestamp,
         });
+        this.storeRemovedModel(oldModel, timestamp);
       }
     }
 
@@ -423,7 +505,9 @@ export class OpenRouterModelWatcher {
           this.storeChanges(changes);
           this.log("Changes detected:");
           this.log(JSON.stringify(changes, null, 4));
-          this.lastModelList = newModels;
+          // re-load model list from db to keep added_at properties
+          // copying the API model list removes all added_at properties
+          this.lastModelList = this.loadLastModelList();
           this.status.dbLastChange = timestamp;
         }
       }
@@ -486,31 +570,33 @@ export class OpenRouterModelWatcher {
   }
 }
 
-const logFile = import.meta.env.WATCHOR_LOG_PATH ?? "watch-or.log";
-const databaseFile = import.meta.env.WATCHOR_DB_PATH ?? "watch-or.db";
+if (import.meta.main) {
+  const logFile = import.meta.env.WATCHOR_LOG_PATH ?? "watch-or.log";
+  const databaseFile = import.meta.env.WATCHOR_DB_PATH ?? "watch-or.db";
 
-// Usage:
-if (Bun.argv.includes("--query")) {
-  if (!fs.existsSync(databaseFile)) {
-    console.error(`Error: database ${databaseFile} not found`);
-    process.exit(1);
+  // Usage:
+  if (Bun.argv.includes("--query")) {
+    if (!fs.existsSync(databaseFile)) {
+      console.error(`Error: database ${databaseFile} not found`);
+      process.exit(1);
+    }
+    const n = parseInt(Bun.argv[Bun.argv.indexOf("--query") + 1] || "10", 10);
+    const db = new Database(databaseFile);
+    const watcher = new OpenRouterModelWatcher(db);
+    watcher.runQueryMode(n);
+    db.close();
+    process.exit(0);
+  } else if (Bun.argv.includes("--once")) {
+    const db = new Database(databaseFile);
+    const watcher = new OpenRouterModelWatcher(db, logFile);
+    watcher.runOnce();
+    db.close();
+    process.exit(0);
+  } else {
+    const db = new Database(databaseFile);
+    const watcher = new OpenRouterModelWatcher(db, logFile);
+    const server = createServer(watcher);
+    watcher.runBackgroundMode();
+    // db.close(); // Don't close the database here, as the background mode runs indefinitely
   }
-  const n = parseInt(Bun.argv[Bun.argv.indexOf("--query") + 1] || "10", 10);
-  const db = new Database(databaseFile);
-  const watcher = new OpenRouterModelWatcher(db);
-  watcher.runQueryMode(n);
-  db.close();
-  process.exit(0);
-} else if (Bun.argv.includes("--once")) {
-  const db = new Database(databaseFile);
-  const watcher = new OpenRouterModelWatcher(db, logFile);
-  watcher.runOnce();
-  db.close();
-  process.exit(0);
-} else {
-  const db = new Database(databaseFile);
-  const watcher = new OpenRouterModelWatcher(db, logFile);
-  const server = createServer(watcher);
-  watcher.runBackgroundMode();
-  // db.close(); // Don't close the database here, as the background mode runs indefinitely
 }

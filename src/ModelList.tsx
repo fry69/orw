@@ -4,9 +4,9 @@ import DataTable, { type TableColumn } from "react-data-table-component";
 import type { Model } from "../types";
 import { GlobalContext } from "./GlobalState";
 import { FilterComponent } from "./FilterComponent";
-import { calcCost } from "./utils";
+import { calcCost, durationAgo } from "./utils";
 
-export const ModelList: React.FC = () => {
+export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
   const navigate = useNavigate();
   const [models, setModels] = useState<Model[]>([]);
   const { setGlobalState } = useContext(GlobalContext);
@@ -42,7 +42,13 @@ export const ModelList: React.FC = () => {
   }, [filterText]);
 
   useEffect(() => {
-    fetch("/api/models")
+    let endpoint: string;
+    if (props.removed) {
+      endpoint = "/api/removed"
+    } else {
+      endpoint = "/api/models"
+    }
+    fetch(endpoint)
       .then((res) => res.json())
       .then((data) => {
         setModels(data.data);
@@ -51,7 +57,7 @@ export const ModelList: React.FC = () => {
           status: data.status,
         }));
       });
-  }, []);
+  }, [props]);
 
   useEffect(() => {
     setGlobalState((prevState) => ({
@@ -162,6 +168,13 @@ export const ModelList: React.FC = () => {
     {
       name: "Instruct",
       selector: (row) => row.architecture.instruct_type ?? "",
+      sortable: true,
+      hide: 959,
+    },
+    {
+      name: "Added",
+      selector: (row) => row.added_at as unknown as string ?? "1970-01-01T00:00:00Z",
+      format: (row) => row.added_at ? durationAgo(row.added_at as unknown as string) : "", 
       sortable: true,
       hide: 959,
     },

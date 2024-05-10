@@ -55,8 +55,49 @@ const migrations: Migration[] = [
       db.run(`DROP TABLE changes`);
       db.run(`ALTER TABLE changes_new RENAME TO changes`);
     },
-    // Add more migrations here
   },
+  {
+    version: 3,
+    up: (db: Database) => {
+      // Fix changes entries without data
+      db.run(`
+        UPDATE changes
+        SET changes = (
+	        SELECT data
+	        FROM models
+	        WHERE changes.id = models.id
+        )
+        WHERE changes = "{}";
+      `);
+      // Create a new table for storing removed models
+      // account for multiple removals of the same model id (could get re-added)
+      db.run(`
+        CREATE TABLE IF NOT EXISTS removed_models (
+          id TEXT,
+          data TEXT,
+          timestamp TEXT,
+          PRIMARY KEY (id, timestamp)
+        );
+      `);
+      // Create a new table for storing added models
+      // account for multiple additions of the same model id (could get re-added)
+      db.run(`
+        CREATE TABLE IF NOT EXISTS added_models (
+          id TEXT,
+          data TEXT,
+          timestamp TEXT,
+          PRIMARY KEY (id, timestamp)
+        );
+      `);
+      // Add already known added model from the changes table to the added_models table
+      db.run(`
+        INSERT INTO added_models (id, data, timestamp)
+        SELECT id, changes, timestamp
+        FROM changes WHERE type = "added"
+      `)
+    },
+  },
+  // Add more migrations here
 ];
 
 export default migrations;

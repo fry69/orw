@@ -15,6 +15,7 @@ const App: React.FC = () => {
         <NavBar />
         <div className="main-content">
           <Routes>
+            <Route path="/removed" element={<ModelList removed />} />
             <Route path="/model" element={<ModelDetail />} />
             <Route path="/changes" element={<ChangeList />} />
             <Route path="/" element={<ModelList />} />

@@ -1,7 +1,7 @@
 /**
  * Represents an OpenRouter model.
  */
-export interface Model {
+export interface ORModel {
   id: string;
   name: string;
   description: string;
@@ -22,6 +22,10 @@ export interface Model {
     is_moderated: boolean;
   };
   per_request_limits: object | null;
+}
+
+export interface Model extends ORModel {
+  added_at?: Date;
 }
 
 /**
@@ -48,6 +52,7 @@ type ResponseStatusSig = {
   dbLastChange: Date;
   dbModelCount: number;
   dbChangesCount: number;
+  dbRemovedModelCount: number;
 };
 
 /**
@@ -102,4 +107,9 @@ export interface Status {
    * Number of changes in database
    */
   dbChangesCount: number;
+
+  /**
+   * Number of removed models in database
+   */
+  dbRemovedModelCount: number;
 }
