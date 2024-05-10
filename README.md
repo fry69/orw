@@ -10,6 +10,12 @@ To run the OpenRouter API Watcher, you'll need the [Bun](https://bun.sh) runtime
 bun install
 ```
 
+Build the web client with the following command:
+
+```bash
+bun run build
+```
+
 ## Usage
 
 The tool can be run in three different modes:
@@ -42,7 +48,11 @@ The tool can be run in three different modes:
 
 The OpenRouter API Watcher includes a simple web interface that allows you to view the list of models and the changes that have been detected. By default, the web interface starts on a random, available port. Check the console output for the URL.
 
-## Screenshots
+## RSS feed
+
+The OpenRouter API Watcher also includes a RSS feed generator, available at the `/rss` endpoint. It will serve the last 50 recorded changes as formatted JSON encapsulated in a `<code>` tag, so it does not look like a garbled mess in RSS readers.
+
+## Screenshots (slightly outdated)
 
 Model List:
 
