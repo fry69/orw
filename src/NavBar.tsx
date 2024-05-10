@@ -27,7 +27,9 @@ export const NavBar: React.FC = () => {
         </li>
         <li className="dynamic-element">{globalState.navBarDynamicElement}</li>
         <li className="info-container">
-          <span>(<NavLink to="/removed">removed</NavLink>) Models:</span>
+          <span>
+            (<NavLink to="/removed">removed</NavLink>) Models:
+          </span>
           <span className="timestamp">
             <b>
               ({globalState.status.dbRemovedModelCount}){" "}
@@ -48,6 +50,21 @@ export const NavBar: React.FC = () => {
           <span className="timestamp">
             <b>{durationAgo(globalState.status.apiLastCheck)}</b>
           </span>
+        </li>
+        <li>
+          <a
+            href="https://github.com/fry69/watch-or"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="github-link"
+          >
+            <img
+              src="https://github.com/fluidicon.png"
+              alt="GitHub"
+              width="32"
+              height="32"
+            />
+          </a>
         </li>
       </ul>
     </nav>

@@ -91,6 +91,11 @@ nav li .timestamp {
   color: skyblue;
 }
 
+nav a.github-link:hover {
+  /* Disable hover effect for the image inside this link */
+  background-color: inherit;
+}
+
 /*
  .main-content {
 }
