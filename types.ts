@@ -25,7 +25,7 @@ export interface ORModel {
 }
 
 export interface Model extends ORModel {
-  added_at?: Date;
+  added_at?: string;
 }
 
 /**

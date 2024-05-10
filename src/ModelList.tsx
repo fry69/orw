@@ -125,6 +125,13 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
       grow: 3,
     },
     {
+      name: "Added",
+      selector: (row) => row.added_at ?? "1970-01-01T00:00:00Z",
+      format: (row) => row.added_at ? durationAgo(row.added_at) : "",
+      sortable: true,
+      hide: 959,
+    },
+    {
       name: "Context",
       selector: (row) => row.context_length,
       format: (row) => roundContext(row.context_length),
@@ -171,13 +178,6 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
       sortable: true,
       hide: 959,
     },
-    {
-      name: "Added",
-      selector: (row) => row.added_at as unknown as string ?? "1970-01-01T00:00:00Z",
-      format: (row) => row.added_at ? durationAgo(row.added_at as unknown as string) : "", 
-      sortable: true,
-      hide: 959,
-    },
   ];
 
   return (
@@ -187,9 +187,10 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
       onRowClicked={(row) => navigate(`/model?id=${row.id}`)}
       dense
       highlightOnHover
-      defaultSortFieldId={2}
+      defaultSortFieldId={3}
       theme="dark"
       sortFunction={customSort}
+      defaultSortAsc={false}
     />
   );
 };
