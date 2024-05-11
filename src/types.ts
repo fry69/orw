@@ -1,3 +1,11 @@
+import type { ServerStatus } from "../types";
+
+export interface GlobalState {
+  status: ServerStatus;
+  navBarDynamicElement: React.ReactElement;
+  refreshTrigger: boolean;
+}
+
 export interface ModelDiffClient {
   id: string;
   type: string;
@@ -6,17 +14,3 @@ export interface ModelDiffClient {
   timestamp: string;
 }
 
-export interface StatusClient {
-  isDevelopment: boolean;
-  apiLastCheck: string;
-  dbLastChange: string;
-  dbModelCount: number;
-  dbChangesCount: number;
-  dbRemovedModelCount: number;
-}
-
-
-export interface GlobalState {
-  status: StatusClient;
-  navBarDynamicElement: React.ReactElement;
-}

@@ -9,7 +9,7 @@ import { calcCost, durationAgo } from "./utils";
 export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
   const navigate = useNavigate();
   const [models, setModels] = useState<Model[]>([]);
-  const { setGlobalState } = useContext(GlobalContext);
+  const { globalState, setGlobalState } = useContext(GlobalContext);
 
   const [filterText, setFilterText] = useState("");
   const filteredModels = models.filter(
@@ -57,7 +57,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
           status: data.status,
         }));
       });
-  }, [props]);
+  }, [props, globalState.refreshTrigger]);
 
   useEffect(() => {
     setGlobalState((prevState) => ({

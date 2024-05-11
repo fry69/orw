@@ -9,7 +9,7 @@ export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
   const [changes, setChanges] = useState<ModelDiffClient[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const { setGlobalState } = useContext(GlobalContext);
+  const { globalState, setGlobalState } = useContext(GlobalContext);
 
   useEffect(() => {
     const fetchModel = async () => {
@@ -42,7 +42,7 @@ export const ModelDetail: React.FC = () => {
     };
 
     fetchModel();
-  }, []);
+  }, [globalState.refreshTrigger]);
 
   const modelStringMemo = useMemo(
     () => <div className="model-id"> Model ID: {model?.id} </div>,

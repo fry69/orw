@@ -7,7 +7,7 @@ import { changeSnippet, dateStringDuration } from "./utils";
 
 export const ChangeList: React.FC = () => {
   const [changes, setChanges] = useState<ModelDiffClient[]>([]);
-  const { setGlobalState } = useContext(GlobalContext);
+  const { globalState, setGlobalState } = useContext(GlobalContext);
 
   const [filterText, setFilterText] = useState("");
   const filteredChanges = changes.filter(
@@ -47,7 +47,7 @@ export const ChangeList: React.FC = () => {
           status: data.status,
         }));
       });
-  }, []);
+  }, [globalState.refreshTrigger]);
 
   useEffect(() => {
     setGlobalState((prevState) => ({

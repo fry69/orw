@@ -45,9 +45,9 @@ export interface ModelDiff {
 }
 
 /**
- * Represents the status information in an API response.
+ * Represents the server status information in an API response.
  */
-type ResponseStatusSig = {
+export type ServerStatus = {
   isDevelopment: boolean;
   apiLastCheck: string;
   dbLastChange: string;
@@ -71,7 +71,7 @@ export type ResponseDataSig =
  * @template T - The type of data in the response, must conform to ResponseDataSig.
  */
 export interface APIResponse<T extends ResponseDataSig> {
-  status: ResponseStatusSig;
+  status: ServerStatus;
   data: T;
 }
 
