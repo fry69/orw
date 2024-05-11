@@ -48,8 +48,9 @@ export interface ModelDiff {
  * Represents the status information in an API response.
  */
 type ResponseStatusSig = {
-  apiLastCheck: Date;
-  dbLastChange: Date;
+  isDevelopment: boolean;
+  apiLastCheck: string;
+  dbLastChange: string;
   dbModelCount: number;
   dbChangesCount: number;
   dbRemovedModelCount: number;

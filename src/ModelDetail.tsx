@@ -3,27 +3,45 @@ import type { Model } from "../types";
 import { GlobalContext } from "./GlobalState";
 import type { ModelDiffClient } from "./types";
 import { calcCost, changeSnippet, dateStringDuration } from "./utils";
+import Error from './Error';
 
 export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
   const [changes, setChanges] = useState<ModelDiffClient[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const { setGlobalState } = useContext(GlobalContext);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get("id");
-    if (id) {
-      fetch(`/api/model?id=${id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setModel(data.data.model);
-          setChanges(data.data.changes);
-          setGlobalState((prevState) => ({
-            ...prevState,
-            status: data.status,
-          }));
-        });
-    }
+    const fetchModel = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get("id");
+        if (!id) {
+          setError("No model ID provided.");
+          return;
+        }
+
+        const response = await fetch(`/api/model?id=${id}`);
+        if (!response.ok) {
+          setError(
+            `Error fetching model: ${response.status} - ${response.statusText}`
+          );
+          return;
+        }
+
+        const data = await response.json();
+        setModel(data.data.model);
+        setChanges(data.data.changes);
+        setGlobalState((prevState) => ({
+          ...prevState,
+          status: data.status,
+        }));
+      } catch (err) {
+        setError("An unexpected error occurred while fetching the model.");
+      }
+    };
+
+    fetchModel();
   }, []);
 
   const modelStringMemo = useMemo(
@@ -40,8 +58,13 @@ export const ModelDetail: React.FC = () => {
     })); // <- using the memoized string is fine
   }, [model]);
 
+
+  if (error) {
+    return <Error message={error} type="error" />;
+  }
+
   if (!model) {
-    return <div>Loading...</div>;
+    return <Error message="Loading..." type="info" />;
   }
 
   // Create a new object that hides the already shown 'description' property

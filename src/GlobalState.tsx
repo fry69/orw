@@ -4,6 +4,7 @@ import type { GlobalState } from "./types";
 
 const defaultGlobalState: GlobalState = {
   status: {
+    isDevelopment: false,
     apiLastCheck: "",
     dbLastChange: "",
     dbModelCount: 0,

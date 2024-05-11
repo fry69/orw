@@ -6,7 +6,7 @@ import type { Model, ModelDiff, Status } from "./types";
 import { runMigrations } from "./db-migration";
 import { createServer } from "./server";
 
-const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
+export const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
 
 let fixedModelList: Model[];
 if (isDevelopment) {

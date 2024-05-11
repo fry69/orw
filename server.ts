@@ -1,5 +1,5 @@
 // server.ts
-import { OpenRouterModelWatcher } from "./watch-or";
+import { OpenRouterModelWatcher, isDevelopment } from "./watch-or";
 import path from "node:path";
 import fs from "node:fs";
 import type {
@@ -17,8 +17,9 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
 
   const apiRespone = <T extends ResponseDataSig>(data: T): APIResponse<T> => ({
     status: {
-      apiLastCheck: watcher.getAPILastCheck,
-      dbLastChange: watcher.getDBLastChange,
+      isDevelopment,
+      apiLastCheck: watcher.getAPILastCheck.toISOString(),
+      dbLastChange: watcher.getDBLastChange.toISOString(),
       dbModelCount: watcher.getDBModelCount,
       dbChangesCount: watcher.getDBChangesCount,
       dbRemovedModelCount: watcher.getDBRemovedModelCount,
@@ -27,12 +28,13 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
   });
 
   const server = Bun.serve({
+    development: isDevelopment,
     port: import.meta.env.WATCHOR_PORT ?? 0,
     hostname: import.meta.env.WATCHOR_HOSTNAME ?? "0.0.0.0",
     fetch(request) {
       const url = new URL(request.url);
-      switch (url.pathname) {
-        case "/api/models":
+      switch (true) {
+        case url.pathname === "/api/models":
           // Respond with complete model list
           const modelsResponse: ModelsResponse = apiRespone(
             watcher.getLastModelList
@@ -42,7 +44,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             headers: { "Content-Type": "application/json" },
           });
 
-        case "/api/removed":
+        case url.pathname === "/api/removed":
           // Respond with removed model list
           const removedResponse: ModelsResponse = apiRespone(
             watcher.loadRemovedModelList()
@@ -52,7 +54,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             headers: { "Content-Type": "application/json" },
           });
 
-        case "/api/model":
+        case url.pathname === "/api/model":
           // Respond with single model id and its associated changes
           const id = url.searchParams.get("id");
           if (id) {
@@ -71,7 +73,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           }
           return new Response("Model not found", { status: 404 });
 
-        case "/api/changes":
+        case url.pathname === "/api/changes":
           // Respond with changes for all models
           const changes = watcher.loadChanges(100);
           const changesResponse: ChangesResponse = apiRespone({ changes });
@@ -79,7 +81,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             headers: { "Content-Type": "application/json" },
           });
 
-        case "/rss":
+        case url.pathname === "/rss":
           // Generate an RSS feed containing changes for all models
           const feed: RSS = new RSS({
             title: "OpenRouter Model Changes",
@@ -109,8 +111,8 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             headers: { "Content-Type": "application/rss+xml" },
           });
 
-        case "/favicon.ico":
-        case "/favicon.svg":
+        case url.pathname === "/favicon.ico":
+        case url.pathname === "/favicon.svg":
           const faviconPath = path.join("static", "favicon.svg");
           if (fs.existsSync(faviconPath)) {
             return new Response(Bun.file(faviconPath), {
@@ -122,19 +124,24 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             return new Response("Favicon not found", { status: 404 });
           }
 
-        case "/":
-          // Serve the index.html file
+        case url.pathname === "/":
+        case url.pathname === "/list":
+        case url.pathname === "/removed":
+        case url.pathname === "/changes":
+        case url.pathname === "/model":
+          // Serve the index.html file containing the React app
           return new Response(Bun.file(path.join(clientDistDir, "index.html")));
 
-        default:
-          // console.log(`pathname: ${url.pathname}`);
+        case url.pathname.startsWith("/assets"):
           // Serve the React client application assets
           const filePath = path.join(clientDistDir, url.pathname.slice(1));
-          if (fs.existsSync(filePath) && !(filePath === "dist")) {
+          if (fs.existsSync(filePath)) {
             return new Response(Bun.file(filePath));
-          } else {
-            return new Response("File not found", { status: 404 });
           }
+          return new Response("File not found", { status: 404 });
+
+        default:
+          return new Response("File not found", { status: 404 });
       }
     },
   });

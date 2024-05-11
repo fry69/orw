@@ -1,6 +1,6 @@
 // client/App.tsx
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import "./app-dark.css";
 import { NavBar } from "./NavBar";
 import { ModelDetail } from "./ModelDetail";
@@ -15,10 +15,11 @@ const App: React.FC = () => {
         <NavBar />
         <div className="main-content">
           <Routes>
+            <Route path="/list" element={<ModelList />} />
             <Route path="/removed" element={<ModelList removed />} />
             <Route path="/model" element={<ModelDetail />} />
             <Route path="/changes" element={<ChangeList />} />
-            <Route path="/" element={<ModelList />} />
+            <Route path="/" element={<Navigate to="/changes" replace />} />
           </Routes>
         </div>
       </div>

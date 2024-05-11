@@ -7,6 +7,7 @@ export interface ModelDiffClient {
 }
 
 export interface StatusClient {
+  isDevelopment: boolean;
   apiLastCheck: string;
   dbLastChange: string;
   dbModelCount: number;

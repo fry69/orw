@@ -11,7 +11,7 @@ export const NavBar: React.FC = () => {
       <ul>
         <li>
           <NavLink
-            to="/"
+            to="/list"
             className={({ isActive }) => (isActive ? "active" : "")}
           >
             Model List
@@ -48,7 +48,11 @@ export const NavBar: React.FC = () => {
           </span>
           API last check:
           <span className="timestamp">
-            <b>{durationAgo(globalState.status.apiLastCheck)}</b>
+            <b>
+              {globalState.status.isDevelopment
+                ? "[dev mode]"
+                : durationAgo(globalState.status.apiLastCheck)}
+            </b>
           </span>
         </li>
         <li>
