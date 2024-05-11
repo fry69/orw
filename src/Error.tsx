@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 interface ErrorProps {
   message: string;
@@ -6,6 +6,21 @@ interface ErrorProps {
 }
 
 const Error: React.FC<ErrorProps> = ({ message, type = "error" }) => {
+   useEffect(() => {
+    // Add the "noindex" meta tag to the document's head if it's an error
+    if (type === "error") {
+      const metaTag = document.createElement("meta");
+      metaTag.name = "robots";
+      metaTag.content = "noindex";
+      document.head.appendChild(metaTag);
+
+      // Clean up the meta tag when the component is unmounted
+      return () => {
+        document.head.removeChild(metaTag);
+      };
+    }
+  }, [type]);
+
   return (
     <div
       style={{

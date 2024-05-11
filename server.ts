@@ -28,6 +28,10 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
     data: data,
   });
 
+  const error404 = () => {
+    return new Response("File not found", { status: 404 });
+  }
+
   const serveStaticFile = (file: string) => {
     let headers = {};
     if (file.endsWith(".svg")) {
@@ -41,7 +45,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
     if (fs.existsSync(filePath)) {
       return new Response(Bun.file(filePath), headers);
     } else {
-      return new Response("File not found", { status: 404 });
+      return error404();
     }
   };
 
@@ -143,7 +147,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           ) {
             return serveStaticFile(googleTokenFile);
           }
-          return new Response("File not found", { status: 404 });
+          return error404();
 
         case url.pathname === "/":
         case url.pathname === "/list":
@@ -159,10 +163,10 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           if (fs.existsSync(filePath)) {
             return new Response(Bun.file(filePath));
           }
-          return new Response("File not found", { status: 404 });
+          return error404();
 
         default:
-          return new Response("File not found", { status: 404 });
+          return error404();
       }
     },
   });
