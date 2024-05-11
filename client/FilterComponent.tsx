@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import styled from "styled-components";
 import Button from "./Button";
 
@@ -35,7 +35,7 @@ interface FilterComponentProps {
   filterText: string;
   onFilter: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onClear: () => void;
-  onKeydown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onKeydown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export const FilterComponent = ({
@@ -52,6 +52,12 @@ export const FilterComponent = ({
     }
   }, [filterText]);
 
+  const handleClear = () => {
+    if (filterText && typeof onClear === "function") {
+      onClear();
+    }
+  };
+
   return (
     <>
       <span style={{ display: "flex" }}>
@@ -63,9 +69,17 @@ export const FilterComponent = ({
           value={filterText}
           onChange={onFilter}
           ref={inputRef}
-          onKeyDown={onKeydown}
+          onKeyDown={(e) => {
+            if (typeof onKeydown === "function") {
+              onKeydown(e);
+            }
+            if (e.key === "Escape") {
+              e.currentTarget.blur();
+              handleClear();
+            }
+          }}
         />
-        <ClearButton type="button" onClick={onClear}>
+        <ClearButton type="button" onClick={handleClear}>
           X
         </ClearButton>
       </span>
@@ -73,27 +87,19 @@ export const FilterComponent = ({
   );
 };
 
-export const FilterComponentMemo = (filterText: any, setFilterText: any) =>
-  useMemo(() => {
-    const handleClear = () => {
+export const filterComponentWrapper = (
+  filterText: string,
+  setFilterText: (value: React.SetStateAction<string>) => void
+) => (
+  <FilterComponent
+    filterText={filterText}
+    onFilter={(e: React.ChangeEvent<HTMLInputElement>) =>
+      setFilterText(e.target.value)
+    }
+    onClear={() => {
       if (filterText) {
         setFilterText("");
       }
-    };
-
-    return (
-      <FilterComponent
-        onFilter={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setFilterText(e.target.value)
-        }
-        onClear={handleClear}
-        filterText={filterText}
-        onKeydown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-          if (e.key === "Escape") {
-            e.currentTarget.blur();
-            handleClear();
-          }
-        }}
-      />
-    );
-  }, [filterText]);
+    }}
+  />
+);

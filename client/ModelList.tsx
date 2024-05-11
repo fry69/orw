@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import DataTable, { type TableColumn } from "react-data-table-component";
 import type { Model } from "../types";
 import { GlobalContext } from "./GlobalState";
-import { FilterComponentMemo } from "./FilterComponent";
 import { calcCost, durationAgo } from "./utils";
+import { filterComponentWrapper } from "./FilterComponent";
 
 export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
       item.name && item.name.toLowerCase().includes(filterText.toLowerCase())
   );
 
-  const filterMemo = FilterComponentMemo(filterText, setFilterText);
+  const filterComponent = filterComponentWrapper(filterText, setFilterText);
 
   useEffect(() => {
     let endpoint: string;
@@ -40,7 +40,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
   useEffect(() => {
     setGlobalState((prevState) => ({
       ...prevState,
-      navBarDynamicElement: filterMemo,
+      navBarDynamicElement: filterComponent,
     }));
   }, [filterText]);
 
