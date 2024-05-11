@@ -72,3 +72,28 @@ export const FilterComponent = ({
     </>
   );
 };
+
+export const FilterComponentMemo = (filterText: any, setFilterText: any) =>
+  useMemo(() => {
+    const handleClear = () => {
+      if (filterText) {
+        setFilterText("");
+      }
+    };
+
+    return (
+      <FilterComponent
+        onFilter={(e: React.ChangeEvent<HTMLInputElement>) =>
+          setFilterText(e.target.value)
+        }
+        onClear={handleClear}
+        filterText={filterText}
+        onKeydown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+          if (e.key === "Escape") {
+            e.currentTarget.blur();
+            handleClear();
+          }
+        }}
+      />
+    );
+  }, [filterText]);

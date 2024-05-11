@@ -28,24 +28,16 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
     data: data,
   });
 
-  const error404 = () => {
-    return new Response("File not found", { status: 404 });
-  }
+  const error404 = (filePath: string, message = "File not found") => {
+    console.log(`Error 404: ${filePath} ${message}`);
+    return new Response(message, { status: 404 });
+  };
 
-  const serveStaticFile = (file: string) => {
-    let headers = {};
-    if (file.endsWith(".svg")) {
-      headers = {
-        headers: {
-          "Content-Type": "image/svg+xml",
-        },
-      };
-    }
-    const filePath = path.join("static", file);
+  const serveStaticFile = (filePath: string) => {
     if (fs.existsSync(filePath)) {
-      return new Response(Bun.file(filePath), headers);
+      return new Response(Bun.file(filePath));
     } else {
-      return error404();
+      return error404(filePath);
     }
   };
 
@@ -135,19 +127,22 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
 
         case url.pathname === "/favicon.ico":
         case url.pathname === "/favicon.svg":
-          return serveStaticFile("favicon.svg");
+          return serveStaticFile("static/favicon.svg");
 
         case url.pathname === "/github.svg":
-          return serveStaticFile("github-mark-white.svg");
+          return serveStaticFile("static/github-mark-white.svg");
 
         case url.pathname.startsWith("/google"):
           if (
             googleTokenFile &&
             url.pathname === path.join("/", googleTokenFile)
           ) {
-            return serveStaticFile(googleTokenFile);
+            return serveStaticFile(path.join("static", googleTokenFile));
           }
-          return error404();
+          return error404(url.pathname);
+
+        case url.pathname === "/app.css":
+          return serveStaticFile("static/app.css");
 
         case url.pathname === "/":
         case url.pathname === "/list":
@@ -155,18 +150,16 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
         case url.pathname === "/changes":
         case url.pathname === "/model":
           // Serve the index.html file containing the React app
-          return new Response(Bun.file(path.join(clientDistDir, "index.html")));
+          return serveStaticFile(path.join(clientDistDir, "index.html"));
 
         case url.pathname.startsWith("/assets"):
           // Serve the React client application assets
-          const filePath = path.join(clientDistDir, url.pathname.slice(1));
-          if (fs.existsSync(filePath)) {
-            return new Response(Bun.file(filePath));
-          }
-          return error404();
+          return serveStaticFile(
+            path.join(clientDistDir, url.pathname.slice(1))
+          );
 
         default:
-          return error404();
+          return error404(url.pathname);
       }
     },
   });

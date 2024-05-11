@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { FilterComponent } from "./FilterComponent";
+import { FilterComponentMemo } from "./FilterComponent";
 import { GlobalContext } from "./GlobalState";
 import { Link } from "react-router-dom";
 import type { ModelDiffClient } from "./types";
@@ -15,27 +15,7 @@ export const ChangeList: React.FC = () => {
       item.id && item.id.toLowerCase().includes(filterText.toLowerCase())
   );
 
-  const filterComponentMemo = useMemo(() => {
-    const handleClear = () => {
-      if (filterText) {
-        setFilterText("");
-      }
-    };
-
-    return (
-      <FilterComponent
-        onFilter={(e: any) => setFilterText(e.target.value)}
-        onClear={handleClear}
-        filterText={filterText}
-        onKeydown={(e: any) => {
-          if (e.key === "Escape") {
-            e.target.blur();
-            handleClear();
-          }
-        }}
-      />
-    );
-  }, [filterText]);
+  const filterMemo = FilterComponentMemo(filterText, setFilterText);
 
   useEffect(() => {
     fetch("/api/changes")
@@ -52,7 +32,7 @@ export const ChangeList: React.FC = () => {
   useEffect(() => {
     setGlobalState((prevState) => ({
       ...prevState,
-      navBarDynamicElement: filterComponentMemo,
+      navBarDynamicElement: filterMemo,
     }));
   }, [filterText]);
 

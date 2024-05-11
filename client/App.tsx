@@ -1,7 +1,6 @@
 // client/App.tsx
 import React from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
-import "./app-dark.css";
 import { NavBar } from "./NavBar";
 import { ModelDetail } from "./ModelDetail";
 import { ChangeList } from "./ChangeList";

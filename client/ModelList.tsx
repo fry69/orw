@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DataTable, { type TableColumn } from "react-data-table-component";
 import type { Model } from "../types";
 import { GlobalContext } from "./GlobalState";
-import { FilterComponent } from "./FilterComponent";
+import { FilterComponentMemo } from "./FilterComponent";
 import { calcCost, durationAgo } from "./utils";
 
 export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
@@ -17,36 +17,14 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
       item.name && item.name.toLowerCase().includes(filterText.toLowerCase())
   );
 
-  const filterComponentMemo = useMemo(() => {
-    const handleClear = () => {
-      if (filterText) {
-        setFilterText("");
-      }
-    };
-
-    return (
-      <FilterComponent
-        onFilter={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setFilterText(e.target.value)
-        }
-        onClear={handleClear}
-        filterText={filterText}
-        onKeydown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-          if (e.key === "Escape") {
-            e.currentTarget.blur();
-            handleClear();
-          }
-        }}
-      />
-    );
-  }, [filterText]);
+  const filterMemo = FilterComponentMemo(filterText, setFilterText);
 
   useEffect(() => {
     let endpoint: string;
     if (props.removed) {
-      endpoint = "/api/removed"
+      endpoint = "/api/removed";
     } else {
-      endpoint = "/api/models"
+      endpoint = "/api/models";
     }
     fetch(endpoint)
       .then((res) => res.json())
@@ -62,7 +40,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
   useEffect(() => {
     setGlobalState((prevState) => ({
       ...prevState,
-      navBarDynamicElement: filterComponentMemo,
+      navBarDynamicElement: filterMemo,
     }));
   }, [filterText]);
 
@@ -127,7 +105,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
     {
       name: "Added",
       selector: (row) => row.added_at ?? "1970-01-01T00:00:00Z",
-      format: (row) => row.added_at ? durationAgo(row.added_at) : "",
+      format: (row) => (row.added_at ? durationAgo(row.added_at) : ""),
       sortable: true,
       hide: 959,
     },
