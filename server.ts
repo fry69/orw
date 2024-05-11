@@ -8,7 +8,7 @@ import type {
   ModelResponse,
   ModelsResponse,
   ResponseDataSig,
-} from "./types";
+} from "./global";
 import RSS from "rss";
 
 export const createServer = (watcher: OpenRouterModelWatcher) => {

@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import type { Model } from "../types";
+import type { Model } from "../global";
 import { GlobalContext } from "./GlobalState";
-import type { ModelDiffClient } from "./types";
+import type { ModelDiffClient } from "./client";
 import { calcCost, changeSnippet, dateStringDuration } from "./utils";
 import Error from './Error';
 

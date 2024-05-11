@@ -1,7 +1,7 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable, { type TableColumn } from "react-data-table-component";
-import type { Model } from "../types";
+import type { Model } from "../global";
 import { GlobalContext } from "./GlobalState";
 import { calcCost, durationAgo } from "./utils";
 import { filterComponentWrapper } from "./FilterComponent";

@@ -2,7 +2,7 @@
 import { describe, beforeEach, afterEach, test, expect, jest } from "bun:test";
 import { OpenRouterModelWatcher } from "./watch-or";
 import { Database } from "bun:sqlite";
-import type { Model, ModelDiff } from "./types";
+import type { Model, ModelDiff } from "./global";
 
 describe("OpenRouterModelWatcher", () => {
   let watcher: OpenRouterModelWatcher;

@@ -1,6 +1,6 @@
 // src/GlobalState.tsx
-import { createContext, useEffect, useState } from "react";
-import type { GlobalState } from "./types";
+import { createContext, useState } from "react";
+import type { GlobalState } from "./client";
 
 const defaultGlobalState: GlobalState = {
   status: {

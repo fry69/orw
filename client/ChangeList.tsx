@@ -1,8 +1,8 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { filterComponentWrapper } from "./FilterComponent";
 import { GlobalContext } from "./GlobalState";
 import { Link } from "react-router-dom";
-import type { ModelDiffClient } from "./types";
+import type { ModelDiffClient } from "./client";
 import { changeSnippet, dateStringDuration } from "./utils";
 
 export const ChangeList: React.FC = () => {

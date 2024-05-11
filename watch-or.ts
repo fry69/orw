@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
-import type { Model, ModelDiff, Status } from "./types";
+import type { Model, ModelDiff, Status } from "./global";
 import { runMigrations } from "./db-migration";
 import { createServer } from "./server";
 

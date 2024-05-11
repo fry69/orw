@@ -1,4 +1,4 @@
-import type { ServerStatus } from "../types";
+import type { ServerStatus } from "../global";
 
 export interface GlobalState {
   status: ServerStatus;

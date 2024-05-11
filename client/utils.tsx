@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { toHumanDurationExtended } from "@kitsuyui/luxon-ext";
-import type { ModelDiffClient } from "./types";
+import type { ModelDiffClient } from "./client";
 
 export const dateString = (timestamp: string) =>
   DateTime.fromISO(timestamp)
