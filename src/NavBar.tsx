@@ -63,7 +63,8 @@ export const NavBar: React.FC = () => {
             className="github-link"
           >
             <img
-              src="https://github.com/fluidicon.png"
+              // src="https://github.com/fluidicon.png"
+              src="/github.svg"
               alt="GitHub"
               width="32"
               height="32"

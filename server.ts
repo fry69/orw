@@ -27,6 +27,19 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
     data: data,
   });
 
+  const serveSVG = (svgFile: string) => {
+    const filePath = path.join("static", svgFile);
+    if (fs.existsSync(filePath)) {
+      return new Response(Bun.file(filePath), {
+        headers: {
+          "Content-Type": "image/svg+xml",
+        },
+      });
+    } else {
+      return new Response("File not found", { status: 404 });
+    }
+  };
+
   const server = Bun.serve({
     development: isDevelopment,
     port: import.meta.env.WATCHOR_PORT ?? 0,
@@ -113,16 +126,10 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
 
         case url.pathname === "/favicon.ico":
         case url.pathname === "/favicon.svg":
-          const faviconPath = path.join("static", "favicon.svg");
-          if (fs.existsSync(faviconPath)) {
-            return new Response(Bun.file(faviconPath), {
-              headers: {
-                "Content-Type": "image/svg+xml",
-              },
-            });
-          } else {
-            return new Response("Favicon not found", { status: 404 });
-          }
+          return serveSVG("favicon.svg");
+
+        case url.pathname === "/github.svg":
+          return serveSVG("github-mark-white.svg");
 
         case url.pathname === "/":
         case url.pathname === "/list":
