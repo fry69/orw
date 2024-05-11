@@ -113,7 +113,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             pubDate: watcher.getDBLastChange,
           });
 
-          const changesRSS = watcher.loadChanges(100);
+          const changesRSS = watcher.loadChanges(50);
           for (const change of changesRSS) {
             feed.item({
               title: `Model ${change.id} ${change.type}`,
