@@ -14,6 +14,7 @@ import RSS from "rss";
 export const createServer = (watcher: OpenRouterModelWatcher) => {
   const clientDistDir =
     import.meta.env.WATCHOR_CLIENT_PATH ?? path.join(".", "dist");
+  const googleTokenFile = import.meta.env.WATCHOR_GOOGLE;
 
   const apiRespone = <T extends ResponseDataSig>(data: T): APIResponse<T> => ({
     status: {
@@ -27,14 +28,18 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
     data: data,
   });
 
-  const serveSVG = (svgFile: string) => {
-    const filePath = path.join("static", svgFile);
-    if (fs.existsSync(filePath)) {
-      return new Response(Bun.file(filePath), {
+  const serveStaticFile = (file: string) => {
+    let headers = {};
+    if (file.endsWith(".svg")) {
+      headers = {
         headers: {
           "Content-Type": "image/svg+xml",
         },
-      });
+      };
+    }
+    const filePath = path.join("static", file);
+    if (fs.existsSync(filePath)) {
+      return new Response(Bun.file(filePath), headers);
     } else {
       return new Response("File not found", { status: 404 });
     }
@@ -126,10 +131,19 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
 
         case url.pathname === "/favicon.ico":
         case url.pathname === "/favicon.svg":
-          return serveSVG("favicon.svg");
+          return serveStaticFile("favicon.svg");
 
         case url.pathname === "/github.svg":
-          return serveSVG("github-mark-white.svg");
+          return serveStaticFile("github-mark-white.svg");
+
+        case url.pathname.startsWith("/google"):
+          if (
+            googleTokenFile &&
+            url.pathname === path.join("/", googleTokenFile)
+          ) {
+            return serveStaticFile(googleTokenFile);
+          }
+          return new Response("File not found", { status: 404 });
 
         case url.pathname === "/":
         case url.pathname === "/list":

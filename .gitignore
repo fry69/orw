@@ -193,3 +193,6 @@ bun.lockb
 backup/
 *.backup*
 *.snapshot*
+
+# Google site verification
+google*.html
