@@ -10,7 +10,8 @@
     "once": "bun run watch-or.ts --once",
     "gzip": "rm ./static/*.gz && gzip --best -k ./static/*",
     "dist-clean": "rm *.log *.db *.sql && rm -fR dist",
-    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\""
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\"",
+    "screenshots":  "cd screenshots && for i in *.png; do zopflipng -y $i $i; done"
   },
   "devDependencies": {
     "@types/bun": "latest",

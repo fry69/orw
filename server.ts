@@ -106,7 +106,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             },
           });
         }
-        // fall through to serve uncompressed file
+        // fall through to serve uncompressed (or compressed by default) file
       }
       return new Response(Bun.file(filePath));
     } else {
@@ -230,6 +230,9 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             return serveStaticFile(path.join("static", googleTokenFile), request);
           }
           return error404(url.pathname);
+
+        case url.pathname === "/screenshot.png":
+          return serveStaticFile("screenshots/ChangeList.png", request);
 
         case url.pathname === "/app.css":
           return serveStaticFile("static/app.css", request);
