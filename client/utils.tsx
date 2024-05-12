@@ -3,9 +3,7 @@ import { toHumanDurationExtended } from "@kitsuyui/luxon-ext";
 import type { ModelDiffClient } from "./client";
 
 export const dateString = (timestamp: string) =>
-  DateTime.fromISO(timestamp)
-    .setLocale("en-us")
-    .toLocaleString(DateTime.DATETIME_MED);
+  DateTime.fromISO(timestamp).setLocale("en-us").toLocaleString(DateTime.DATETIME_MED);
 
 export const durationAgo = (timestamp: DateTime | string) => {
   if (typeof timestamp === "string" && timestamp !== "") {

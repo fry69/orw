@@ -188,6 +188,7 @@ bun.lockb
 *.sql
 !migrations/*.sql
 *.json
+!.prettierrc.json
 
 # Backup, snapshot and cache files and folder
 cache/

@@ -30,9 +30,7 @@ export function runMigrations(db: Database) {
 
 function getCurrentVersion(db: Database): number {
   try {
-    const row: any = db
-      .query("SELECT MAX(version) AS version FROM migrations")
-      .get();
+    const row: any = db.query("SELECT MAX(version) AS version FROM migrations").get();
     return row?.version || 0;
   } catch (err) {
     // If the migrations table doesn't exist, return -1

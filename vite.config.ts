@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { compression } from 'vite-plugin-compression2';
+import { compression } from "vite-plugin-compression2";
 
 export default defineConfig({
   build: {

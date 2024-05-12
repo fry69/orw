@@ -20,13 +20,10 @@ export const NavBar: React.FC = () => {
           : durationAgo(globalState.status.apiLastCheck)
       );
 
-      // If last API check is longer than an hour ago, trigger an refresh 
+      // If last API check is longer than an hour ago, trigger an refresh
       const now = Date.now();
       const oneHourAndOneMinute = 3600_000 + 6_000; // 1 hour + 1 minute in milliseconds
-      if (
-        now - new Date(globalState.status.apiLastCheck).getTime() >
-        oneHourAndOneMinute
-      ) {
+      if (now - new Date(globalState.status.apiLastCheck).getTime() > oneHourAndOneMinute) {
         setGlobalState((prevState) => ({
           ...prevState,
           refreshTrigger: !prevState.refreshTrigger, // This inversion triggers refreshing
@@ -54,20 +51,17 @@ export const NavBar: React.FC = () => {
     <nav>
       <ul>
         <li>
-          <NavLink
-            to="/list"
-            className={({ isActive }) => (isActive ? "active" : "")}
-          >
+          <NavLink to="/list" className={({ isActive }) => (isActive ? "active" : "")}>
             Model List
           </NavLink>
         </li>
-        <li>
-          <NavLink
-            to="/changes"
-            className={({ isActive }) => (isActive ? "active" : "")}
-          >
+        <li className="changes-container">
+          <NavLink to="/changes" className={({ isActive }) => (isActive ? "active" : "")}>
             Change List
           </NavLink>
+          <a href="/rss" className="button-link rss-link">
+            <img className="image-link" src="/rss.svg" alt="RSS Feeed" width="16" height="16" />
+          </a>
         </li>
         <li className="dynamic-element">{globalState.navBarDynamicElement}</li>
         <li className="info-container">
@@ -76,8 +70,7 @@ export const NavBar: React.FC = () => {
           </span>
           <span className="timestamp">
             <b>
-              ({globalState.status.dbRemovedModelCount}){" "}
-              {globalState.status.dbModelCount}
+              ({globalState.status.dbRemovedModelCount}) {globalState.status.dbModelCount}
             </b>
           </span>
           Changes:
@@ -100,14 +93,9 @@ export const NavBar: React.FC = () => {
             href="https://github.com/fry69/watch-or"
             target="_blank"
             rel="noopener noreferrer"
-            className="github-link"
+            className="button-link"
           >
-            <img
-              src="/github.svg"
-              alt="GitHub"
-              width="32"
-              height="32"
-            />
+            <img className="image-link" src="/github.svg" alt="GitHub repository" width="32" height="32" />
           </a>
         </li>
       </ul>

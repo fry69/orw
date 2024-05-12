@@ -6,7 +6,7 @@ interface ErrorProps {
 }
 
 const Error: React.FC<ErrorProps> = ({ message, type = "error" }) => {
-   useEffect(() => {
+  useEffect(() => {
     // Add the "noindex" meta tag to the document's head if it's an error
     if (type === "error") {
       const metaTag = document.createElement("meta");

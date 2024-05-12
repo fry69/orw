@@ -239,10 +239,11 @@ export class OpenRouterModelWatcher {
    * @param {Date} [timestamp] - The timestamp to associate with the removal.
    */
   storeRemovedModel(model: Model, timestamp: Date = new Date()) {
-    this.db.run(
-      "INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)",
-      [model.id, JSON.stringify(model), timestamp.toISOString()]
-    );
+    this.db.run("INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)", [
+      model.id,
+      JSON.stringify(model),
+      timestamp.toISOString(),
+    ]);
   }
 
   /**
@@ -251,10 +252,11 @@ export class OpenRouterModelWatcher {
    * @param {Date} [timestamp] - The timestamp to associate with the addition.
    */
   storeAddedModel(model: Model, timestamp: Date = new Date()) {
-    this.db.run(
-      "INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)",
-      [model.id, JSON.stringify(model), timestamp.toISOString()]
-    );
+    this.db.run("INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)", [
+      model.id,
+      JSON.stringify(model),
+      timestamp.toISOString(),
+    ]);
   }
 
   /**
@@ -315,14 +317,10 @@ export class OpenRouterModelWatcher {
    */
   loadDBCounter() {
     let result: any;
-    result = this.db
-      .query("SELECT count(id) as changesCount FROM changes")
-      .get();
+    result = this.db.query("SELECT count(id) as changesCount FROM changes").get();
     this.status.dbChangesCount = result.changesCount ?? 0;
 
-    result = this.db
-      .query("SELECT count(id) as removedModelCount FROM removed_models")
-      .get();
+    result = this.db.query("SELECT count(id) as removedModelCount FROM removed_models").get();
     this.status.dbRemovedModelCount = result.removedModelCount ?? 0;
   }
 
@@ -357,9 +355,7 @@ export class OpenRouterModelWatcher {
   loadChanges(n: number = 10): ModelDiff[] {
     this.loadDBCounter();
     return this.db
-      .query(
-        "SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?"
-      )
+      .query("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?")
       .all(n)
       .map(this.transformChangesRow);
   }
@@ -385,17 +381,12 @@ export class OpenRouterModelWatcher {
    */
   storeChanges(changes: ModelDiff[]) {
     for (const change of changes) {
-      this.db.run(
-        "INSERT INTO changes (id, type, changes, timestamp) VALUES (?, ?, ?, ?)",
-        [
-          change.id,
-          change.type,
-          change.changes
-            ? JSON.stringify(change.changes)
-            : JSON.stringify(change.model),
-          change.timestamp.toISOString(),
-        ]
-      );
+      this.db.run("INSERT INTO changes (id, type, changes, timestamp) VALUES (?, ?, ?, ?)", [
+        change.id,
+        change.type,
+        change.changes ? JSON.stringify(change.changes) : JSON.stringify(change.model),
+        change.timestamp.toISOString(),
+      ]);
     }
   }
 
@@ -541,27 +532,15 @@ export class OpenRouterModelWatcher {
 
     changes.forEach((change) => {
       if (change.type === "added") {
-        console.log(
-          `New model added with id ${
-            change.id
-          } at ${change.timestamp.toLocaleString()}`
-        );
+        console.log(`New model added with id ${change.id} at ${change.timestamp.toLocaleString()}`);
         console.dir(change.model);
       } else if (change.type === "removed") {
-        console.log(
-          `Model id ${
-            change.id
-          } removed at ${change.timestamp.toLocaleString()}`
-        );
+        console.log(`Model id ${change.id} removed at ${change.timestamp.toLocaleString()}`);
       } else if (change.type === "changed") {
         console.log(
-          `Change detected for model ${
-            change.id
-          } at ${change.timestamp.toLocaleString()}:`
+          `Change detected for model ${change.id} at ${change.timestamp.toLocaleString()}:`
         );
-        for (const [key, { old, new: newValue }] of Object.entries(
-          change.changes!
-        )) {
+        for (const [key, { old, new: newValue }] of Object.entries(change.changes!)) {
           console.log(`  ${key}: ${old} -> ${newValue}`);
         }
       }

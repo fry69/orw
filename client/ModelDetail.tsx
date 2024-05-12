@@ -3,7 +3,7 @@ import type { Model } from "../global";
 import { GlobalContext } from "./GlobalState";
 import type { ModelDiffClient } from "./client";
 import { calcCost, changeSnippet, dateStringDuration } from "./utils";
-import Error from './Error';
+import Error from "./Error";
 
 export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
@@ -23,9 +23,7 @@ export const ModelDetail: React.FC = () => {
 
         const response = await fetch(`/api/model?id=${id}`);
         if (!response.ok) {
-          setError(
-            `Error fetching model: ${response.status} - ${response.statusText}`
-          );
+          setError(`Error fetching model: ${response.status} - ${response.statusText}`);
           return;
         }
 
@@ -57,7 +55,6 @@ export const ModelDetail: React.FC = () => {
       navBarDynamicElement: modelStringMemo,
     })); // <- using the memoized string is fine
   }, [model]);
-
 
   if (error) {
     return <Error message={error} type="error" />;
@@ -107,8 +104,7 @@ export const ModelDetail: React.FC = () => {
           <p style={{ fontSize: "large" }}>
             Input: <b>$ {calcCost(model.pricing.prompt)}</b> per million tokens
             <br />
-            Output: <b>$ {calcCost(model.pricing.completion)}</b> per million
-            tokens
+            Output: <b>$ {calcCost(model.pricing.completion)}</b> per million tokens
           </p>
         </>
       );
@@ -134,9 +130,7 @@ export const ModelDetail: React.FC = () => {
         </div>
         <div>
           <h3>Context Length</h3>
-          <p style={{ fontSize: "x-large", textAlign: "center" }}>
-            {model.context_length}
-          </p>
+          <p style={{ fontSize: "x-large", textAlign: "center" }}>{model.context_length}</p>
         </div>
       </div>
       <h3>Description</h3>

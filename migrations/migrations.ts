@@ -94,7 +94,7 @@ const migrations: Migration[] = [
         INSERT INTO added_models (id, data, timestamp)
         SELECT id, changes, timestamp
         FROM changes WHERE type = "added"
-      `)
+      `);
     },
   },
   // Add more migrations here

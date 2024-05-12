@@ -71,8 +71,32 @@ nav a:visited {
 }
 
 nav a:hover {
-  background-color: #555;
+  color: red;
+  /* background-color: #555; */
 }
+
+nav li.changes-container {
+  display: grid;
+  grid-template-columns: auto 20px;
+  column-gap: 0;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+nav a.rss-link {
+  padding: 0;
+  overflow: hidden;
+}
+
+.image-link:hover {
+  transition: transform 0.2s ease-in-out;
+}
+
+.image-link:hover {
+  transform: scale(1.2);
+}
+
 
 nav li.dynamic-element {
   margin-left: auto;
@@ -91,7 +115,7 @@ nav li .timestamp {
   color: skyblue;
 }
 
-nav a.github-link:hover {
+nav a.button-link:hover {
   /* Disable hover effect for the image inside this link */
   background-color: inherit;
 }

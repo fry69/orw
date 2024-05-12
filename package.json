@@ -9,7 +9,8 @@
     "query": "bun run watch-or.ts --query",
     "once": "bun run watch-or.ts --once",
     "gzip": "rm ./static/*.gz && gzip --best -k ./static/*",
-    "dist-clean": "rm *.log *.db *.sql && rm -fR dist"
+    "dist-clean": "rm *.log *.db *.sql && rm -fR dist",
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\""
   },
   "devDependencies": {
     "@types/bun": "latest",

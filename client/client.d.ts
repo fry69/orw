@@ -13,4 +13,3 @@ export interface ModelDiffClient {
   model?: any;
   timestamp: string;
 }
-

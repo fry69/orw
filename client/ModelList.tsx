@@ -13,8 +13,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
 
   const [filterText, setFilterText] = useState("");
   const filteredModels = models.filter(
-    (item) =>
-      item.name && item.name.toLowerCase().includes(filterText.toLowerCase())
+    (item) => item.name && item.name.toLowerCase().includes(filterText.toLowerCase())
   );
 
   const filterComponent = filterComponentWrapper(filterText, setFilterText);
@@ -120,9 +119,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
       name: "Price/MT",
       selector: (row) => row.pricing.completion,
       format: (row) => {
-        return row.id === "openrouter/auto"
-          ? "[N/A]"
-          : calcCost(row.pricing.completion);
+        return row.id === "openrouter/auto" ? "[N/A]" : calcCost(row.pricing.completion);
       },
       sortable: true,
       right: true,

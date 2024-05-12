@@ -23,13 +23,10 @@ export const GlobalContext = createContext<{
   setGlobalState: () => {},
 });
 
-export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [globalState, setGlobalState] =
-    useState<GlobalState>(defaultGlobalState);
+export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [globalState, setGlobalState] = useState<GlobalState>(defaultGlobalState);
 
-    return (
+  return (
     <GlobalContext.Provider value={{ globalState, setGlobalState }}>
       {children}
     </GlobalContext.Provider>

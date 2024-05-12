@@ -15,8 +15,7 @@ import RSS from "rss";
 
 export const createServer = (watcher: OpenRouterModelWatcher) => {
   const cacheDir = import.meta.env.WATCHOR_CACHE_DIR ?? path.join(".", "cache");
-  const clientDistDir =
-    import.meta.env.WATCHOR_CLIENT_PATH ?? path.join(".", "dist");
+  const clientDistDir = import.meta.env.WATCHOR_CLIENT_PATH ?? path.join(".", "dist");
   const googleTokenFile = import.meta.env.WATCHOR_GOOGLE;
 
   // Create the cache directory if it doesn't exist
@@ -56,8 +55,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
     // Check if the cached file does not exist or is older than the last change in the database
     if (
       !fs.existsSync(cacheFilePath) ||
-      fs.statSync(cacheFilePath).mtime.getTime() <
-        watcher.getDBLastChange.getTime()
+      fs.statSync(cacheFilePath).mtime.getTime() < watcher.getDBLastChange.getTime()
     ) {
       try {
         const gzipFilePath = `${cacheFilePath}.gz`;
@@ -86,9 +84,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
     const gzipFilePath = `${filePath}.gz`;
 
     // Check if the client accepts gzip compression
-    const acceptsGzip = request.headers
-      .get("Accept-Encoding")
-      ?.includes("gzip");
+    const acceptsGzip = request.headers.get("Accept-Encoding")?.includes("gzip");
 
     if (fs.existsSync(filePath)) {
       // only check for compressed files if the original uncompressed file exists
@@ -161,9 +157,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
 
   const generateRemoved = (): string => {
     // Respond with removed model list
-    const removedResponse: ModelsResponse = apiRespone(
-      watcher.loadRemovedModelList()
-    );
+    const removedResponse: ModelsResponse = apiRespone(watcher.loadRemovedModelList());
 
     return JSON.stringify(removedResponse);
   };
@@ -224,15 +218,12 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
         case url.pathname === "/github.svg":
           return serveStaticFile("static/github-mark-white.svg", request);
 
+        case url.pathname === "/rss.svg":
+          return serveStaticFile("static/rss.svg", request);
+
         case url.pathname.startsWith("/google"):
-          if (
-            googleTokenFile &&
-            url.pathname === path.join("/", googleTokenFile)
-          ) {
-            return serveStaticFile(
-              path.join("static", googleTokenFile),
-              request
-            );
+          if (googleTokenFile && url.pathname === path.join("/", googleTokenFile)) {
+            return serveStaticFile(path.join("static", googleTokenFile), request);
           }
           return error404(url.pathname);
 
@@ -245,17 +236,11 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
         case url.pathname === "/changes":
         case url.pathname === "/model":
           // Serve the index.html file containing the React app
-          return serveStaticFile(
-            path.join(clientDistDir, "index.html"),
-            request
-          );
+          return serveStaticFile(path.join(clientDistDir, "index.html"), request);
 
         case url.pathname.startsWith("/assets"):
           // Serve the React client application assets
-          return serveStaticFile(
-            path.join(clientDistDir, url.pathname.slice(1)),
-            request
-          );
+          return serveStaticFile(path.join(clientDistDir, url.pathname.slice(1)), request);
 
         default:
           return error404(url.pathname);

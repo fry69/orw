@@ -18,6 +18,4 @@ const ButtonStyle = styled.button`
 
 // eslint-disable-next-line react/prop-
 // @ts-ignore
-export default ({ children, ...rest }) => (
-  <ButtonStyle {...rest}>{children}</ButtonStyle>
-);
+export default ({ children, ...rest }) => <ButtonStyle {...rest}>{children}</ButtonStyle>;

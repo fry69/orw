@@ -93,9 +93,7 @@ export const filterComponentWrapper = (
 ) => (
   <FilterComponent
     filterText={filterText}
-    onFilter={(e: React.ChangeEvent<HTMLInputElement>) =>
-      setFilterText(e.target.value)
-    }
+    onFilter={(e: React.ChangeEvent<HTMLInputElement>) => setFilterText(e.target.value)}
     onClear={() => {
       if (filterText) {
         setFilterText("");
