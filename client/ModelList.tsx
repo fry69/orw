@@ -162,7 +162,11 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
     <DataTable
       columns={columns}
       data={filteredModels}
-      onRowClicked={(row) => navigate(`/model?id=${row.id}`)}
+      onRowClicked={(row) => {
+        if (!props.removed) {
+          return navigate(`/model?id=${row.id}`);
+        }
+      }}
       dense
       highlightOnHover
       defaultSortFieldId={3}

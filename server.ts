@@ -6,6 +6,7 @@ import { gzipSync } from "node:zlib";
 import type {
   APIResponse,
   ChangesResponse,
+  Model,
   ModelResponse,
   ModelsResponse,
   ResponseDataSig,
@@ -17,6 +18,16 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
   const clientDistDir =
     import.meta.env.WATCHOR_CLIENT_PATH ?? path.join(".", "dist");
   const googleTokenFile = import.meta.env.WATCHOR_GOOGLE;
+
+  // Create the cache directory if it doesn't exist
+  if (!fs.existsSync(cacheDir)) {
+    try {
+      fs.mkdirSync(cacheDir, { recursive: true });
+    } catch (err) {
+      console.error("Error creating cache directory:", err);
+      throw err;
+    }
+  }
 
   const apiRespone = <T extends ResponseDataSig>(data: T): APIResponse<T> => ({
     status: {
@@ -33,6 +44,42 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
   const error404 = (filePath: string, message = "File not found") => {
     console.log(`Error 404: ${filePath} ${message}`);
     return new Response(message, { status: 404 });
+  };
+
+  const cacheAndServeContent = (
+    fileName: string,
+    contentGenerator: () => string,
+    request: Request
+  ): Response => {
+    const cacheFilePath = path.join(cacheDir, fileName);
+
+    // Check if the cached file does not exist or is older than the last change in the database
+    if (
+      !fs.existsSync(cacheFilePath) ||
+      fs.statSync(cacheFilePath).mtime.getTime() <
+        watcher.getDBLastChange.getTime()
+    ) {
+      try {
+        const gzipFilePath = `${cacheFilePath}.gz`;
+        // Generate the content
+        const content = contentGenerator();
+        if (content) {
+          // Cache the content
+          fs.writeFileSync(cacheFilePath, content);
+          // Compress the cached file
+          const compressedData = gzipSync(content);
+          fs.writeFileSync(gzipFilePath, compressedData);
+        } else {
+          throw "Content failed to generate";
+        }
+      } catch (err) {
+        console.error(`Content file error: ${cacheFilePath}`, err);
+        throw err;
+      }
+    }
+
+    // Serve the cached file
+    return serveStaticFile(cacheFilePath, request);
   };
 
   const serveStaticFile = (filePath: string, request: Request) => {
@@ -55,7 +102,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           return new Response(Bun.file(gzipFilePath), {
             headers: {
               "Content-Encoding": "gzip",
-              "Content-Type": Bun.file(filePath).type
+              "Content-Type": Bun.file(filePath).type,
             },
           });
         }
@@ -78,10 +125,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
     }
   };
 
-  const rssFilePath = path.join(cacheDir, "rss.xml");
-  const rssGzipFilePath = `${rssFilePath}.gz`;
-
-  const generateRSSFeed = (): RSS => {
+  const generateRSSFeedXML = (): string => {
     const feed: RSS = new RSS({
       title: "OpenRouter Model Changes",
       description: "RSS feed for changes in OpenRouter models",
@@ -99,50 +143,46 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           null,
           2
         )}</code>`,
-        url: `${publicURL}model?id=${
+        url: `${publicURL}${change.type === "removed" ? "removed" : "model"}?id=${
           change.id
         }&timestamp=${change.timestamp.toISOString()}`,
         date: change.timestamp,
       });
     }
 
-    return feed;
+    return feed.xml();
   };
 
-  const serveRSSFeed = (request: Request): Response => {
-    // Check if the cached RSS file is up-to-date
-    const cachedRSSModTime = fs.existsSync(rssFilePath)
-      ? fs.statSync(rssFilePath).mtime.getTime()
-      : 0;
-    const dbLastChange = watcher.getDBLastChange.getTime();
+  const generateModels = (): string => {
+    // Respond with complete model list
+    const modelsResponse: ModelsResponse = apiRespone(watcher.getLastModelList);
+    return JSON.stringify(modelsResponse);
+  };
 
-    if (cachedRSSModTime < dbLastChange) {
-      try {
-        // Check if the cache directory exists, and create it if not
-        if (!fs.existsSync(cacheDir)) {
-          try {
-            console.log("Create cache directory");
-            fs.mkdirSync(cacheDir, { recursive: true });
-          } catch (err) {
-            console.error("Error creating cache directory:", err);
-            throw err;
-          }
-        }
+  const generateRemoved = (): string => {
+    // Respond with removed model list
+    const removedResponse: ModelsResponse = apiRespone(
+      watcher.loadRemovedModelList()
+    );
 
-        // Generate a new RSS feed and cache it
-        console.log("Generating fresh rss.xml");
-        const feed = generateRSSFeed();
-        fs.writeFileSync(rssFilePath, feed.xml());
+    return JSON.stringify(removedResponse);
+  };
 
-        // Compress the cached RSS file
-        compressFile(rssFilePath, rssGzipFilePath);
-      } catch (err) {
-        console.error("Error generating or caching RSS feed:", err);
-        return error404(rssFilePath, "Error generating RSS feed");
-      }
-    }
-    // Serve the cached RSS file
-    return serveStaticFile(rssFilePath, request);
+  const generateModel = (id: string, model: Model): string => {
+    // Respond with single model id and its associated changes
+    const changes = watcher.loadChangesForModel(id, 50);
+    const modelResponse: ModelResponse = apiRespone({
+      model,
+      changes,
+    });
+    return JSON.stringify(modelResponse);
+  };
+
+  const generateChanges = (): string => {
+    // Respond with changes for all models
+    const changes = watcher.loadChanges(100);
+    const changesResponse: ChangesResponse = apiRespone({ changes });
+    return JSON.stringify(changesResponse);
   };
 
   const server = Bun.serve({
@@ -154,54 +194,28 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
       const url = new URL(request.url);
       switch (true) {
         case url.pathname === "/api/models":
-          // Respond with complete model list
-          const modelsResponse: ModelsResponse = apiRespone(
-            watcher.getLastModelList
-          );
-
-          return new Response(JSON.stringify(modelsResponse), {
-            headers: { "Content-Type": "application/json" },
-          });
+          return cacheAndServeContent("models.json", generateModels, request);
 
         case url.pathname === "/api/removed":
-          // Respond with removed model list
-          const removedResponse: ModelsResponse = apiRespone(
-            watcher.loadRemovedModelList()
-          );
-
-          return new Response(JSON.stringify(removedResponse), {
-            headers: { "Content-Type": "application/json" },
-          });
+          return cacheAndServeContent("removed.json", generateRemoved, request);
 
         case url.pathname === "/api/model":
-          // Respond with single model id and its associated changes
           const id = url.searchParams.get("id");
-          if (id) {
-            const model = watcher.getLastModelList.find((m) => m.id === id);
-            if (!model) {
-              return new Response("Model not found", { status: 404 });
-            }
-            const changes = watcher.loadChangesForModel(id, 50);
-            const modelResponse: ModelResponse = apiRespone({
-              model,
-              changes,
-            });
-            return new Response(JSON.stringify(modelResponse), {
-              headers: { "Content-Type": "application/json" },
-            });
+          const model = watcher.getLastModelList.find((m) => m.id === id);
+          if (id && model) {
+            return cacheAndServeContent(
+              `model-${btoa(id)}.json`,
+              () => generateModel(id, model),
+              request
+            );
           }
-          return new Response("Model not found", { status: 404 });
+          return error404("", "Model not found");
 
         case url.pathname === "/api/changes":
-          // Respond with changes for all models
-          const changes = watcher.loadChanges(100);
-          const changesResponse: ChangesResponse = apiRespone({ changes });
-          return new Response(JSON.stringify(changesResponse), {
-            headers: { "Content-Type": "application/json" },
-          });
+          return cacheAndServeContent("changes.json", generateChanges, request);
 
         case url.pathname === "/rss":
-          return serveRSSFeed(request);
+          return cacheAndServeContent("rss.xml", generateRSSFeedXML, request);
 
         case url.pathname === "/favicon.ico":
         case url.pathname === "/favicon.svg":

@@ -41,7 +41,11 @@ export const ChangeList: React.FC = () => {
       {filteredChanges.map((change, index) => (
         <div key={index} className="change-entry">
           <p>
-            <Link to={`/model?id=${change.id}`}>
+            <Link
+              to={`/${change.type === "removed" ? "removed" : "model"}?id=${
+                change.id
+              }`}
+            >
               <b>{change.id}</b>
             </Link>{" "}
             {change.type} at {dateStringDuration(change.timestamp)}
