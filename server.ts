@@ -48,14 +48,18 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
   const cacheAndServeContent = (
     fileName: string,
     contentGenerator: () => string,
-    request: Request
+    request: Request,
+    dbOnlyCheck: boolean = false
   ): Response => {
     const cacheFilePath = path.join(cacheDir, fileName);
 
-    // Check if the cached file does not exist or is older than the last change in the database
+    // Check if the cached file does not exist or is older than the last API check
+    // This is need to keep the client updated when the last check was
+    // Optionally only check for last change in database, e.g. for RSS endpoint
     if (
       !fs.existsSync(cacheFilePath) ||
-      fs.statSync(cacheFilePath).mtime.getTime() < watcher.getDBLastChange.getTime()
+      fs.statSync(cacheFilePath).mtime.getTime() <
+        (dbOnlyCheck ? watcher.getDBLastChange.getTime() : watcher.getAPILastCheck.getTime())
     ) {
       try {
         const gzipFilePath = `${cacheFilePath}.gz`;
@@ -209,7 +213,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           return cacheAndServeContent("changes.json", generateChanges, request);
 
         case url.pathname === "/rss":
-          return cacheAndServeContent("rss.xml", generateRSSFeedXML, request);
+          return cacheAndServeContent("rss.xml", generateRSSFeedXML, request, true);
 
         case url.pathname === "/favicon.ico":
         case url.pathname === "/favicon.svg":
