@@ -232,7 +232,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           return error404(url.pathname);
 
         case url.pathname === "/screenshot.png":
-          return serveStaticFile("screenshots/ChangeList.png", request);
+          return serveStaticFile("screenshots/ChangeList_crop.png", request);
 
         case url.pathname === "/app.css":
           return serveStaticFile("static/app.css", request);

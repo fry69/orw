@@ -199,3 +199,6 @@ backup/
 # Google site verification
 google*.html
 google*.html.gz
+
+# Python
+venv/
