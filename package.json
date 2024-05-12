@@ -8,30 +8,32 @@
     "web": "bun run watch-or.ts",
     "query": "bun run watch-or.ts --query",
     "once": "bun run watch-or.ts --once",
+    "gzip": "rm ./static/*.gz && gzip --best -k ./static/*",
     "dist-clean": "rm *.log *.db *.sql && rm -fR dist"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/deep-diff": "^1.0.5",
     "@types/luxon": "^3.4.2",
-    "@types/react": "^18.3.1",
+    "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
     "@types/rss": "^0.0.32",
-    "luxon": "^3.4.4"
+    "@kitsuyui/luxon-ext": "^0.1.5",
+    "luxon": "^3.4.4",
+    "react": "^18.3.1",
+    "react-data-table-component": "^7.6.2",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.23.1",
+    "styled-components": "^6.1.11"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@kitsuyui/luxon-ext": "^0.1.5",
     "@vitejs/plugin-react": "^4.2.1",
     "deep-diff": "^1.0.2",
-    "react": "^18.3.1",
-    "react-data-table-component": "^7.6.2",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.23.0",
     "rss": "^1.2.2",
-    "styled-components": "^6.1.9",
-    "vite": "^5.2.11"
+    "vite": "^5.2.11",
+    "vite-plugin-compression2": "^1.1.0"
   }
 }

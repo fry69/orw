@@ -189,10 +189,12 @@ bun.lockb
 !migrations/*.sql
 *.json
 
-# Backup and snapshot files and folder
+# Backup, snapshot and cache files and folder
+cache/
 backup/
 *.backup*
 *.snapshot*
 
 # Google site verification
 google*.html
+google*.html.gz
