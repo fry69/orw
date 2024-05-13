@@ -102,7 +102,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
 
           // RSS needs a special content type
           if (gzipFilePath.endsWith("rss.xml.gz")) {
-            return new Response(Bun.file(gzipFilePath), {
+            return new Response(fs.readFileSync(gzipFilePath), {
               headers: {
                 "Content-Encoding": "gzip",
                 "Content-Type": "application/rss+xml",
@@ -110,7 +110,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
             });
           }
 
-          return new Response(Bun.file(gzipFilePath), {
+          return new Response(fs.readFileSync(gzipFilePath), {
             headers: {
               "Content-Encoding": "gzip",
               "Content-Type": Bun.file(filePath).type,
@@ -121,13 +121,13 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
       }
       // RSS still needs a special content type
       if (filePath.endsWith("rss.xml")) {
-        return new Response(Bun.file(filePath), {
+        return new Response(fs.readFileSync(filePath), {
           headers: {
             "Content-Type": "application/rss+xml",
           },
         });
       }
-      return new Response(Bun.file(filePath));
+      return new Response(fs.readFileSync(filePath));
     } else {
       return error404(filePath);
     }
@@ -246,12 +246,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           return cacheAndServeContent("changes.json", generateChanges, request);
 
         case url.pathname === "/rss":
-          return new Response(generateRSSFeedXML(), {
-            headers: {
-              "Content-Type": "application/rss+xml",
-            },
-          });
-        // return cacheAndServeContent("rss.xml", generateRSSFeedXML, request, true);
+        return cacheAndServeContent("rss.xml", generateRSSFeedXML, request, true);
 
         case url.pathname === "/favicon.ico":
         case url.pathname === "/favicon.svg":
