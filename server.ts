@@ -127,7 +127,11 @@ export const createServer = (watcher: OpenRouterAPIWatcher) => {
           },
         });
       }
-      return new Response(fs.readFileSync(filePath));
+      return new Response(fs.readFileSync(filePath), {
+        headers: {
+          "Content-Type": Bun.file(filePath).type,
+        },
+      });
     } else {
       return error404(filePath);
     }
@@ -246,7 +250,7 @@ export const createServer = (watcher: OpenRouterAPIWatcher) => {
           return cacheAndServeContent("changes.json", generateChanges, request);
 
         case url.pathname === "/rss":
-        return cacheAndServeContent("rss.xml", generateRSSFeedXML, request, true);
+          return cacheAndServeContent("rss.xml", generateRSSFeedXML, request, true);
 
         case url.pathname === "/favicon.ico":
         case url.pathname === "/favicon.svg":
