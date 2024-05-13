@@ -47,6 +47,19 @@ fi
 source_prefix="$1"
 target_prefix="$2"
 
+# Check if a .gitignore file exists in the current directory or its parents
+gitignore_path=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ -n "$gitignore_path" ] && [ -e "$gitignore_path/.gitignore" ]; then
+    echo "Warning: A .gitignore file was found in the current directory or its parents."
+    echo "The script will rename files that are ignored by Git, which may or may not be what you want."
+    read -p "Do you still want to proceed? (y/n) " -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Renames cancelled."
+        exit 0
+    fi
+fi
+
 # Perform a dry run first
 rename_files "$source_prefix" "$target_prefix" "true"
 
