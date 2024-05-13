@@ -1,4 +1,4 @@
-// watch-or.ts
+// orw.ts
 import fs from "node:fs";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
@@ -20,7 +20,7 @@ if (isDevelopment) {
 /**
  * Watches for changes in OpenRouter models and stores the changes in a SQLite database.
  */
-export class OpenRouterModelWatcher {
+export class OpenRouterAPIWatcher {
   /**
    * The SQLite database used for storing model changes.
    */
@@ -111,7 +111,7 @@ export class OpenRouterModelWatcher {
   }
 
   /**
-   * Creates a new instance of the OpenRouterModelWatcher class.
+   * Creates a new instance of the OpenRouterAPIWatcher class.
    * @param {Database} db  - The SQLite database to use for storing model changes.
    * @param {string} [logFile]  - Path to the logfile
    */
@@ -506,14 +506,14 @@ export class OpenRouterModelWatcher {
   }
 
   /**
-   * Runs the OpenRouterModelWatcher only once
+   * Runs the OpenRouterAPIWatcher only once
    */
   public async runOnce() {
     await this.check();
   }
 
   /**
-   * Runs the OpenRouterModelWatcher in background mode, continuously checking for model changes.
+   * Runs the OpenRouterAPIWatcher in background mode, continuously checking for model changes.
    */
   public async runBackgroundMode() {
     this.log("watcher running in background mode");
@@ -524,7 +524,7 @@ export class OpenRouterModelWatcher {
   }
 
   /**
-   * Runs the OpenRouterModelWatcher in query mode, displaying the most recent model changes.
+   * Runs the OpenRouterAPIWatcher in query mode, displaying the most recent model changes.
    * @param n - The maximum number of changes to display.
    */
   public async runQueryMode(n: number = 10) {
@@ -550,8 +550,8 @@ export class OpenRouterModelWatcher {
 }
 
 if (import.meta.main) {
-  const logFile = import.meta.env.WATCHOR_LOG_PATH ?? "watch-or.log";
-  const databaseFile = import.meta.env.WATCHOR_DB_PATH ?? "watch-or.db";
+  const logFile = import.meta.env.ORW_LOG_PATH ?? "orw.log";
+  const databaseFile = import.meta.env.ORW_DB_PATH ?? "orw.db";
 
   // Usage:
   if (Bun.argv.includes("--query")) {
@@ -561,19 +561,19 @@ if (import.meta.main) {
     }
     const n = parseInt(Bun.argv[Bun.argv.indexOf("--query") + 1] || "10", 10);
     const db = new Database(databaseFile);
-    const watcher = new OpenRouterModelWatcher(db);
+    const watcher = new OpenRouterAPIWatcher(db);
     watcher.runQueryMode(n);
     db.close();
     process.exit(0);
   } else if (Bun.argv.includes("--once")) {
     const db = new Database(databaseFile);
-    const watcher = new OpenRouterModelWatcher(db, logFile);
+    const watcher = new OpenRouterAPIWatcher(db, logFile);
     watcher.runOnce();
     db.close();
     process.exit(0);
   } else {
     const db = new Database(databaseFile);
-    const watcher = new OpenRouterModelWatcher(db, logFile);
+    const watcher = new OpenRouterAPIWatcher(db, logFile);
     const server = createServer(watcher);
     watcher.runBackgroundMode();
     // db.close(); // Don't close the database here, as the background mode runs indefinitely

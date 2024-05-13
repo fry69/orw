@@ -82,7 +82,7 @@ export const NavBar: React.FC = () => {
         </li>
         <li>
           <a
-            href="https://github.com/fry69/watch-or"
+            href="https://github.com/fry69/orw"
             target="_blank"
             rel="noopener noreferrer"
             className="button-link"

@@ -1,11 +1,11 @@
-// watch-or.test.ts
+// orw.test.ts
 import { describe, beforeEach, afterEach, test, expect, jest } from "bun:test";
-import { OpenRouterModelWatcher } from "./watch-or";
+import { OpenRouterAPIWatcher } from "./orw";
 import { Database } from "bun:sqlite";
 import type { Model, ModelDiff } from "./global";
 
-describe("OpenRouterModelWatcher", () => {
-  let watcher: OpenRouterModelWatcher;
+describe("OpenRouterAPIWatcher", () => {
+  let watcher: OpenRouterAPIWatcher;
   let db: Database;
 
   beforeEach(() => {
@@ -13,7 +13,7 @@ describe("OpenRouterModelWatcher", () => {
     console.log = jest.fn();
     console.error = jest.fn();
     db = new Database(":memory:");
-    watcher = new OpenRouterModelWatcher(db);
+    watcher = new OpenRouterAPIWatcher(db);
   });
 
   afterEach(() => {

@@ -1,5 +1,5 @@
 // server.ts
-import { OpenRouterModelWatcher, isDevelopment } from "./watch-or";
+import { OpenRouterAPIWatcher, isDevelopment } from "./orw";
 import path from "node:path";
 import fs from "node:fs";
 import { gzipSync } from "node:zlib";
@@ -13,10 +13,10 @@ import type {
 } from "./global";
 import RSS from "rss";
 
-export const createServer = (watcher: OpenRouterModelWatcher) => {
-  const cacheDir = import.meta.env.WATCHOR_CACHE_DIR ?? path.join(".", "cache");
-  const clientDistDir = import.meta.env.WATCHOR_CLIENT_PATH ?? path.join(".", "dist");
-  const googleTokenFile = import.meta.env.WATCHOR_GOOGLE;
+export const createServer = (watcher: OpenRouterAPIWatcher) => {
+  const cacheDir = import.meta.env.ORW_CACHE_DIR ?? path.join(".", "cache");
+  const clientDistDir = import.meta.env.ORW_CLIENT_PATH ?? path.join(".", "dist");
+  const googleTokenFile = import.meta.env.ORW_GOOGLE;
 
   // Create the cache directory if it doesn't exist
   if (!fs.existsSync(cacheDir)) {
@@ -218,8 +218,8 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
 
   const server = Bun.serve({
     development: isDevelopment,
-    port: import.meta.env.WATCHOR_PORT ?? 0,
-    hostname: import.meta.env.WATCHOR_HOSTNAME ?? "0.0.0.0",
+    port: import.meta.env.ORW_PORT ?? 0,
+    hostname: import.meta.env.ORW_HOSTNAME ?? "0.0.0.0",
 
     fetch(request) {
       const url = new URL(request.url);
@@ -288,6 +288,6 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
     },
   });
 
-  const publicURL = import.meta.env.WATCHOR_URL ?? server.url.toString();
+  const publicURL = import.meta.env.ORW_URL ?? server.url.toString();
   watcher.log(`Webinterface running at URL ${publicURL}`);
 };

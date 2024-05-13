@@ -1,4 +1,4 @@
-# watch-or: OpenRouter API Watcher
+# orw: OpenRouter API Watcher
 
 The OpenRouter API Watcher is a tool that monitors changes in OpenRouter models and stores those changes in a SQLite database. It queries the model list via the API every hour and includes a simple web interface for viewing the changes.
 
@@ -23,7 +23,7 @@ The tool can be run in three different modes:
 1. **Background Mode**: To run the watcher in the background, use the following command:
 
    ```bash
-   bun run watch-or.ts
+   bun run orw.ts
    ```
 
    The watcher will continuously monitor the OpenRouter API and store any changes in the database.
@@ -31,7 +31,7 @@ The tool can be run in three different modes:
 2. **Query Mode**: To view the most recent changes, use the following command:
 
    ```bash
-   bun run watch-or.ts --query [number]
+   bun run orw.ts --query [number]
    ```
 
    Replace `[number]` with the maximum number of changes you want to display (default is 10).
@@ -39,7 +39,7 @@ The tool can be run in three different modes:
 3. **One-Time Mode**: To run the watcher just once, use the following command:
 
    ```bash
-   bun run watch-or.ts --once
+   bun run orw.ts --once
    ```
 
    This will perform a single check and update the database if any changes are detected.

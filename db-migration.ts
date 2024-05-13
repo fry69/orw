@@ -1,8 +1,8 @@
 import { Database } from "bun:sqlite";
 import migrations from "./migrations/migrations";
 
-const databaseFile = import.meta.env.WATCHOR_DB_PATH ?? "watch-or.db";
-// const databaseFile = "watch-or.db";
+const databaseFile = import.meta.env.ORW_DB_PATH ?? "orw.db";
+// const databaseFile = "orw.db";
 
 export function runMigrations(db: Database) {
   let currentVersion = getCurrentVersion(db);
