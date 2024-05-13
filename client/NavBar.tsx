@@ -63,30 +63,22 @@ export const NavBar: React.FC = () => {
             <img className="image-link" src="/rss.svg" alt="RSS Feeed" width="16" height="16" />
           </a>
         </li>
+        <li className="info-container">
+          Recorded changes:
+          <b className="timestamp">{globalState.status.dbChangesCount}</b>
+        </li>
         <li className="dynamic-element">{globalState.navBarDynamicElement}</li>
         <li className="info-container">
-          <span>
-            (<NavLink to="/removed">removed</NavLink>) Models:
-          </span>
-          <span className="timestamp">
-            <b>
-              ({globalState.status.dbRemovedModelCount}) {globalState.status.dbModelCount}
-            </b>
-          </span>
-          Changes:
-          <span className="timestamp">
-            <b>{globalState.status.dbChangesCount}</b>
-          </span>
+          Active models:
+          <b className="timestamp">{globalState.status.dbModelCount}</b>
+          Removed models:
+          <b className="timestamp">{globalState.status.dbRemovedModelCount}</b>
         </li>
         <li className="info-container">
           DB last change:
-          <span className="timestamp">
-            <b>{dbLastChangeDuration}</b>
-          </span>
+          <b className="timestamp">{dbLastChangeDuration}</b>
           API last check:
-          <span className="timestamp">
-            <b>{apiLastCheckDuration}</b>
-          </span>
+          <b className="timestamp">{apiLastCheckDuration}</b>
         </li>
         <li>
           <a
@@ -95,7 +87,13 @@ export const NavBar: React.FC = () => {
             rel="noopener noreferrer"
             className="button-link"
           >
-            <img className="image-link" src="/github.svg" alt="GitHub repository" width="32" height="32" />
+            <img
+              className="image-link"
+              src="/github.svg"
+              alt="GitHub repository"
+              width="32"
+              height="32"
+            />
           </a>
         </li>
       </ul>
