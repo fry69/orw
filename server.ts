@@ -245,12 +245,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
         case url.pathname === "/api/changes":
           return cacheAndServeContent("changes.json", generateChanges, request);
 
-        case url.pathname === "/feed":
-        case url.pathname === "/feed.xml":
-        case url.pathname === "/feed/rss.xml":
         case url.pathname === "/rss":
-        case url.pathname === "/rss/feed":
-        case url.pathname === "/rss.xml":
           return new Response(generateRSSFeedXML(), {
             headers: {
               "Content-Type": "application/rss+xml",
