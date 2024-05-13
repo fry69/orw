@@ -136,14 +136,14 @@ export const ModelDetail: React.FC = () => {
   const RequestPrice = () => {
     if (parseFloat(model.pricing.request) > 0) {
       return <><br />
-      Requests: <b>{calcCostPerThousand(model.pricing.request, "request")}</b></>;
+      Request: <b>{calcCostPerThousand(model.pricing.request, "requests")}</b></>;
     }
   };
 
   const ImagePrice = () => {
     if (parseFloat(model.pricing.image) > 0) {
       return <><br />
-      Requests: <b>{calcCostPerThousand(model.pricing.request, "image")}</b></>;
+      Image: <b>{calcCostPerThousand(model.pricing.image, "images")}</b></>;
     }
   };
 
