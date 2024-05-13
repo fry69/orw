@@ -236,13 +236,15 @@ export const createServer = (watcher: OpenRouterAPIWatcher) => {
 
         case url.pathname === "/api/model":
           const id = url.searchParams.get("id");
-          const model = watcher.getLastModelList.find((m) => m.id === id);
-          if (id && model) {
-            return cacheAndServeContent(
-              `model-${btoa(id)}.json`,
-              () => generateModel(id, model),
-              request
-            );
+          if (id && id.length < 256 && /^[a-zA-Z0-9\/\-]+$/.test(id)) {
+            const model = watcher.getLastModelList.find((m) => m.id === id);
+            if (model) {
+              return cacheAndServeContent(
+                `model-${btoa(id)}.json`,
+                () => generateModel(id, model),
+                request
+              );
+            }
           }
           return error404("", "Model not found");
 
