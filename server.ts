@@ -250,7 +250,12 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
         case url.pathname === "/feed/rss.xml":
         case url.pathname === "/rss":
         case url.pathname === "/rss.xml":
-          return cacheAndServeContent("rss.xml", generateRSSFeedXML, request, true);
+          return new Response(generateRSSFeedXML(), {
+            headers: {
+              "Content-Type": "application/rss+xml",
+            },
+          });
+        // return cacheAndServeContent("rss.xml", generateRSSFeedXML, request, true);
 
         case url.pathname === "/favicon.ico":
         case url.pathname === "/favicon.svg":
