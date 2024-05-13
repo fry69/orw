@@ -1,0 +1,12 @@
+[Unit]
+Description=OpenRouter API Watcher
+
+[Install]
+WantedBy=default.target
+
+[Service]
+ExecStart=/usr/bin/bash ./tools/start.sh
+WorkingDirectory=/home/orw/watch-or
+PrivateTmp=1
+Restart=always
+RestartSec=60
