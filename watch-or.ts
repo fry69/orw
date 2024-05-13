@@ -331,15 +331,14 @@ export class OpenRouterModelWatcher {
    */
   private transformChangesRow = (row: any): ModelDiff => {
     const changes = JSON.parse(row.changes);
-    if (changes.description)
-      if (row.type === "changed") {
-        return {
-          id: row.id,
-          type: row.type,
-          changes,
-          timestamp: new Date(row.timestamp),
-        };
-      }
+    if (row.type === "changed") {
+      return {
+        id: row.id,
+        type: row.type,
+        changes,
+        timestamp: new Date(row.timestamp),
+      };
+    }
     return {
       id: row.id,
       type: row.type,

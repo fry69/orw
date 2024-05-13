@@ -33,20 +33,33 @@ export const dateStringDuration = (timestamp: string) => (
   </>
 );
 
-export const calcCost = (floatString: string): string => {
-  const cost = Math.round(parseFloat(floatString) * 1000000 * 100) / 100;
-  return cost > 0 ? cost.toFixed(2) : "[free]";
+export const calcCost = (floatString: string, factor: number, unit?: string): string => {
+  const cost = Math.round(parseFloat(floatString) * factor * 100) / 100;
+  return cost > 0 ? "$" + cost.toFixed(2) + " " + unit : "[free]";
 };
+
+export const calcCostPerMillion = (floatString: string, unit?: string): string =>
+  calcCost(floatString, 1_000_000, unit ? "per million " + unit: "");
+
+export const calcCostPerThousand = (floatString: string, unit?: string): string =>
+  calcCost(floatString, 1_000, unit ? "per thousand " + unit : "");
 
 export const changeSnippet = (change: ModelDiffClient) => {
   if (change.changes) {
     return (
       <>
         {Object.entries(change.changes).map(([key, { old, new: newValue }]) => {
-          if (key.includes("pricing")) {
-            old = calcCost(old);
-            newValue = calcCost(newValue);
+          if (key === "pricing.prompt" || key === "pricing.completion") {
+            old = calcCostPerMillion(old, "tokens");
+            newValue = calcCostPerMillion(newValue, "tokens");
+          } else if (key === "pricing.request") {
+            old = calcCostPerThousand(old, "requests");
+            newValue = calcCostPerThousand(newValue, "requests");
+          } else if (key === "pricing.image") {
+            old = calcCostPerThousand(old, "images");
+            newValue = calcCostPerThousand(newValue, "images");
           }
+
           if (key.includes("description")) {
             return (
               <div key={key}>

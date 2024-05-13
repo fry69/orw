@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DataTable, { type TableColumn } from "react-data-table-component";
 import type { Model } from "../global";
 import { GlobalContext } from "./GlobalState";
-import { calcCost, durationAgo } from "./utils";
+import { calcCostPerMillion, durationAgo } from "./utils";
 import { filterComponentWrapper } from "./FilterComponent";
 
 export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
@@ -119,7 +119,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
       name: "Price/MT",
       selector: (row) => row.pricing.completion,
       format: (row) => {
-        return row.id === "openrouter/auto" ? "[N/A]" : calcCost(row.pricing.completion);
+        return row.id === "openrouter/auto" ? "[N/A]" : calcCostPerMillion(row.pricing.completion);
       },
       sortable: true,
       right: true,

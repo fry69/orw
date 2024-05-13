@@ -249,6 +249,7 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
         case url.pathname === "/feed.xml":
         case url.pathname === "/feed/rss.xml":
         case url.pathname === "/rss":
+        case url.pathname === "/rss/feed":
         case url.pathname === "/rss.xml":
           return new Response(generateRSSFeedXML(), {
             headers: {

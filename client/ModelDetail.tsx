@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import type { Model } from "../global";
 import { GlobalContext } from "./GlobalState";
 import type { ModelDiffClient } from "./client";
-import { calcCost, changeSnippet, dateStringDuration } from "./utils";
+import { calcCostPerMillion, calcCostPerThousand, changeSnippet, dateStringDuration } from "./utils";
 import Error from "./Error";
 
 export const ModelDetail: React.FC = () => {
@@ -102,9 +102,10 @@ export const ModelDetail: React.FC = () => {
       return (
         <>
           <p style={{ fontSize: "large" }}>
-            Input: <b>$ {calcCost(model.pricing.prompt)}</b> per million tokens
-            <br />
-            Output: <b>$ {calcCost(model.pricing.completion)}</b> per million tokens
+            {InputPrice()}
+            {OutputPrice()}
+            {RequestPrice()}
+            {ImagePrice()}
           </p>
         </>
       );
@@ -117,6 +118,35 @@ export const ModelDetail: React.FC = () => {
       </>
     );
   };
+
+  const InputPrice = () => {
+    if (parseFloat(model.pricing.prompt) > 0) {
+      return <>
+      Input: <b>{calcCostPerMillion(model.pricing.prompt, "tokens")}</b></>;
+    }
+  };
+
+  const OutputPrice = () => {
+    if (parseFloat(model.pricing.completion) > 0) {
+      return <><br />
+      Output: <b>{calcCostPerMillion(model.pricing.completion, "tokens")}</b></>;
+    }
+  };
+
+  const RequestPrice = () => {
+    if (parseFloat(model.pricing.request) > 0) {
+      return <><br />
+      Requests: <b>{calcCostPerThousand(model.pricing.request, "request")}</b></>;
+    }
+  };
+
+  const ImagePrice = () => {
+    if (parseFloat(model.pricing.image) > 0) {
+      return <><br />
+      Requests: <b>{calcCostPerThousand(model.pricing.request, "image")}</b></>;
+    }
+  };
+
 
   return (
     <div className="model-details">
