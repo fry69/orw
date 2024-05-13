@@ -99,6 +99,17 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
 
         if (compressedModTime >= uncompressedModTime) {
           // only serve compressed files that are at least as new as the original
+
+          // RSS needs a special content type
+          if (gzipFilePath.endsWith("rss.xml.gz")) {
+            return new Response(Bun.file(gzipFilePath), {
+              headers: {
+                "Content-Encoding": "gzip",
+                "Content-Type": "application/rss+xml",
+              },
+            });
+          }
+
           return new Response(Bun.file(gzipFilePath), {
             headers: {
               "Content-Encoding": "gzip",
@@ -107,6 +118,14 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
           });
         }
         // fall through to serve uncompressed (or compressed by default) file
+      }
+      // RSS still needs a special content type
+      if (filePath.endsWith("rss.xml")) {
+        return new Response(Bun.file(filePath), {
+          headers: {
+            "Content-Type": "application/rss+xml",
+          },
+        });
       }
       return new Response(Bun.file(filePath));
     } else {
@@ -135,7 +154,21 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
     });
 
     const changesRSS = watcher.loadChanges(50);
+
+    const replaceDescription = (obj: any) => {
+      for (const key in obj) {
+        if (key === "description") {
+          obj[key] = "[...]";
+        } else if (typeof obj[key] === "object" && obj[key] !== null) {
+          // Recursively traverse nested objects
+          replaceDescription(obj[key]);
+        }
+      }
+    };
+
     for (const change of changesRSS) {
+      // Replace description field with [...] to not upset some RSS readers
+      replaceDescription(change);
       feed.item({
         title: `Model ${change.id} ${change.type}`,
         description: `<code style="display: block; white-space: pre-wrap; font-family: monospace;">${JSON.stringify(
@@ -212,7 +245,11 @@ export const createServer = (watcher: OpenRouterModelWatcher) => {
         case url.pathname === "/api/changes":
           return cacheAndServeContent("changes.json", generateChanges, request);
 
+        case url.pathname === "/feed":
+        case url.pathname === "/feed.xml":
+        case url.pathname === "/feed/rss.xml":
         case url.pathname === "/rss":
+        case url.pathname === "/rss.xml":
           return cacheAndServeContent("rss.xml", generateRSSFeedXML, request, true);
 
         case url.pathname === "/favicon.ico":

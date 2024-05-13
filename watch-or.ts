@@ -330,21 +330,22 @@ export class OpenRouterModelWatcher {
    * @returns {ModelDiff}
    */
   private transformChangesRow = (row: any): ModelDiff => {
-    if (row.type === "changed") {
-      return {
-        id: row.id,
-        type: row.type,
-        changes: JSON.parse(row.changes),
-        timestamp: new Date(row.timestamp),
-      };
-    } else {
-      return {
-        id: row.id,
-        type: row.type,
-        model: JSON.parse(row.changes),
-        timestamp: new Date(row.timestamp),
-      };
-    }
+    const changes = JSON.parse(row.changes);
+    if (changes.description)
+      if (row.type === "changed") {
+        return {
+          id: row.id,
+          type: row.type,
+          changes,
+          timestamp: new Date(row.timestamp),
+        };
+      }
+    return {
+      id: row.id,
+      type: row.type,
+      model: changes,
+      timestamp: new Date(row.timestamp),
+    };
   };
 
   /**
