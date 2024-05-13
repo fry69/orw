@@ -3,15 +3,15 @@
   "module": "watch-or.ts",
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build --mode production",
     "watch": "vite build --watch --mode development",
     "web": "bun run watch-or.ts",
     "query": "bun run watch-or.ts --query",
     "once": "bun run watch-or.ts --once",
     "gzip": "rm ./static/*.gz && gzip --best -k ./static/*",
-    "dist-clean": "rm *.log *.db *.sql && rm -fR dist",
+    "dist-clean": "rm -fR dist cache",
     "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\"",
-    "screenshots":  "cd screenshots && for i in *.png; do zopflipng -y $i $i; done"
+    "screenshots":  "cd screenshots && for i in *.png; do zopflipng -y $i $i; done && cd .."
   },
   "devDependencies": {
     "@types/bun": "latest",
