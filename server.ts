@@ -334,6 +334,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
             request,
           });
 
+        case url.pathname === "/robots.txt":
+          return serveStaticFile({ filePath: "static/robots.txt", request });
+
         case url.pathname === "/favicon.ico":
         case url.pathname === "/favicon.svg":
           return serveStaticFile({ filePath: "static/favicon.svg", request });
