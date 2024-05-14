@@ -320,9 +320,13 @@ export class OpenRouterAPIWatcher {
    */
   loadRemovedModelList(): Model[] {
     const removedModels: Model[] = this.db
-      .query("SELECT data FROM removed_models ORDER BY timestamp DESC")
+      .query("SELECT timestamp, data FROM removed_models ORDER BY timestamp DESC")
       .all()
-      .map((row: any) => JSON.parse(row.data));
+      .map((row: any) => {
+        const model: Model = JSON.parse(row.data);
+        model["removed_at"] = row.timestamp;
+        return model;
+      });
     this.loadDBState();
     return removedModels;
   }

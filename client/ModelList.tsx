@@ -102,9 +102,23 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
       grow: 3,
     },
     {
-      name: "Added",
-      selector: (row) => row.added_at ?? "1970-01-01T00:00:00Z",
-      format: (row) => (row.added_at ? durationAgo(row.added_at) : ""),
+      name: props.removed ? "Removed" : "Added",
+      selector: (row) => {
+        if (row.removed_at) {
+          return row.removed_at;
+        } else if (row.added_at) {
+          return row.added_at;
+        }
+        return row.added_at ?? "1970-01-01T00:00:00Z";
+      },
+      format: (row) => {
+        if (row.removed_at) {
+          return durationAgo(row.removed_at);
+        } else if (row.added_at) {
+          return durationAgo(row.added_at);
+        }
+        return "";
+      },
       sortable: true,
       hide: 959,
     },
