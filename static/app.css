@@ -97,7 +97,6 @@ nav a.rss-link {
   transform: scale(1.2);
 }
 
-
 nav li.dynamic-element {
   margin-left: auto;
 }
@@ -113,6 +112,17 @@ nav li.info-container {
 
 nav li .timestamp {
   color: skyblue;
+}
+
+nav li.info-container.gridgap {
+  column-gap: 1em;
+}
+
+nav li .rowspan {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: medium;
 }
 
 nav a.button-link:hover {
@@ -169,7 +179,6 @@ pre {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: "";
-
 }
 
 .change-model-name {

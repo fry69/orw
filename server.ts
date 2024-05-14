@@ -41,6 +41,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
       dbModelCount: watcher.getDBModelCount,
       dbChangesCount: watcher.getDBChangesCount,
       dbRemovedModelCount: watcher.getDBRemovedModelCount,
+      dbfirstChangeTimestamp: watcher.getDBFirstChangeTimestamp,
     },
     data: data,
   });

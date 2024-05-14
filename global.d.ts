@@ -55,6 +55,7 @@ export type ServerStatus = {
   dbModelCount: number;
   dbChangesCount: number;
   dbRemovedModelCount: number;
+  dbfirstChangeTimestamp: string;
 };
 
 /**
@@ -114,4 +115,9 @@ export interface Status {
    * Number of removed models in database
    */
   dbRemovedModelCount: number;
+
+  /**
+   * Timestamp of the first change in the database (aka 'birthday')
+   */
+  dbFirstChangeTimestamp: string;
 }

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { GlobalContext } from "./GlobalState";
 import { durationAgo } from "./utils";
+import { DateTime } from "luxon";
 
 export const NavBar: React.FC = () => {
   const { globalState, setGlobalState } = useContext(GlobalContext);
@@ -63,9 +64,12 @@ export const NavBar: React.FC = () => {
             <img className="image-link" src="/rss.svg" alt="RSS Feeed" width="16" height="16" />
           </a>
         </li>
-        <li className="info-container">
+        <li className="info-container gridgap">
           Recorded changes:
-          <b className="timestamp">{globalState.status.dbChangesCount}</b>
+          <b className="timestamp rowspan">{globalState.status.dbChangesCount}</b>
+          <span>
+            (since {DateTime.fromISO(globalState.status.dbfirstChangeTimestamp).toISODate()})
+          </span>
         </li>
         <li className="dynamic-element">{globalState.navBarDynamicElement}</li>
         <li className="info-container">

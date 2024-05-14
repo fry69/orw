@@ -75,6 +75,11 @@ export class OpenRouterAPIWatcher {
      * Number of removed models in database
      */
     dbRemovedModelCount: 0,
+
+    /**
+     * Timestamp of the first change in the database (aka 'birthday')
+     */
+    dbFirstChangeTimestamp: "",
   };
 
   /**
@@ -111,6 +116,13 @@ export class OpenRouterAPIWatcher {
    */
   get getDBRemovedModelCount(): number {
     return this.status.dbRemovedModelCount;
+  }
+  /**
+   * Get the timestamp of the first change in the database
+   * @returns {string} - Timestamp of the first change in database
+   */
+  get getDBFirstChangeTimestamp(): string {
+    return this.status.dbFirstChangeTimestamp;
   }
 
   /**
@@ -340,6 +352,11 @@ export class OpenRouterAPIWatcher {
     result = this.db.query("SELECT last_check FROM last_api_check WHERE id = 1").get();
     if (result) {
       this.status.apiLastCheck = new Date(result.last_check) ?? new Date(0);
+    }
+
+    result = this.db.query("SELECT MIN(timestamp) as first_change_timestamp FROM changes").get();
+    if (result) {
+      this.status.dbFirstChangeTimestamp = result.first_change_timestamp;
     }
 
     result = this.db.query("SELECT count(id) as changesCount FROM changes").get();
