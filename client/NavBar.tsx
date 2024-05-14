@@ -17,7 +17,7 @@ export const NavBar: React.FC = () => {
       setApiLastCheckDuration(
         globalState.status.isDevelopment
           ? "[dev mode]"
-          : durationAgo(globalState.status.apiLastCheck)
+          : durationAgo(globalState.status.apiLastCheck, true)
       );
 
       // If last API check is longer than an hour ago, trigger an refresh
@@ -75,9 +75,9 @@ export const NavBar: React.FC = () => {
           <b className="timestamp">{globalState.status.dbRemovedModelCount}</b>
         </li>
         <li className="info-container">
-          DB last change:
+          Last DB change:
           <b className="timestamp">{dbLastChangeDuration}</b>
-          API last check:
+          Next API check:
           <b className="timestamp">{apiLastCheckDuration}</b>
         </li>
         <li>

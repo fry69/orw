@@ -1,16 +1,21 @@
-import { DateTime } from "luxon";
+import { DateTime, Duration } from "luxon";
 import { toHumanDurationExtended } from "@kitsuyui/luxon-ext";
 import type { ModelDiffClient } from "./client";
 
 export const dateString = (timestamp: string) =>
   DateTime.fromISO(timestamp).setLocale("en-us").toLocaleString(DateTime.DATETIME_MED);
 
-export const durationAgo = (timestamp: DateTime | string) => {
+export const durationAgo = (timestamp: DateTime | string, until: boolean = false) => {
   if (typeof timestamp === "string" && timestamp !== "") {
     timestamp = DateTime.fromISO(timestamp);
   }
   if (DateTime.isDateTime(timestamp)) {
-    const duration = timestamp.setLocale("en-us").diffNow();
+    let duration: Duration;
+    if (until) {
+      duration = timestamp.setLocale("en-us").plus({ hours: 1 }).diffNow();
+    } else {
+      duration = timestamp.setLocale("en-us").diffNow();
+    }
     return toHumanDurationExtended(duration, {
       human: {
         unitDisplay: "narrow",
@@ -39,7 +44,7 @@ export const calcCost = (floatString: string, factor: number, unit?: string): st
 };
 
 export const calcCostPerMillion = (floatString: string, unit?: string): string =>
-  calcCost(floatString, 1_000_000, unit ? "per million " + unit: "");
+  calcCost(floatString, 1_000_000, unit ? "per million " + unit : "");
 
 export const calcCostPerThousand = (floatString: string, unit?: string): string =>
   calcCost(floatString, 1_000, unit ? "per thousand " + unit : "");
