@@ -8,6 +8,52 @@ describe("OpenRouterAPIWatcher", () => {
   let watcher: OpenRouterAPIWatcher;
   let db: Database;
 
+  const dummyModel = {
+    id: "1",
+    name: "Model 1",
+    description: "Description 1",
+    pricing: {
+      prompt: "0.01",
+      completion: "0.02",
+      request: "0.03",
+      image: "0.04",
+    },
+    context_length: 1024,
+    architecture: {
+      modality: "text",
+      tokenizer: "gpt2",
+      instruct_type: null,
+    },
+    top_provider: {
+      max_completion_tokens: 2048,
+      is_moderated: true,
+    },
+    per_request_limits: null,
+  };
+
+  const otherModel: Model = {
+    id: "2",
+    name: "Model 2",
+    description: "Description 2",
+    pricing: {
+      prompt: "0.01",
+      completion: "0.02",
+      request: "0.03",
+      image: "0.04",
+    },
+    context_length: 1024,
+    architecture: {
+      modality: "text",
+      tokenizer: "gpt2",
+      instruct_type: null,
+    },
+    top_provider: {
+      max_completion_tokens: 2048,
+      is_moderated: true,
+    },
+    per_request_limits: null,
+  };
+
   beforeEach(() => {
     // Silence console output
     console.log = jest.fn();
@@ -21,30 +67,7 @@ describe("OpenRouterAPIWatcher", () => {
   });
 
   test("should store and load model list", () => {
-    const models: Model[] = [
-      {
-        id: "1",
-        name: "Model 1",
-        description: "Description 1",
-        pricing: {
-          prompt: "0.01",
-          completion: "0.02",
-          request: "0.03",
-          image: "0.04",
-        },
-        context_length: 1024,
-        architecture: {
-          modality: "text",
-          tokenizer: "gpt2",
-          instruct_type: null,
-        },
-        top_provider: {
-          max_completion_tokens: 2048,
-          is_moderated: true,
-        },
-        per_request_limits: null,
-      },
-    ];
+    const models: Model[] = [dummyModel];
 
     watcher.storeModelList(models, new Date());
     const loadedModels = watcher.loadLastModelList();
@@ -71,56 +94,14 @@ describe("OpenRouterAPIWatcher", () => {
   });
 
   test("should find changes between model lists", () => {
-    const oldModels: Model[] = [
-      {
-        id: "1",
-        name: "Model 1",
-        description: "Description 1",
-        pricing: {
-          prompt: "0.01",
-          completion: "0.02",
-          request: "0.03",
-          image: "0.04",
-        },
-        context_length: 1024,
-        architecture: {
-          modality: "text",
-          tokenizer: "gpt2",
-          instruct_type: null,
-        },
-        top_provider: {
-          max_completion_tokens: 2048,
-          is_moderated: true,
-        },
-        per_request_limits: null,
-      },
-    ];
+    const oldModels: Model[] = [dummyModel];
 
-    const newModels: Model[] = [
-      {
-        id: "1",
-        name: "Model 1 Updated",
-        description: "Description 1",
-        pricing: {
-          prompt: "0.01",
-          completion: "0.02",
-          request: "0.03",
-          image: "0.04",
-        },
-        context_length: 1024,
-        architecture: {
-          modality: "text",
-          tokenizer: "gpt2",
-          instruct_type: "instruct",
-        },
-        top_provider: {
-          max_completion_tokens: 2048,
-          is_moderated: false,
-        },
-        per_request_limits: null,
-      },
-    ];
+    const modifiedModel: Model = JSON.parse(JSON.stringify(dummyModel));
+    modifiedModel.name = "Model 1 Updated";
+    modifiedModel.architecture.instruct_type = "instruct";
+    modifiedModel.top_provider.is_moderated = false;
 
+    const newModels: Model[] = [modifiedModel];
     const changes = watcher.findChanges(newModels, oldModels);
 
     expect(changes).toEqual([
@@ -138,221 +119,32 @@ describe("OpenRouterAPIWatcher", () => {
   });
 
   test("should not report changes between identical model lists", () => {
-    const oldModels: Model[] = [
-      {
-        id: "1",
-        name: "Model 1",
-        description: "Description 1",
-        pricing: {
-          prompt: "0.01",
-          completion: "0.02",
-          request: "0.03",
-          image: "0.04",
-        },
-        context_length: 1024,
-        architecture: {
-          modality: "text",
-          tokenizer: "gpt2",
-          instruct_type: null,
-        },
-        top_provider: {
-          max_completion_tokens: 2048,
-          is_moderated: true,
-        },
-        per_request_limits: null,
-      },
-    ];
-
-    const newModels: Model[] = [
-      {
-        id: "1",
-        name: "Model 1",
-        description: "Description 1",
-        pricing: {
-          prompt: "0.01",
-          completion: "0.02",
-          request: "0.03",
-          image: "0.04",
-        },
-        context_length: 1024,
-        architecture: {
-          modality: "text",
-          tokenizer: "gpt2",
-          instruct_type: null,
-        },
-        top_provider: {
-          max_completion_tokens: 2048,
-          is_moderated: true,
-        },
-        per_request_limits: null,
-      },
-    ];
-
+    const oldModels: Model[] = [dummyModel];
+    const newModels: Model[] = [dummyModel];
     const changes = watcher.findChanges(newModels, oldModels);
-
     expect(changes).toEqual([]);
   });
 
   test("should detect added models", () => {
-    const oldModels: Model[] = [
-      {
-        id: "1",
-        name: "Model 1",
-        description: "Description 1",
-        pricing: {
-          prompt: "0.01",
-          completion: "0.02",
-          request: "0.03",
-          image: "0.04",
-        },
-        context_length: 1024,
-        architecture: {
-          modality: "text",
-          tokenizer: "gpt2",
-          instruct_type: null,
-        },
-        top_provider: {
-          max_completion_tokens: 2048,
-          is_moderated: true,
-        },
-        per_request_limits: null,
-      },
-    ];
+    const oldModels: Model[] = [dummyModel];
 
-    const newModels: Model[] = [
-      {
-        id: "1",
-        name: "Model 1",
-        description: "Description 1",
-        pricing: {
-          prompt: "0.01",
-          completion: "0.02",
-          request: "0.03",
-          image: "0.04",
-        },
-        context_length: 1024,
-        architecture: {
-          modality: "text",
-          tokenizer: "gpt2",
-          instruct_type: null,
-        },
-        top_provider: {
-          max_completion_tokens: 2048,
-          is_moderated: true,
-        },
-        per_request_limits: null,
-      },
-      {
-        id: "2",
-        name: "Model 2",
-        description: "Description 2",
-        pricing: {
-          prompt: "0.01",
-          completion: "0.02",
-          request: "0.03",
-          image: "0.04",
-        },
-        context_length: 1024,
-        architecture: {
-          modality: "text",
-          tokenizer: "gpt2",
-          instruct_type: null,
-        },
-        top_provider: {
-          max_completion_tokens: 2048,
-          is_moderated: true,
-        },
-        per_request_limits: null,
-      },
-    ];
-
+    const newModels: Model[] = [dummyModel, otherModel];
     const changes = watcher.findChanges(newModels, oldModels);
 
     expect(changes).toEqual([
       {
         id: "2",
         type: "added",
-        model: newModels[1],
+        model: otherModel,
         timestamp: expect.any(Date),
       },
     ]);
   });
 
   test("should detect removed models", () => {
-    const oldModels: Model[] = [
-      {
-        id: "1",
-        name: "Model 1",
-        description: "Description 1",
-        pricing: {
-          prompt: "0.01",
-          completion: "0.02",
-          request: "0.03",
-          image: "0.04",
-        },
-        context_length: 1024,
-        architecture: {
-          modality: "text",
-          tokenizer: "gpt2",
-          instruct_type: null,
-        },
-        top_provider: {
-          max_completion_tokens: 2048,
-          is_moderated: true,
-        },
-        per_request_limits: null,
-      },
-      {
-        id: "2",
-        name: "Model 2",
-        description: "Description 2",
-        pricing: {
-          prompt: "0.01",
-          completion: "0.02",
-          request: "0.03",
-          image: "0.04",
-        },
-        context_length: 1024,
-        architecture: {
-          modality: "text",
-          tokenizer: "gpt2",
-          instruct_type: null,
-        },
-        top_provider: {
-          max_completion_tokens: 2048,
-          is_moderated: true,
-        },
-        per_request_limits: null,
-      },
-    ];
-
-    const newModels: Model[] = [
-      {
-        id: "1",
-        name: "Model 1",
-        description: "Description 1",
-        pricing: {
-          prompt: "0.01",
-          completion: "0.02",
-          request: "0.03",
-          image: "0.04",
-        },
-        context_length: 1024,
-        architecture: {
-          modality: "text",
-          tokenizer: "gpt2",
-          instruct_type: null,
-        },
-        top_provider: {
-          max_completion_tokens: 2048,
-          is_moderated: true,
-        },
-        per_request_limits: null,
-      },
-    ];
-
+    const oldModels: Model[] = [dummyModel, otherModel];
+    const newModels: Model[] = [dummyModel];
     const changes = watcher.findChanges(newModels, oldModels);
-
     expect(changes).toEqual([
       {
         id: "2",
@@ -361,5 +153,23 @@ describe("OpenRouterAPIWatcher", () => {
         timestamp: expect.any(Date),
       },
     ]);
+  });
+
+  test("should load the most recent model list from the database", async () => {
+    const oldModels: Model[] = [dummyModel];
+    const date1 = new Date(2023, 4, 1);
+    watcher.storeModelList(oldModels, date1);
+
+    const newModels: Model[] = [dummyModel, otherModel];
+    const date2 = new Date(2023, 4, 2);
+    watcher.storeModelList(newModels, date2);
+
+    const loadedModels = watcher.loadLastModelList();
+    expect(loadedModels).toEqual([dummyModel, otherModel]);
+  });
+
+  test("should handle an empty database", () => {
+    const loadedModels = watcher.loadLastModelList();
+    expect(loadedModels).toEqual([]);
   });
 });

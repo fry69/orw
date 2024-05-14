@@ -7,13 +7,16 @@ import { runMigrations } from "./db-migration";
 import { createServer } from "./server";
 
 export const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
+const fixedModelFile = import.meta.env.ORW_MODEL_FILE || "./models.json";
 
-let fixedModelList: Model[];
+let fixedModelList: Model[] = [];
 if (isDevelopment) {
-  // Don't query the acutal API during development, use a fixed model list instead
+  // Don't query the acutal API during development, use a fixed model list instead if present
   // generate a current model list snapshot with
   // `curl https://openrouter.ai/api/v1/models > models.json`
-  fixedModelList = (await import("./models.json")).data;
+  if (await Bun.file(fixedModelFile).exists()) {
+    fixedModelList = JSON.parse(await Bun.file(fixedModelFile).text()).data;
+  }
   console.log("watcher initializing in development mode");
 }
 
