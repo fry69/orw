@@ -7,7 +7,12 @@ import { createGzip } from "node:zlib";
 import type { APIResponse, Model, ResponseDataSig } from "./global";
 import RSS from "rss";
 
-export const createServer = async (watcher: OpenRouterAPIWatcher) => {
+/**
+ * Creates a new server instance and starts watching the OpenRouter API.
+ * @param {OpenRouterAPIWatcher} watcher - The OpenRouterAPIWatcher instance to use.
+ * @returns {Promise<void>}
+ */
+export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void> => {
   const cacheDir = import.meta.env.ORW_CACHE_DIR ?? path.join(".", "cache");
   const clientDistDir = import.meta.env.ORW_CLIENT_PATH ?? path.join(".", "dist");
   const googleTokenFile = import.meta.env.ORW_GOOGLE;
@@ -22,6 +27,12 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
     }
   }
 
+  /**
+   * Creates an API response object with status information.
+   * @template T - The type of the response data.
+   * @param {T} data - The response data.
+   * @returns {APIResponse<T>} - The API response object.
+   */
   const apiRespone = <T extends ResponseDataSig>(data: T): APIResponse<T> => ({
     status: {
       isDevelopment,
@@ -34,16 +45,40 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
     data: data,
   });
 
-  const error404 = (filePath: string, message = "File not found") => {
+  /**
+   * Creates a 404 error response.
+   * @param {string} filePath - The file path that was not found.
+   * @param {string} [message] - The error message.
+   * @returns {Response} - The 404 error response.
+   */
+  const error404 = (filePath: string, message: string = "File not found"): Response => {
     console.log(`Error 404: ${filePath} ${message}`);
     return new Response(message, { status: 404 });
   };
 
-  const cacheAndCompressFile = async (
-    cacheFilePath: string,
-    content: string,
-    gzipFilePath: string
-  ) => {
+  /**
+   * Options for caching and compressing a file.
+   * @interface cacheAndCompressFileOptions
+   * @property {string} cacheFilePath - The path to the cached file.
+   * @property {string} gzipFilePath - The path to the gzipped file.
+   * @property {string} content - The content to be cached and compressed.
+   */
+  interface cacheAndCompressFileOptions {
+    cacheFilePath: string;
+    gzipFilePath: string;
+    content: string;
+  }
+
+  /**
+   * Caches and compresses a file.
+   * @param {cacheAndCompressFileOptions} options - The options for caching and compressing the file.
+   * @returns {Promise<void>}
+   */
+  const cacheAndCompressFile = async ({
+    cacheFilePath,
+    gzipFilePath,
+    content,
+  }: cacheAndCompressFileOptions): Promise<void> => {
     const cacheFile = fs.createWriteStream(cacheFilePath);
     const gzipFile = fs.createWriteStream(gzipFilePath);
 
@@ -51,7 +86,13 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
     await pipeline(content, createGzip(), gzipFile);
   };
 
-  const checkFileFreshness = async (filePath: string, lastModified: Date) => {
+  /**
+   * Checks if a file is fresh (i.e., its modification time is greater than or equal to the given last modified time).
+   * @param {string} filePath - The path to the file.
+   * @param {Date} lastModified - The last modified time to compare against.
+   * @returns {Promise<boolean>} - True if the file is fresh, false otherwise.
+   */
+  const checkFileFreshness = async (filePath: string, lastModified: Date): Promise<boolean> => {
     try {
       const stats = await fs.promises.stat(filePath);
       return stats.mtime >= lastModified;
@@ -63,25 +104,47 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
     }
   };
 
-  const cacheAndServeContent = async (
-    fileName: string,
-    contentType: string,
-    contentGenerator: () => string,
-    request: Request,
-    dbOnlyCheck: boolean = false
-  ): Promise<Response> => {
+  /**
+   * Options for caching and serving content.
+   * @interface cacheAndServeContentOptions
+   * @property {string} fileName - The name of the file to cache.
+   * @property {string} contentType - The content type of the file.
+   * @property {() => string} contentGenerator - A function that generates the content to be cached.
+   * @property {boolean} [dbOnlyCheck] - Whether to check the database last change time instead of the API last check time.
+   * @property {Request} request - The incoming request.
+   */
+  interface cacheAndServeContentOptions {
+    fileName: string;
+    contentType: string;
+    contentGenerator: () => string;
+    dbOnlyCheck?: boolean;
+    request: Request;
+  }
+
+  /**
+   * Caches and serves content, using cached files if they are fresh.
+   * @param {cacheAndServeContentOptions} options - The options for caching and serving the content.
+   * @returns {Promise<Response>} - The response to be sent to the client.
+   */
+  const cacheAndServeContent = async ({
+    fileName,
+    contentType,
+    contentGenerator,
+    dbOnlyCheck = false,
+    request,
+  }: cacheAndServeContentOptions): Promise<Response> => {
     const cacheFilePath = path.join(cacheDir, fileName);
-    const cacheFilePathGz = `${cacheFilePath}.gz`;
+    const gzipFilePath = `${cacheFilePath}.gz`;
 
     const lastModified = dbOnlyCheck ? watcher.getDBLastChange : watcher.getAPILastCheck;
 
     if (
       !(await checkFileFreshness(cacheFilePath, lastModified)) ||
-      !(await checkFileFreshness(cacheFilePathGz, lastModified))
+      !(await checkFileFreshness(gzipFilePath, lastModified))
     ) {
       const content = contentGenerator();
       // create cache files in background while serving content direcly
-      cacheAndCompressFile(cacheFilePath, content, cacheFilePathGz);
+      cacheAndCompressFile({ cacheFilePath, content, gzipFilePath });
       return new Response(content, {
         headers: {
           "content-type": contentType,
@@ -90,10 +153,32 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
     }
 
     // Serve the cached file
-    return serveStaticFile(cacheFilePath, request, contentType);
+    return serveStaticFile({ filePath: cacheFilePath, contentType, request });
   };
 
-  const serveStaticFile = async (filePath: string, request: Request, contentType?: string) => {
+  /**
+   * Options for serving a static file.
+   * @interface serveStaticFileOptions
+   * @property {string} filePath - The path to the file to serve.
+   * @property {string} [contentType] - The content type of the file.
+   * @property {Request} request - The incoming request.
+   */
+  interface serveStaticFileOptions {
+    filePath: string;
+    contentType?: string;
+    request: Request;
+  }
+
+  /**
+   * Serves a static file, optionally serving a gzipped version if the client accepts it.
+   * @param {serveStaticFileOptions} options - The options for serving the static file.
+   * @returns {Promise<Response>} - The response to be sent to the client.
+   */
+  const serveStaticFile = async ({
+    filePath,
+    contentType,
+    request,
+  }: serveStaticFileOptions): Promise<Response> => {
     const gzipFilePath = `${filePath}.gz`;
 
     // Check if the client accepts gzip compression
@@ -126,6 +211,10 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
     }
   };
 
+  /**
+   * Generates an RSS feed XML string.
+   * @returns {string} - The RSS feed XML.
+   */
   const generateRSSFeedXML = (): string => {
     const feed: RSS = new RSS({
       title: "OpenRouter Model Changes",
@@ -168,10 +257,22 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
     return feed.xml();
   };
 
+  /**
+   * Generates a response object with the given content.
+   * @template T - The type of the response data.
+   * @param {T} content - The response data.
+   * @returns {string} - The JSON-encoded response.
+   */
   const generateResponse = (content: ResponseDataSig): string => {
     return JSON.stringify(apiRespone(content));
   };
 
+  /**
+   * Generates a model response object with the given model and changes.
+   * @param {string} modelId - The ID of the model.
+   * @param {Model} model - The model object.
+   * @returns {string} - The JSON-encoded model response.
+   */
   const generateModelResponse = (modelId: string, model: Model): string => {
     const changes = watcher.loadChangesForModel(modelId, 50);
     return generateResponse({ model, changes });
@@ -186,74 +287,74 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
       const url = new URL(request.url);
       switch (true) {
         case url.pathname === "/api/models":
-          return cacheAndServeContent(
-            "models.json",
-            "application/json",
-            () => generateResponse(watcher.getLastModelList),
-            request
-          );
+          return cacheAndServeContent({
+            fileName: "models.json",
+            contentType: "application/json",
+            contentGenerator: () => generateResponse(watcher.getLastModelList),
+            request,
+          });
 
         case url.pathname === "/api/removed":
-          return cacheAndServeContent(
-            "removed.json",
-            "application/json",
-            () => generateResponse(watcher.loadRemovedModelList()),
-            request
-          );
+          return cacheAndServeContent({
+            fileName: "removed.json",
+            contentType: "application/json",
+            contentGenerator: () => generateResponse(watcher.loadRemovedModelList()),
+            request,
+          });
 
         case url.pathname === "/api/model":
           const id = url.searchParams.get("id");
           if (id && id.length < 256 && /^[a-zA-Z0-9\/\-]+$/.test(id)) {
             const model = watcher.getLastModelList.find((m) => m.id === id);
             if (model) {
-              return cacheAndServeContent(
-                `model-${btoa(id)}.json`,
-                "application/json",
-                () => generateModelResponse(id, model),
-                request
-              );
+              return cacheAndServeContent({
+                fileName: `model-${btoa(id)}.json`,
+                contentType: "application/json",
+                contentGenerator: () => generateModelResponse(id, model),
+                request,
+              });
             }
           }
           return error404("", "Model not found");
 
         case url.pathname === "/api/changes":
-          return cacheAndServeContent(
-            "changes.json",
-            "application/json",
-            () => generateResponse({ changes: watcher.loadChanges(100) }),
-            request
-          );
+          return cacheAndServeContent({
+            fileName: "changes.json",
+            contentType: "application/json",
+            contentGenerator: () => generateResponse({ changes: watcher.loadChanges(100) }),
+            request,
+          });
 
         case url.pathname === "/rss":
-          return cacheAndServeContent(
-            "rss.xml",
-            "application/rss+xml",
-            generateRSSFeedXML,
+          return cacheAndServeContent({
+            fileName: "rss.xml",
+            contentType: "application/rss+xml",
+            contentGenerator: generateRSSFeedXML,
+            dbOnlyCheck: true,
             request,
-            true
-          );
+          });
 
         case url.pathname === "/favicon.ico":
         case url.pathname === "/favicon.svg":
-          return serveStaticFile("static/favicon.svg", request);
+          return serveStaticFile({ filePath: "static/favicon.svg", request });
 
         case url.pathname === "/github.svg":
-          return serveStaticFile("static/github-mark-white.svg", request);
+          return serveStaticFile({ filePath: "static/github-mark-white.svg", request });
 
         case url.pathname === "/rss.svg":
-          return serveStaticFile("static/rss.svg", request);
+          return serveStaticFile({ filePath: "static/rss.svg", request });
 
         case url.pathname.startsWith("/google"):
           if (googleTokenFile && url.pathname === path.join("/", googleTokenFile)) {
-            return serveStaticFile(path.join("static", googleTokenFile), request);
+            return serveStaticFile({ filePath: path.join("static", googleTokenFile), request });
           }
           return error404(url.pathname);
 
         case url.pathname === "/screenshot.png":
-          return serveStaticFile("screenshots/ChangeList_crop.png", request);
+          return serveStaticFile({ filePath: "screenshots/ChangeList_crop.png", request });
 
         case url.pathname === "/app.css":
-          return serveStaticFile("static/app.css", request);
+          return serveStaticFile({ filePath: "static/app.css", request });
 
         case url.pathname === "/":
         case url.pathname === "/list":
@@ -261,11 +362,14 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
         case url.pathname === "/changes":
         case url.pathname === "/model":
           // Serve the index.html file containing the React app
-          return serveStaticFile(path.join(clientDistDir, "index.html"), request);
+          return serveStaticFile({ filePath: path.join(clientDistDir, "index.html"), request });
 
         case url.pathname.startsWith("/assets"):
           // Serve the React client application assets
-          return serveStaticFile(path.join(clientDistDir, url.pathname.slice(1)), request);
+          return serveStaticFile({
+            filePath: path.join(clientDistDir, url.pathname.slice(1)),
+            request,
+          });
 
         default:
           return error404(url.pathname);
