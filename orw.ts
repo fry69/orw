@@ -17,7 +17,7 @@ if (isDevelopment) {
   if (await Bun.file(fixedModelFile).exists()) {
     fixedModelList = JSON.parse(await Bun.file(fixedModelFile).text()).data;
   }
-  console.log("watcher initializing in development mode");
+  console.log("--- Watcher initializing in development mode ---");
 }
 
 /**
@@ -194,7 +194,7 @@ export class OpenRouterAPIWatcher {
    */
   async getModelList(): Promise<Model[]> {
     if (isDevelopment) {
-      console.log(
+      this.log(
         "Warning: using fixed model list, switch to production mode to load live model list from API"
       );
       return fixedModelList;
@@ -205,6 +205,7 @@ export class OpenRouterAPIWatcher {
       if (response) {
         const { data } = await response.json();
         if (data) {
+          this.updateAPILastCheck();
           return data;
         } else {
           return [];
@@ -218,6 +219,17 @@ export class OpenRouterAPIWatcher {
       }
     }
     return [];
+  }
+
+  /**
+   * Updates the last check API timestamp in the database and application 
+   * @param {Date} timestamp - optional timestap to set the API last check  
+   */
+  updateAPILastCheck(timestamp: Date = new Date()) {
+    this.status.apiLastCheck = timestamp;
+    this.db.run("INSERT OR REPLACE INTO last_api_check (id, last_check) VALUES (1, ?);", [
+      timestamp.toISOString(),
+    ]);
   }
 
   /**
@@ -298,7 +310,7 @@ export class OpenRouterAPIWatcher {
         return parsedData;
       });
     this.status.dbLastChange = mostRecentTimestamp;
-    this.loadDBCounter();
+    this.loadDBState();
     return models;
   }
 
@@ -311,15 +323,21 @@ export class OpenRouterAPIWatcher {
       .query("SELECT data FROM removed_models ORDER BY timestamp DESC")
       .all()
       .map((row: any) => JSON.parse(row.data));
-    this.loadDBCounter();
+    this.loadDBState();
     return removedModels;
   }
 
   /**
-   * Loads various counters from the database and updates the internal status
+   * Loads various state and counters from the database and updates the internal status
    */
-  loadDBCounter() {
+  loadDBState() {
     let result: any;
+
+    result = this.db.query("SELECT last_check FROM last_api_check WHERE id = 1").get();
+    if (result) {
+      this.status.apiLastCheck = new Date(result.last_check) ?? new Date(0);
+    }
+
     result = this.db.query("SELECT count(id) as changesCount FROM changes").get();
     this.status.dbChangesCount = result.changesCount ?? 0;
 
@@ -356,7 +374,7 @@ export class OpenRouterAPIWatcher {
    * @returns {ModelDiff[]} - An array of ModelDiff objects.
    */
   loadChanges(n: number = 10): ModelDiff[] {
-    this.loadDBCounter();
+    this.loadDBState();
     return this.db
       .query("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?")
       .all(n)
@@ -369,7 +387,7 @@ export class OpenRouterAPIWatcher {
    * @returns {ModelDiff[]} - An array of ModelDiff objects.
    */
   loadChangesForModel(id: string, n: number = 10): ModelDiff[] {
-    this.loadDBCounter();
+    this.loadDBState();
     return this.db
       .query(
         "SELECT id, type, changes, timestamp FROM changes WHERE id = ? ORDER BY timestamp DESC LIMIT ?"
@@ -516,14 +534,32 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
-   * Runs the OpenRouterAPIWatcher in background mode, continuously checking for model changes.
+   * Runs the main check loop, continuously checking for model changes every hour.
    */
-  public async runBackgroundMode() {
-    this.log("watcher running in background mode");
+  private async runBackgroundLoop() {
     while (true) {
+      this.log("API check");
       await this.check();
-      await new Promise((resolve) => setTimeout(resolve, 3600000)); // 1 hour
+      await new Promise((resolve) => setTimeout(resolve, 3_600_000)); // 1 hour
     }
+  }
+
+  /**
+   * Prepares the OpenRouterAPIWatcher for background mode.
+   */
+  public async enterBackgroundMode() {
+    this.log("Watcher running in background mode");
+    // Check the last API timestamp and check if it is older than one hour
+    const timeDiff = Date.now() - this.status.apiLastCheck.getTime();
+    if (timeDiff > 3_600_000) {
+      await this.runBackgroundLoop();
+      // this never returns...
+    }
+    // schedule the next API check after the remaining wait time has elapsed
+    const sleeptime = 3_600_000 - timeDiff;
+    this.log(`Next API check in ${(sleeptime / 1_000 / 60).toFixed(0)} minutes` );
+    setTimeout(this.runBackgroundLoop, sleeptime);
+    // this also should never return...
   }
 
   /**
@@ -578,7 +614,7 @@ if (import.meta.main) {
     const db = new Database(databaseFile);
     const watcher = new OpenRouterAPIWatcher(db, logFile);
     const server = createServer(watcher);
-    watcher.runBackgroundMode();
+    watcher.enterBackgroundMode();
     // db.close(); // Don't close the database here, as the background mode runs indefinitely
   }
 }

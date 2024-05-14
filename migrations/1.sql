@@ -10,4 +10,6 @@ CREATE TABLE IF NOT EXISTS changes (
     timestamp TEXT
 );
 
-CREATE TABLE IF NOT EXISTS migrations (version INTEGER PRIMARY KEY);
+CREATE TABLE IF NOT EXISTS migrations (
+    version INTEGER PRIMARY KEY
+);

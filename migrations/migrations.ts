@@ -97,6 +97,19 @@ const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 4,
+    up: (db: Database) => {
+      // Create table to store last API check timestamp
+      db.run(`
+        CREATE TABLE IF NOT EXISTS last_api_check (
+          id INTEGER PRIMARY KEY,
+          last_check TEXT NOT NULL
+        );
+      `);
+    },
+  },
+
   // Add more migrations here
 ];
 
