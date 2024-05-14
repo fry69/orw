@@ -105,10 +105,32 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   };
 
   /**
+   * Calculates the remaining time in seconds until the next API check is due.
+   * @returns {number} - The remaing time in seconds until the next API is due.
+   */
+  const secondsUntilAPIcheck = (): number => {
+    const timeDiff = Date.now() - watcher.getAPILastCheck.getTime();
+    const msRemaining = 3_600_000 - timeDiff;
+    if (msRemaining > 0) {
+      return Math.floor(msRemaining / 1000);
+    }
+    return 0;
+  };
+
+  /**
+   * Generates the default value for Cache-Control based on time left until next API check.
+   * @returns {string} - The value for Cache-Control based on time left until next API check.
+   */
+  const defaultCacheControl = (): string => {
+    return "public, max-age=" + secondsUntilAPIcheck();
+  };
+
+  /**
    * Options for caching and serving content.
    * @interface cacheAndServeContentOptions
    * @property {string} fileName - The name of the file to cache.
    * @property {string} contentType - The content type of the file.
+   * @property {string} [cacheControl] - The Cache-Control header for this resource.
    * @property {() => string} contentGenerator - A function that generates the content to be cached.
    * @property {boolean} [dbOnlyCheck] - Whether to check the database last change time instead of the API last check time.
    * @property {Request} request - The incoming request.
@@ -116,6 +138,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   interface cacheAndServeContentOptions {
     fileName: string;
     contentType: string;
+    cacheControl?: string;
     contentGenerator: () => string;
     dbOnlyCheck?: boolean;
     request: Request;
@@ -129,6 +152,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   const cacheAndServeContent = async ({
     fileName,
     contentType,
+    cacheControl,
     contentGenerator,
     dbOnlyCheck = false,
     request,
@@ -147,13 +171,14 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
       cacheAndCompressFile({ cacheFilePath, content, gzipFilePath });
       return new Response(content, {
         headers: {
-          "content-type": contentType,
+          "Content-Type": contentType,
+          "Cache-Control": cacheControl ? cacheControl : defaultCacheControl(),
         },
       });
     }
 
     // Serve the cached file
-    return serveStaticFile({ filePath: cacheFilePath, contentType, request });
+    return serveStaticFile({ filePath: cacheFilePath, contentType, cacheControl, request });
   };
 
   /**
@@ -161,11 +186,13 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * @interface serveStaticFileOptions
    * @property {string} filePath - The path to the file to serve.
    * @property {string} [contentType] - The content type of the file.
+   * @property {string} [cacheControl] - The Cache-Control header for this resource.
    * @property {Request} request - The incoming request.
    */
   interface serveStaticFileOptions {
     filePath: string;
     contentType?: string;
+    cacheControl?: string;
     request: Request;
   }
 
@@ -177,6 +204,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   const serveStaticFile = async ({
     filePath,
     contentType,
+    cacheControl,
     request,
   }: serveStaticFileOptions): Promise<Response> => {
     const gzipFilePath = `${filePath}.gz`;
@@ -196,6 +224,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
             headers: {
               "Content-Encoding": "gzip",
               "Content-Type": contentType ? contentType : Bun.file(filePath).type,
+              "Cache-Control": cacheControl ? cacheControl : defaultCacheControl(),
             },
           });
         }
@@ -204,6 +233,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
       return new Response(await Bun.file(filePath).arrayBuffer(), {
         headers: {
           "Content-Type": contentType ? contentType : Bun.file(filePath).type,
+          "Cache-Control": cacheControl ? cacheControl : defaultCacheControl(),
         },
       });
     } else {
