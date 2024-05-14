@@ -222,8 +222,8 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
-   * Updates the last check API timestamp in the database and application 
-   * @param {Date} timestamp - optional timestap to set the API last check  
+   * Updates the last check API timestamp in the database and application.
+   * @param {Date} timestamp - optional timestap to set the API last check.
    */
   updateAPILastCheck(timestamp: Date = new Date()) {
     this.status.apiLastCheck = timestamp;
@@ -557,8 +557,8 @@ export class OpenRouterAPIWatcher {
     }
     // schedule the next API check after the remaining wait time has elapsed
     const sleeptime = 3_600_000 - timeDiff;
-    this.log(`Next API check in ${(sleeptime / 1_000 / 60).toFixed(0)} minutes` );
-    setTimeout(this.runBackgroundLoop, sleeptime);
+    this.log(`Next API check in ${(sleeptime / 1_000 / 60).toFixed(0)} minutes`);
+    setTimeout(() => this.runBackgroundLoop(), sleeptime);
     // this also should never return...
   }
 
