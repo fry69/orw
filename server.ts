@@ -4,14 +4,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { pipeline } from "node:stream/promises";
 import { createGzip } from "node:zlib";
-import type {
-  APIResponse,
-  ChangesResponse,
-  Model,
-  ModelResponse,
-  ModelsResponse,
-  ResponseDataSig,
-} from "./global";
+import type { APIResponse, Model, ResponseDataSig } from "./global";
 import RSS from "rss";
 
 export const createServer = async (watcher: OpenRouterAPIWatcher) => {
@@ -72,6 +65,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
 
   const cacheAndServeContent = async (
     fileName: string,
+    contentType: string,
     contentGenerator: () => string,
     request: Request,
     dbOnlyCheck: boolean = false
@@ -86,14 +80,20 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
       !(await checkFileFreshness(cacheFilePathGz, lastModified))
     ) {
       const content = contentGenerator();
-      await cacheAndCompressFile(cacheFilePath, content, cacheFilePathGz);
+      // create cache files in background while serving content direcly
+      cacheAndCompressFile(cacheFilePath, content, cacheFilePathGz);
+      return new Response(content, {
+        headers: {
+          "content-type": contentType,
+        },
+      });
     }
 
     // Serve the cached file
-    return serveStaticFile(cacheFilePath, request);
+    return serveStaticFile(cacheFilePath, request, contentType);
   };
 
-  const serveStaticFile = async (filePath: string, request: Request) => {
+  const serveStaticFile = async (filePath: string, request: Request, contentType?: string) => {
     const gzipFilePath = `${filePath}.gz`;
 
     // Check if the client accepts gzip compression
@@ -107,36 +107,18 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
 
         // only serve compressed files that are at least as new as the original
         if (compressedModTime >= uncompressedModTime) {
-          // RSS needs a special content type
-          if (gzipFilePath.endsWith("rss.xml.gz")) {
-            return new Response(await Bun.file(gzipFilePath).arrayBuffer(), {
-              headers: {
-                "Content-Encoding": "gzip",
-                "Content-Type": "application/rss+xml",
-              },
-            });
-          }
-
           return new Response(await Bun.file(gzipFilePath).arrayBuffer(), {
             headers: {
               "Content-Encoding": "gzip",
-              "Content-Type": Bun.file(filePath).type,
+              "Content-Type": contentType ? contentType : Bun.file(filePath).type,
             },
           });
         }
         // fall through to serve uncompressed (or compressed by default) file
       }
-      // RSS still needs a special content type
-      if (filePath.endsWith("rss.xml")) {
-        return new Response(await Bun.file(filePath).arrayBuffer(), {
-          headers: {
-            "Content-Type": "application/rss+xml",
-          },
-        });
-      }
       return new Response(await Bun.file(filePath).arrayBuffer(), {
         headers: {
-          "Content-Type": Bun.file(filePath).type,
+          "Content-Type": contentType ? contentType : Bun.file(filePath).type,
         },
       });
     } else {
@@ -186,12 +168,11 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
     return feed.xml();
   };
 
-
   const generateResponse = (content: ResponseDataSig): string => {
     return JSON.stringify(apiRespone(content));
   };
 
-  const generateModelResponse = (modelId: string, model: Model):string => {
+  const generateModelResponse = (modelId: string, model: Model): string => {
     const changes = watcher.loadChangesForModel(modelId, 50);
     return generateResponse({ model, changes });
   };
@@ -207,6 +188,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
         case url.pathname === "/api/models":
           return cacheAndServeContent(
             "models.json",
+            "application/json",
             () => generateResponse(watcher.getLastModelList),
             request
           );
@@ -214,6 +196,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
         case url.pathname === "/api/removed":
           return cacheAndServeContent(
             "removed.json",
+            "application/json",
             () => generateResponse(watcher.loadRemovedModelList()),
             request
           );
@@ -225,6 +208,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
             if (model) {
               return cacheAndServeContent(
                 `model-${btoa(id)}.json`,
+                "application/json",
                 () => generateModelResponse(id, model),
                 request
               );
@@ -235,12 +219,19 @@ export const createServer = async (watcher: OpenRouterAPIWatcher) => {
         case url.pathname === "/api/changes":
           return cacheAndServeContent(
             "changes.json",
+            "application/json",
             () => generateResponse({ changes: watcher.loadChanges(100) }),
             request
           );
 
         case url.pathname === "/rss":
-          return cacheAndServeContent("rss.xml", generateRSSFeedXML, request, true);
+          return cacheAndServeContent(
+            "rss.xml",
+            "application/rss+xml",
+            generateRSSFeedXML,
+            request,
+            true
+          );
 
         case url.pathname === "/favicon.ico":
         case url.pathname === "/favicon.svg":
