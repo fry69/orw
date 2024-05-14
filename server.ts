@@ -2,7 +2,8 @@
 import { OpenRouterAPIWatcher, isDevelopment } from "./orw";
 import path from "node:path";
 import fs from "node:fs";
-import { gzipSync } from "node:zlib";
+import { pipeline } from "node:stream/promises";
+import { createGzip } from "node:zlib";
 import type {
   APIResponse,
   ChangesResponse,
@@ -13,15 +14,15 @@ import type {
 } from "./global";
 import RSS from "rss";
 
-export const createServer = (watcher: OpenRouterAPIWatcher) => {
+export const createServer = async (watcher: OpenRouterAPIWatcher) => {
   const cacheDir = import.meta.env.ORW_CACHE_DIR ?? path.join(".", "cache");
   const clientDistDir = import.meta.env.ORW_CLIENT_PATH ?? path.join(".", "dist");
   const googleTokenFile = import.meta.env.ORW_GOOGLE;
 
   // Create the cache directory if it doesn't exist
-  if (!fs.existsSync(cacheDir)) {
+  if (!(await fs.promises.exists(cacheDir))) {
     try {
-      fs.mkdirSync(cacheDir, { recursive: true });
+      await fs.promises.mkdir(cacheDir, { recursive: true });
     } catch (err) {
       console.error("Error creating cache directory:", err);
       throw err;
@@ -45,64 +46,70 @@ export const createServer = (watcher: OpenRouterAPIWatcher) => {
     return new Response(message, { status: 404 });
   };
 
-  const cacheAndServeContent = (
+  const cacheAndCompressFile = async (
+    cacheFilePath: string,
+    content: string,
+    gzipFilePath: string
+  ) => {
+    const cacheFile = fs.createWriteStream(cacheFilePath);
+    const gzipFile = fs.createWriteStream(gzipFilePath);
+
+    await pipeline(content, cacheFile);
+    await pipeline(content, createGzip(), gzipFile);
+  };
+
+  const checkFileFreshness = async (filePath: string, lastModified: Date) => {
+    try {
+      const stats = await fs.promises.stat(filePath);
+      return stats.mtime >= lastModified;
+    } catch (error: any) {
+      if (error.code === "ENOENT") {
+        return false;
+      }
+      throw error;
+    }
+  };
+
+  const cacheAndServeContent = async (
     fileName: string,
     contentGenerator: () => string,
     request: Request,
     dbOnlyCheck: boolean = false
-  ): Response => {
+  ): Promise<Response> => {
     const cacheFilePath = path.join(cacheDir, fileName);
+    const cacheFilePathGz = `${cacheFilePath}.gz`;
 
-    // Check if the cached file does not exist or is older than the last API check
-    // This is need to keep the client updated when the last check was
-    // Optionally only check for last change in database, e.g. for RSS endpoint
+    const lastModified = dbOnlyCheck ? watcher.getDBLastChange : watcher.getAPILastCheck;
+
     if (
-      !fs.existsSync(cacheFilePath) ||
-      fs.statSync(cacheFilePath).mtime.getTime() <
-        (dbOnlyCheck ? watcher.getDBLastChange.getTime() : watcher.getAPILastCheck.getTime())
+      !(await checkFileFreshness(cacheFilePath, lastModified)) ||
+      !(await checkFileFreshness(cacheFilePathGz, lastModified))
     ) {
-      try {
-        const gzipFilePath = `${cacheFilePath}.gz`;
-        // Generate the content
-        const content = contentGenerator();
-        if (content) {
-          // Cache the content
-          fs.writeFileSync(cacheFilePath, content);
-          // Compress the cached file
-          const compressedData = gzipSync(content);
-          fs.writeFileSync(gzipFilePath, compressedData);
-        } else {
-          throw "Content failed to generate";
-        }
-      } catch (err) {
-        console.error(`Content file error: ${cacheFilePath}`, err);
-        throw err;
-      }
+      const content = contentGenerator();
+      await cacheAndCompressFile(cacheFilePath, content, cacheFilePathGz);
     }
 
     // Serve the cached file
     return serveStaticFile(cacheFilePath, request);
   };
 
-  const serveStaticFile = (filePath: string, request: Request) => {
+  const serveStaticFile = async (filePath: string, request: Request) => {
     const gzipFilePath = `${filePath}.gz`;
 
     // Check if the client accepts gzip compression
     const acceptsGzip = request.headers.get("Accept-Encoding")?.includes("gzip");
 
-    if (fs.existsSync(filePath)) {
+    if (await Bun.file(filePath).exists()) {
       // only check for compressed files if the original uncompressed file exists
-      if (acceptsGzip && fs.existsSync(gzipFilePath)) {
-        // Check if the uncompressed file is newer than the compressed file
-        const uncompressedModTime = fs.statSync(filePath).mtime.getTime();
-        const compressedModTime = fs.statSync(gzipFilePath).mtime.getTime();
+      if (acceptsGzip && (await Bun.file(gzipFilePath).exists())) {
+        const uncompressedModTime = (await fs.promises.stat(filePath)).mtime.getTime();
+        const compressedModTime = (await fs.promises.stat(gzipFilePath)).mtime.getTime();
 
+        // only serve compressed files that are at least as new as the original
         if (compressedModTime >= uncompressedModTime) {
-          // only serve compressed files that are at least as new as the original
-
           // RSS needs a special content type
           if (gzipFilePath.endsWith("rss.xml.gz")) {
-            return new Response(fs.readFileSync(gzipFilePath), {
+            return new Response(await Bun.file(gzipFilePath).arrayBuffer(), {
               headers: {
                 "Content-Encoding": "gzip",
                 "Content-Type": "application/rss+xml",
@@ -110,7 +117,7 @@ export const createServer = (watcher: OpenRouterAPIWatcher) => {
             });
           }
 
-          return new Response(fs.readFileSync(gzipFilePath), {
+          return new Response(await Bun.file(gzipFilePath).arrayBuffer(), {
             headers: {
               "Content-Encoding": "gzip",
               "Content-Type": Bun.file(filePath).type,
@@ -121,30 +128,19 @@ export const createServer = (watcher: OpenRouterAPIWatcher) => {
       }
       // RSS still needs a special content type
       if (filePath.endsWith("rss.xml")) {
-        return new Response(fs.readFileSync(filePath), {
+        return new Response(await Bun.file(filePath).arrayBuffer(), {
           headers: {
             "Content-Type": "application/rss+xml",
           },
         });
       }
-      return new Response(fs.readFileSync(filePath), {
+      return new Response(await Bun.file(filePath).arrayBuffer(), {
         headers: {
           "Content-Type": Bun.file(filePath).type,
         },
       });
     } else {
       return error404(filePath);
-    }
-  };
-
-  const compressFile = (inputPath: string, outputPath: string) => {
-    try {
-      const inputData = fs.readFileSync(inputPath);
-      const compressedData = gzipSync(inputData);
-      fs.writeFileSync(outputPath, compressedData);
-    } catch (err) {
-      console.error("Error compressing file:", err);
-      throw err;
     }
   };
 
@@ -190,34 +186,14 @@ export const createServer = (watcher: OpenRouterAPIWatcher) => {
     return feed.xml();
   };
 
-  const generateModels = (): string => {
-    // Respond with complete model list
-    const modelsResponse: ModelsResponse = apiRespone(watcher.getLastModelList);
-    return JSON.stringify(modelsResponse);
+
+  const generateResponse = (content: ResponseDataSig): string => {
+    return JSON.stringify(apiRespone(content));
   };
 
-  const generateRemoved = (): string => {
-    // Respond with removed model list
-    const removedResponse: ModelsResponse = apiRespone(watcher.loadRemovedModelList());
-
-    return JSON.stringify(removedResponse);
-  };
-
-  const generateModel = (id: string, model: Model): string => {
-    // Respond with single model id and its associated changes
-    const changes = watcher.loadChangesForModel(id, 50);
-    const modelResponse: ModelResponse = apiRespone({
-      model,
-      changes,
-    });
-    return JSON.stringify(modelResponse);
-  };
-
-  const generateChanges = (): string => {
-    // Respond with changes for all models
-    const changes = watcher.loadChanges(100);
-    const changesResponse: ChangesResponse = apiRespone({ changes });
-    return JSON.stringify(changesResponse);
+  const generateModelResponse = (modelId: string, model: Model):string => {
+    const changes = watcher.loadChangesForModel(modelId, 50);
+    return generateResponse({ model, changes });
   };
 
   const server = Bun.serve({
@@ -229,10 +205,18 @@ export const createServer = (watcher: OpenRouterAPIWatcher) => {
       const url = new URL(request.url);
       switch (true) {
         case url.pathname === "/api/models":
-          return cacheAndServeContent("models.json", generateModels, request);
+          return cacheAndServeContent(
+            "models.json",
+            () => generateResponse(watcher.getLastModelList),
+            request
+          );
 
         case url.pathname === "/api/removed":
-          return cacheAndServeContent("removed.json", generateRemoved, request);
+          return cacheAndServeContent(
+            "removed.json",
+            () => generateResponse(watcher.loadRemovedModelList()),
+            request
+          );
 
         case url.pathname === "/api/model":
           const id = url.searchParams.get("id");
@@ -241,7 +225,7 @@ export const createServer = (watcher: OpenRouterAPIWatcher) => {
             if (model) {
               return cacheAndServeContent(
                 `model-${btoa(id)}.json`,
-                () => generateModel(id, model),
+                () => generateModelResponse(id, model),
                 request
               );
             }
@@ -249,7 +233,11 @@ export const createServer = (watcher: OpenRouterAPIWatcher) => {
           return error404("", "Model not found");
 
         case url.pathname === "/api/changes":
-          return cacheAndServeContent("changes.json", generateChanges, request);
+          return cacheAndServeContent(
+            "changes.json",
+            () => generateResponse({ changes: watcher.loadChanges(100) }),
+            request
+          );
 
         case url.pathname === "/rss":
           return cacheAndServeContent("rss.xml", generateRSSFeedXML, request, true);
