@@ -168,15 +168,19 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     if (!disableCache) {
       headers["Cache-Control"] = cacheControl ? cacheControl : defaultCacheControl();
     }
-    // Sadly Content-Length gets overwritten again to 0 if no body is present,
-    // so this here below has no effect, but I keep it anyway, as a reference.
     if (request.method === "HEAD") {
+      // HTTP HEAD method, this should never return a body, but include all headers
+      // Content-Length gets overwritten by Response() to 0, if no body is present
+      // X-Content-Length is a workaround to see the actual length of the resource
+      let length = 0;
       if (typeof content === "string") {
-        headers["Content-Length"] = content.length ?? 0;
+        length = content.length ?? 0;
       } else {
         // assume content is an ArrayBuffer
-        headers["Content-Length"] = content.byteLength ?? 0;
+        length = content.byteLength ?? 0;
       }
+      headers["X-Content-Length"] = length;
+      headers["Content-Length"] = length; // let's try anyway to see if it works sometime
     }
     return new Response(request.method === "HEAD" ? null : content, { headers: headers });
   };
