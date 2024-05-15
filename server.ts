@@ -440,6 +440,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
           }
           return error404(url.pathname);
 
+        case url.pathname === "/sitemap.xml":
+          return serveStaticFile({ filePath: "static/sitemap.xml", request });
+
         case url.pathname === "/screenshot.png":
           return serveStaticFile({ filePath: "screenshots/ChangeList_crop.png", request });
 
