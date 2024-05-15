@@ -4,7 +4,7 @@ import Button from "./Button";
 
 const TextField = styled.input`
   height: 32px;
-  width: 200px;
+  width: 130px;
   border-radius: 3px;
   border-top-left-radius: 5px;
   border-bottom-left-radius: 5px;

@@ -53,12 +53,12 @@ export const NavBar: React.FC = () => {
       <ul>
         <li>
           <NavLink to="/list" className={({ isActive }) => (isActive ? "active" : "")}>
-            Model List
+            Models
           </NavLink>
         </li>
         <li className="changes-container">
           <NavLink to="/changes" className={({ isActive }) => (isActive ? "active" : "")}>
-            Change List
+            Changes
           </NavLink>
           <a href="/rss" className="button-link rss-link">
             <img className="image-link" src="/rss.svg" alt="RSS Feeed" width="16" height="16" />

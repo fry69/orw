@@ -1,5 +1,6 @@
 /* app.css */
 body {
+  min-width: 480px;
   margin: 0;
   padding: 0;
   background-color: #444;
@@ -31,7 +32,6 @@ nav {
   background-color: #333;
   color: #fff;
   display: flex;
-  /* justify-content: space-between; */
   align-items: center;
   padding: 1rem;
   overflow: hidden;
@@ -102,6 +102,7 @@ nav li.dynamic-element {
 }
 
 nav li.info-container {
+  flex-shrink: 2;
   display: grid;
   grid-template-columns: 1fr auto;
   column-gap: 0.5em;
@@ -198,4 +199,26 @@ pre {
   margin-bottom: 1rem;
   border-radius: 4px;
   box-shadow: 0 2px 4px #888;
+}
+
+@media (max-width: 767px) {
+  nav li.info-container {
+    display: none;
+  }
+  nav a.rss-link {
+    display: none;
+  }
+  nav ul {
+    justify-content: left;
+  }
+  nav li {
+    font-size: large;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 479px) {
+  nav li.dynamic-element {
+    display: none;
+  }
 }
