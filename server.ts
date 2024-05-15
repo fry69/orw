@@ -16,14 +16,19 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   const cacheDir = import.meta.env.ORW_CACHE_DIR ?? path.join(".", "cache");
   const clientDistDir = import.meta.env.ORW_CLIENT_PATH ?? path.join(".", "dist");
   const googleTokenFile = import.meta.env.ORW_GOOGLE;
+  const disableCache = import.meta.env.ORW_DISABLE_CACHE;
 
-  // Create the cache directory if it doesn't exist
-  if (!(await fs.promises.exists(cacheDir))) {
-    try {
-      await fs.promises.mkdir(cacheDir, { recursive: true });
-    } catch (err) {
-      console.error("Error creating cache directory:", err);
-      throw err;
+  if (disableCache) {
+    console.log("Caching disabled");
+  } else {
+    // Create the cache directory if it doesn't exist
+    if (!(await fs.promises.exists(cacheDir))) {
+      try {
+        await fs.promises.mkdir(cacheDir, { recursive: true });
+      } catch (err) {
+        console.error("Error creating cache directory:", err);
+        throw err;
+      }
     }
   }
 
@@ -127,6 +132,56 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   };
 
   /**
+   * Options for wrapper around Response()
+   * @property {any} content - The content for the response
+   * @property {string} [contentType] - The Content-Type for the response
+   * @property {string} [cacheControl] - The Cache-Control for the response
+   * @property {string} [contentEncoing] - The Content-Encoding for the response
+   * @property {Request} request - The object containing the request
+   */
+  interface responseWrapperOptions {
+    content: ArrayBuffer | string;
+    contentType?: string;
+    cacheControl?: string;
+    contentEncoding?: string;
+    request: Request;
+  }
+
+  /**
+   * Wrapper around Response()
+   * @param  {responseWrapperOptions} - The options for responseWrapper
+   * @returns {Response} - The final response
+   */
+  const responseWrapper = ({
+    content,
+    contentType,
+    cacheControl,
+    contentEncoding,
+    request,
+  }: responseWrapperOptions): Response => {
+    // Create response headers
+    const headers: any = {};
+    headers["Content-Type"] = contentType;
+    if (contentEncoding) {
+      headers["Content-Encoding"] = contentEncoding;
+    }
+    if (!disableCache) {
+      headers["Cache-Control"] = cacheControl ? cacheControl : defaultCacheControl();
+    }
+    // Sadly Content-Length gets overwritten again to 0 if no body is present,
+    // so this here below has no effect, but I keep it anyway, as a reference.
+    if (request.method === "HEAD") {
+      if (typeof content === "string") {
+        headers["Content-Length"] = content.length ?? 0;
+      } else {
+        // assume content is an ArrayBuffer
+        headers["Content-Length"] = content.byteLength ?? 0;
+      }
+    }
+    return new Response(request.method === "HEAD" ? null : content, { headers: headers });
+  };
+
+  /**
    * Options for caching and serving content.
    * @interface cacheAndServeContentOptions
    * @property {string} fileName - The name of the file to cache.
@@ -158,6 +213,12 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     dbOnlyCheck = false,
     request,
   }: cacheAndServeContentOptions): Promise<Response> => {
+    // Generate and serve content directly if caching is disabled
+    if (disableCache) {
+      const content = contentGenerator();
+      return responseWrapper({ content, contentType, cacheControl, request });
+    }
+
     const cacheFilePath = path.join(cacheDir, fileName);
     const gzipFilePath = `${cacheFilePath}.gz`;
 
@@ -170,12 +231,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
       const content = contentGenerator();
       // create cache files in background while serving content direcly
       cacheAndCompressFile({ cacheFilePath, content, gzipFilePath });
-      return new Response(content, {
-        headers: {
-          "Content-Type": contentType,
-          "Cache-Control": cacheControl ? cacheControl : defaultCacheControl(),
-        },
-      });
+      return responseWrapper({ content, contentType, cacheControl, request });
     }
 
     // Serve the cached file
@@ -204,7 +260,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    */
   const serveStaticFile = async ({
     filePath,
-    contentType,
+    contentType = Bun.file(filePath).type,
     cacheControl,
     request,
   }: serveStaticFileOptions): Promise<Response> => {
@@ -221,21 +277,21 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
         // only serve compressed files that are at least as new as the original
         if (compressedModTime >= uncompressedModTime) {
-          return new Response(await Bun.file(gzipFilePath).arrayBuffer(), {
-            headers: {
-              "Content-Encoding": "gzip",
-              "Content-Type": contentType ? contentType : Bun.file(filePath).type,
-              "Cache-Control": cacheControl ? cacheControl : defaultCacheControl(),
-            },
+          return responseWrapper({
+            content: await Bun.file(gzipFilePath).arrayBuffer(),
+            contentType,
+            cacheControl,
+            contentEncoding: "gzip",
+            request,
           });
         }
         // fall through to serve uncompressed (or compressed by default) file
       }
-      return new Response(await Bun.file(filePath).arrayBuffer(), {
-        headers: {
-          "Content-Type": contentType ? contentType : Bun.file(filePath).type,
-          "Cache-Control": cacheControl ? cacheControl : defaultCacheControl(),
-        },
+      return responseWrapper({
+        content: await Bun.file(filePath).arrayBuffer(),
+        contentType,
+        cacheControl,
+        request,
       });
     } else {
       return error404(filePath);
