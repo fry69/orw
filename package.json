@@ -1,17 +1,20 @@
 {
-  "name": "watch-or",
-  "module": "watch-or.ts",
+  "name": "orw",
+  "module": "orw.ts",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "build": "vite build --mode production",
-    "watch": "vite build --watch --mode development",
-    "web": "bun run watch-or.ts",
-    "query": "bun run watch-or.ts --query",
-    "once": "bun run watch-or.ts --once",
+    "watch:vite-standalone": "vite build --watch --mode development",
+    "watch:vite": "vite --open",
+    "watch": "bun run --hot orw.ts & bun run watch:vite",
+    "start": "bun run orw.ts",
+    "query": "bun run orw.ts --query",
+    "once": "bun run orw.ts --once",
     "gzip": "rm ./static/*.gz && gzip --best -k ./static/*",
     "dist-clean": "rm -fR dist cache",
     "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\"",
-    "screenshots":  "cd screenshots && for i in *.png; do zopflipng -y $i $i; done && cd .."
+    "screenshots": "cd screenshots && for i in *.png; do zopflipng -y $i $i; done && cd .."
   },
   "devDependencies": {
     "@types/bun": "latest",

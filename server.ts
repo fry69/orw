@@ -342,9 +342,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
           null,
           2
         )}</code>`,
-        url: `${publicURL}${change.type === "removed" ? "removed" : "model"}?id=${
+        url: `${publicURL}${change.type === "removed" ? "removed" : "model"}?id=${encodeURIComponent(
           change.id
-        }&timestamp=${change.timestamp.toISOString()}`,
+        )}&timestamp=${change.timestamp.toISOString()}`,
         date: change.timestamp,
       });
     }
@@ -398,16 +398,19 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
           });
 
         case url.pathname === "/api/model":
-          const id = url.searchParams.get("id");
-          if (id && id.length < 256 && /^[a-zA-Z0-9\/\-]+$/.test(id)) {
-            const model = watcher.getLastModelList.find((m) => m.id === id);
-            if (model) {
-              return cacheAndServeContent({
-                fileName: `model-${btoa(id)}.json`,
-                contentType: "application/json",
-                contentGenerator: () => generateModelResponse(id, model),
-                request,
-              });
+          const id_raw = url.searchParams.get("id");
+          if (id_raw) {
+            const id = decodeURIComponent(id_raw);
+            if (id.length < 256 && /^[a-zA-Z0-9\/\-:]+$/.test(id)) {
+              const model = watcher.getLastModelList.find((m) => m.id === id);
+              if (model) {
+                return cacheAndServeContent({
+                  fileName: `model-${btoa(id)}.json`,
+                  contentType: "application/json",
+                  contentGenerator: () => generateModelResponse(id, model),
+                  request,
+                });
+              }
             }
           }
           return error404("", "Model not found");
@@ -437,7 +440,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
           return serveStaticFile({ filePath: "static/favicon.svg", request });
 
         case url.pathname === "/github.svg":
-          return serveStaticFile({ filePath: "static/github-mark-white.svg", request });
+          return serveStaticFile({ filePath: "static/github.svg", request });
 
         case url.pathname === "/rss.svg":
           return serveStaticFile({ filePath: "static/rss.svg", request });

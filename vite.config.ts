@@ -7,4 +7,11 @@ export default defineConfig({
     sourcemap: false, // Enable source maps
   },
   plugins: [react(), compression()],
+  server: {
+    port: 6500,
+    proxy: {
+      "/api": "http://localhost:3000",
+    },
+  },
+  publicDir: "static",
 });

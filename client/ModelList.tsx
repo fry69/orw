@@ -175,7 +175,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
       data={filteredModels}
       onRowClicked={(row) => {
         if (!props.removed) {
-          return navigate(`/model?id=${row.id}`);
+          return navigate(`/model?id=${encodeURIComponent(row.id)}`);
         }
       }}
       dense
