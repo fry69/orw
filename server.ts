@@ -17,6 +17,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   const clientDistDir = import.meta.env.ORW_CLIENT_PATH ?? path.join(".", "dist");
   const googleTokenFile = import.meta.env.ORW_GOOGLE;
   const disableCache = import.meta.env.ORW_DISABLE_CACHE;
+  const contentSecurityPolicy = import.meta.env.ORW_CSP;
 
   if (disableCache) {
     console.log("Caching disabled");
@@ -162,6 +163,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     // Create response headers
     const headers: any = {};
     headers["Content-Type"] = contentType;
+    if (contentSecurityPolicy) {
+      headers["Content-Security-Policy"] = contentSecurityPolicy;
+    }
     if (contentEncoding) {
       headers["Content-Encoding"] = contentEncoding;
     }
