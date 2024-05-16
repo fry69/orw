@@ -401,7 +401,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
           const id_raw = url.searchParams.get("id");
           if (id_raw) {
             const id = decodeURIComponent(id_raw);
-            if (id.length < 256 && /^[a-zA-Z0-9\/\-:]+$/.test(id)) {
+            if (id.length < 256 && /^[a-zA-Z0-9\/\-:.]+$/.test(id)) {
               const model = watcher.getLastModelList.find((m) => m.id === id);
               if (model) {
                 return cacheAndServeContent({
