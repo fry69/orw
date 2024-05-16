@@ -1,5 +1,6 @@
 // orw.ts
 import fs from "node:fs";
+import path from "node:path";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
 import type { Model, ModelDiff, Status } from "./global";
@@ -7,15 +8,18 @@ import { runMigrations } from "./db-migration";
 import { createServer } from "./server";
 
 export const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
-const fixedModelFile = import.meta.env.ORW_MODEL_FILE || "./models.json";
+const fixedModelFilePath = import.meta.env.ORW_MODEL_FILE || "./models.json";
+const backupPath = import.meta.env.ORW_BACKUP_PATH || "./backup";
+const logFilePath = import.meta.env.ORW_LOG_PATH ?? "./orw.log";
+const dbFilePath = import.meta.env.ORW_DB_PATH ?? "./orw.db";
 
 let fixedModelList: Model[] = [];
 if (isDevelopment) {
   // Don't query the acutal API during development, use a fixed model list instead if present
   // generate a current model list snapshot with
   // `curl https://openrouter.ai/api/v1/models > models.json`
-  if (await Bun.file(fixedModelFile).exists()) {
-    fixedModelList = JSON.parse(await Bun.file(fixedModelFile).text()).data;
+  if (await Bun.file(fixedModelFilePath).exists()) {
+    fixedModelList = JSON.parse(await Bun.file(fixedModelFilePath).text()).data;
   }
   console.log("--- Watcher initializing in development mode ---");
 }
@@ -37,7 +41,7 @@ export class OpenRouterAPIWatcher {
   /**
    * Path to the logfile, log only if set
    */
-  private logFile?: string;
+  private logFilePath?: string;
 
   /**
    * Memory cache for the last model list from the database
@@ -128,9 +132,9 @@ export class OpenRouterAPIWatcher {
   /**
    * Creates a new instance of the OpenRouterAPIWatcher class.
    * @param {Database} db  - The SQLite database to use for storing model changes.
-   * @param {string} [logFile]  - Path to the logfile
+   * @param {string} [logFilePath]  - Path to the logfile
    */
-  constructor(db: Database, logFile?: string) {
+  constructor(db: Database, logFilePath?: string) {
     this.db = db;
     runMigrations(db);
 
@@ -151,14 +155,28 @@ export class OpenRouterAPIWatcher {
       });
     }
 
-    if (logFile) {
-      this.logFile = logFile;
+    if (logFilePath) {
+      this.logFilePath = logFilePath;
       // Check if the log file exists, if not, create it
-      if (!fs.existsSync(this.logFile)) {
-        fs.writeFileSync(this.logFile, "");
+      if (!fs.existsSync(this.logFilePath)) {
+        fs.writeFileSync(this.logFilePath, "");
       }
       if (isDevelopment) {
         this.log("watcher initialized");
+      }
+    }
+
+    if (backupPath) {
+      // Create the backup directory if it doesn't exist
+      if (!fs.existsSync(backupPath)) {
+        try {
+          fs.mkdirSync(backupPath, { recursive: true });
+        } catch (err) {
+          const message = `Error creating backup directory at ${backupPath}: ${err}`;
+          this.error(message);
+          console.error(message);
+          throw err;
+        }
       }
     }
   }
@@ -175,8 +193,8 @@ export class OpenRouterAPIWatcher {
     console.error(logMessage);
 
     // Log the message to the log file
-    if (this.logFile) {
-      fs.appendFileSync(this.logFile, `${logMessage}\n`);
+    if (this.logFilePath) {
+      fs.appendFileSync(this.logFilePath, `${logMessage}\n`);
     }
   }
 
@@ -195,8 +213,8 @@ export class OpenRouterAPIWatcher {
     console.log(logMessage);
 
     // Log the message to the log file
-    if (this.logFile) {
-      fs.appendFileSync(this.logFile, `${logMessage}\n`);
+    if (this.logFilePath) {
+      fs.appendFileSync(this.logFilePath, `${logMessage}\n`);
     }
   }
 
@@ -542,6 +560,8 @@ export class OpenRouterAPIWatcher {
           // copying the API model list removes all added_at properties
           this.lastModelList = this.loadLastModelList();
           this.status.dbLastChange = timestamp;
+          // Create a database backup
+          await this.backupDb();
         }
       }
     }
@@ -552,6 +572,29 @@ export class OpenRouterAPIWatcher {
    */
   public async runOnce() {
     await this.check();
+  }
+
+  /**
+   * Backups the database, saving previous backup
+   * @param {boolean} [initial] - If set only create a backup if none exists
+   */
+  private async backupDb(initial: boolean = false) {
+    const dbBackupFile = path.basename(dbFilePath) + ".backup";
+    const dbBackupFilePath = path.join(backupPath, dbBackupFile);
+    if (initial && (await Bun.file(dbBackupFilePath).exists())) {
+      return;
+    }
+    const dbPrevBackupFilePath = dbBackupFilePath + ".prev";
+    if (await Bun.file(dbBackupFilePath).exists()) {
+      this.log("Moving current backup");
+      if (await Bun.file(dbPrevBackupFilePath).exists()) {
+        await fs.promises.unlink(dbPrevBackupFilePath);
+      }
+      await fs.promises.rename(dbBackupFilePath, dbPrevBackupFilePath);
+    }
+    this.log("Creating new database backup");
+    this.db.run(`VACUUM INTO '${dbBackupFilePath}'`);
+    this.log("Database backup finished");
   }
 
   /**
@@ -569,6 +612,7 @@ export class OpenRouterAPIWatcher {
    * Prepares the OpenRouterAPIWatcher for background mode.
    */
   public async enterBackgroundMode() {
+    this.backupDb(true);
     this.log("Watcher running in background mode");
     // Check the last API timestamp and check if it is older than one hour
     const timeDiff = Date.now() - this.status.apiLastCheck.getTime();
@@ -610,30 +654,27 @@ export class OpenRouterAPIWatcher {
 }
 
 if (import.meta.main) {
-  const logFile = import.meta.env.ORW_LOG_PATH ?? "orw.log";
-  const databaseFile = import.meta.env.ORW_DB_PATH ?? "orw.db";
-
   // Usage:
   if (Bun.argv.includes("--query")) {
-    if (!fs.existsSync(databaseFile)) {
-      console.error(`Error: database ${databaseFile} not found`);
+    if (!fs.existsSync(dbFilePath)) {
+      console.error(`Error: database ${dbFilePath} not found`);
       process.exit(1);
     }
     const n = parseInt(Bun.argv[Bun.argv.indexOf("--query") + 1] || "10", 10);
-    const db = new Database(databaseFile);
+    const db = new Database(dbFilePath);
     const watcher = new OpenRouterAPIWatcher(db);
     watcher.runQueryMode(n);
     db.close();
     process.exit(0);
   } else if (Bun.argv.includes("--once")) {
-    const db = new Database(databaseFile);
-    const watcher = new OpenRouterAPIWatcher(db, logFile);
+    const db = new Database(dbFilePath);
+    const watcher = new OpenRouterAPIWatcher(db, logFilePath);
     watcher.runOnce();
     db.close();
     process.exit(0);
   } else {
-    const db = new Database(databaseFile);
-    const watcher = new OpenRouterAPIWatcher(db, logFile);
+    const db = new Database(dbFilePath);
+    const watcher = new OpenRouterAPIWatcher(db, logFilePath);
     const server = createServer(watcher);
     watcher.enterBackgroundMode();
     // db.close(); // Don't close the database here, as the background mode runs indefinitely
