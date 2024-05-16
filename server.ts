@@ -2,6 +2,7 @@
 import { OpenRouterAPIWatcher, isDevelopment } from "./orw";
 import path from "node:path";
 import fs from "node:fs";
+import crypto from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import { createGzip } from "node:zlib";
 import type { APIResponse, Model, ResponseDataSig } from "./global";
@@ -64,6 +65,20 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   };
 
   /**
+   * Calculates the Etag for a file.
+   * @param {string} filePath - The path to the file.
+   * @returns {Promise<string>} - The Etag for the file.
+   */
+  const calculateEtag = async (filePath: string): Promise<string> => {
+    const stats = await fs.promises.stat(filePath);
+    const content = await fs.promises.readFile(filePath);
+    const hash = crypto.createHash("sha256");
+    hash.update(content);
+    hash.update(stats.mtime.toISOString());
+    return `"${hash.digest("hex")}"`;
+  };
+
+  /**
    * Options for caching and compressing a file.
    * @interface cacheAndCompressFileOptions
    * @property {string} cacheFilePath - The path to the cached file.
@@ -79,18 +94,23 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   /**
    * Caches and compresses a file.
    * @param {cacheAndCompressFileOptions} options - The options for caching and compressing the file.
-   * @returns {Promise<void>}
+   * @returns {Promise<string>} - The calculated Etag for the file.
    */
   const cacheAndCompressFile = async ({
     cacheFilePath,
     gzipFilePath,
     content,
-  }: cacheAndCompressFileOptions): Promise<void> => {
+  }: cacheAndCompressFileOptions): Promise<string> => {
     const cacheFile = fs.createWriteStream(cacheFilePath);
     const gzipFile = fs.createWriteStream(gzipFilePath);
+    const etag = await calculateEtag(cacheFilePath);
+    const etagFilePath = `${cacheFilePath}.etag`;
 
     await pipeline(content, cacheFile);
-    await pipeline(content, createGzip(), gzipFile);
+    pipeline(content, createGzip(), gzipFile); // create compressed file in background
+    await fs.promises.writeFile(etagFilePath, etag);
+
+    return etag;
   };
 
   /**
@@ -138,6 +158,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * @property {string} [contentType] - The Content-Type for the response
    * @property {string} [cacheControl] - The Cache-Control for the response
    * @property {string} [contentEncoing] - The Content-Encoding for the response
+   * @property {string} [etag] - The Etag for the response
    * @property {Request} request - The object containing the request
    */
   interface responseWrapperOptions {
@@ -145,6 +166,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     contentType?: string;
     cacheControl?: string;
     contentEncoding?: string;
+    etag?: string;
     request: Request;
   }
 
@@ -158,6 +180,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     contentType,
     cacheControl,
     contentEncoding,
+    etag,
     request,
   }: responseWrapperOptions): Response => {
     // Create response headers
@@ -171,6 +194,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     }
     if (!disableCache) {
       headers["Cache-Control"] = cacheControl ? cacheControl : defaultCacheControl();
+    }
+    if (etag && etag !== "") {
+      headers["Etag"] = etag;
     }
     if (request.method === "HEAD") {
       // HTTP HEAD method, this should never return a body, but include all headers
@@ -229,17 +255,19 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
     const cacheFilePath = path.join(cacheDir, fileName);
     const gzipFilePath = `${cacheFilePath}.gz`;
+    const etagFilePath = `${cacheFilePath}.etag`;
 
     const lastModified = dbOnlyCheck ? watcher.getDBLastChange : watcher.getAPILastCheck;
 
     if (
       !(await checkFileFreshness(cacheFilePath, lastModified)) ||
-      !(await checkFileFreshness(gzipFilePath, lastModified))
+      !(await checkFileFreshness(gzipFilePath, lastModified)) ||
+      !(await fs.promises.exists(etagFilePath))
     ) {
       const content = contentGenerator();
       // create cache files in background while serving content direcly
-      cacheAndCompressFile({ cacheFilePath, content, gzipFilePath });
-      return responseWrapper({ content, contentType, cacheControl, request });
+      const etag = await cacheAndCompressFile({ cacheFilePath, content, gzipFilePath });
+      return responseWrapper({ content, contentType, cacheControl, etag, request });
     }
 
     // Serve the cached file
@@ -273,6 +301,19 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     request,
   }: serveStaticFileOptions): Promise<Response> => {
     const gzipFilePath = `${filePath}.gz`;
+    const etagFilePath = `${filePath}.etag`;
+    let etag = "";
+
+    // Get the Etag for the file if it exists
+    if (await Bun.file(etagFilePath).exists()) {
+      etag = await fs.promises.readFile(etagFilePath, "utf8");
+    }
+
+    // Check if the client has a cached version of the file
+    const clientEtag = request.headers.get("If-None-Match");
+    if (clientEtag && clientEtag === etag) {
+      return new Response(null, { status: 304 });
+    }
 
     // Check if the client accepts gzip compression
     const acceptsGzip = request.headers.get("Accept-Encoding")?.includes("gzip");
@@ -290,6 +331,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
             contentType,
             cacheControl,
             contentEncoding: "gzip",
+            etag,
             request,
           });
         }
@@ -299,6 +341,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
         content: await Bun.file(filePath).arrayBuffer(),
         contentType,
         cacheControl,
+        etag,
         request,
       });
     } else {
