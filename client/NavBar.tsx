@@ -52,39 +52,6 @@ export const NavBar: React.FC = () => {
     <nav>
       <ul>
         <li>
-          <NavLink to="/list" className={({ isActive }) => (isActive ? "active" : "")}>
-            Models
-          </NavLink>
-        </li>
-        <li className="changes-container">
-          <NavLink to="/changes" className={({ isActive }) => (isActive ? "active" : "")}>
-            Changes
-          </NavLink>
-          <a href="/rss" className="button-link rss-link">
-            <img className="image-link" src="/rss.svg" alt="RSS Feeed" width="16" height="16" />
-          </a>
-        </li>
-        <li className="info-container gridgap">
-          Recorded changes:
-          <b className="timestamp rowspan">{globalState.status.dbChangesCount}</b>
-          <span>
-            (since {DateTime.fromISO(globalState.status.dbfirstChangeTimestamp).toISODate()})
-          </span>
-        </li>
-        <li className="dynamic-element">{globalState.navBarDynamicElement}</li>
-        <li className="info-container">
-          Active models:
-          <b className="timestamp">{globalState.status.dbModelCount}</b>
-          Removed models:
-          <b className="timestamp">{globalState.status.dbRemovedModelCount}</b>
-        </li>
-        <li className="info-container">
-          Last DB change:
-          <b className="timestamp">{dbLastChangeDuration}</b>
-          Next API check:
-          <b className="timestamp">{apiLastCheckDuration}</b>
-        </li>
-        <li>
           <a
             href="https://github.com/fry69/orw"
             target="_blank"
@@ -99,6 +66,39 @@ export const NavBar: React.FC = () => {
               height="32"
             />
           </a>
+        </li>
+        <li>
+          <NavLink to="/list" className={({ isActive }) => (isActive ? "active" : "")}>
+            Models
+          </NavLink>
+        </li>
+        <li className="changes-container">
+          <NavLink to="/changes" className={({ isActive }) => (isActive ? "active" : "")}>
+            Changes
+          </NavLink>
+          <a href="/rss" className="button-link rss-link">
+            <img className="image-link" src="/rss.svg" alt="RSS Feeed" width="16" height="16" />
+          </a>
+        </li>
+        <li className="dynamic-element">{globalState.navBarDynamicElement}</li>
+        <li className="info-container">
+          Last DB change:
+          <b className="timestamp dynamic">{dbLastChangeDuration}</b>
+          Next API check:
+          <b className="timestamp dynamic">{apiLastCheckDuration}</b>
+        </li>
+        <li className="info-container">
+          Active models:
+          <b className="timestamp">{globalState.status.dbModelCount}</b>
+          Removed models:
+          <b className="timestamp">{globalState.status.dbRemovedModelCount}</b>
+        </li>
+        <li className="info-container gridgap">
+          Recorded changes:
+          <b className="timestamp rowspan">{globalState.status.dbChangesCount}</b>
+          <span>
+            (since {DateTime.fromISO(globalState.status.dbfirstChangeTimestamp).toISODate()})
+          </span>
         </li>
       </ul>
     </nav>

@@ -2,7 +2,12 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import type { Model } from "../global";
 import { GlobalContext } from "./GlobalState";
 import type { ModelDiffClient } from "./client";
-import { calcCostPerMillion, calcCostPerThousand, changeSnippet, dateStringDuration } from "./utils";
+import {
+  calcCostPerMillion,
+  calcCostPerThousand,
+  changeSnippet,
+  dateStringDuration,
+} from "./utils";
 import Error from "./Error";
 
 export const ModelDetail: React.FC = () => {
@@ -42,17 +47,21 @@ export const ModelDetail: React.FC = () => {
     fetchModel();
   }, [globalState.refreshTrigger]);
 
-  const modelStringMemo = useMemo(
-    () => <div className="model-id"> Model ID: {model?.id} </div>,
-    [model]
-  );
+  // const modelStringMemo = useMemo(
+  //   () => <div className="model-id"> Model ID: {model?.id} </div>,
+  //   [model]
+  // );
 
   // setDynamicElement(<div className="model-id"> Model ID: {model?.id} </div>); // <- 100% browser CPU
 
   useEffect(() => {
     setGlobalState((prevState) => ({
       ...prevState,
-      navBarDynamicElement: modelStringMemo,
+      navBarDynamicElement: (
+        <>
+          <span className="dynamic-element"></span>
+        </>
+      ),
     })); // <- using the memoized string is fine
   }, [model]);
 
@@ -101,11 +110,11 @@ export const ModelDetail: React.FC = () => {
     if (parseFloat(model.pricing.completion) > 0) {
       return (
         <>
-          <p style={{ fontSize: "large" }}>
-            {InputPrice()}
-            {OutputPrice()}
-            {RequestPrice()}
-            {ImagePrice()}
+          <p className="price-container" style={{ fontSize: "large" }}>
+            {PriceElement("Input:", model.pricing.prompt, "tokens")}
+            {PriceElement("Output:", model.pricing.completion, "tokens")}
+            {PriceElement("Request:", model.pricing.request, "requests", true)}
+            {PriceElement("Image:", model.pricing.image, "images", true)}
           </p>
         </>
       );
@@ -119,34 +128,23 @@ export const ModelDetail: React.FC = () => {
     );
   };
 
-  const InputPrice = () => {
-    if (parseFloat(model.pricing.prompt) > 0) {
-      return <>
-      Input: <b>{calcCostPerMillion(model.pricing.prompt, "tokens")}</b></>;
+  const PriceElement = (
+    prefix: string,
+    price: string,
+    unit: string,
+    thousands: boolean = false
+  ) => {
+    if (parseFloat(price) > 0) {
+      const formattedPrice = thousands
+        ? calcCostPerThousand(price, unit)
+        : calcCostPerMillion(price, unit);
+      return (
+        <>
+          <span className="price-prefix">{prefix}</span> <b>{formattedPrice}</b>
+        </>
+      );
     }
   };
-
-  const OutputPrice = () => {
-    if (parseFloat(model.pricing.completion) > 0) {
-      return <><br />
-      Output: <b>{calcCostPerMillion(model.pricing.completion, "tokens")}</b></>;
-    }
-  };
-
-  const RequestPrice = () => {
-    if (parseFloat(model.pricing.request) > 0) {
-      return <><br />
-      Request: <b>{calcCostPerThousand(model.pricing.request, "requests")}</b></>;
-    }
-  };
-
-  const ImagePrice = () => {
-    if (parseFloat(model.pricing.image) > 0) {
-      return <><br />
-      Image: <b>{calcCostPerThousand(model.pricing.image, "images")}</b></>;
-    }
-  };
-
 
   return (
     <div className="model-details">
@@ -155,12 +153,15 @@ export const ModelDetail: React.FC = () => {
           <h3>Price</h3>
           {Price()}
         </div>
-        <div className="change-model-name">
-          <h2>{model.name}</h2>
+        <div>
+          <h2 className="change-model-name">{model.name}</h2>
+          <h4>{model.id}</h4>
         </div>
         <div>
           <h3>Context Length</h3>
-          <p style={{ fontSize: "x-large", textAlign: "center" }}>{model.context_length}</p>
+          <p style={{ fontSize: "x-large", textAlign: "center" }}>
+            {model.context_length.toLocaleString()}
+          </p>
         </div>
       </div>
       <h3>Description</h3>

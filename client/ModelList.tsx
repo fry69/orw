@@ -43,7 +43,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
     }));
   }, [filterText]);
 
-  const roundContext = (context: number) => {
+  const roundKb = (context: number) => {
     return `${Math.ceil(context / 1024)}k`;
   };
 
@@ -125,7 +125,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
     {
       name: "Context",
       selector: (row) => row.context_length,
-      format: (row) => roundContext(row.context_length),
+      format: (row) => roundKb(row.context_length),
       sortable: true,
       right: true,
     },
@@ -143,7 +143,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
       selector: (row) => row.top_provider.max_completion_tokens ?? 0,
       format: (row) => {
         const maxOut = row.top_provider.max_completion_tokens ?? 0;
-        return maxOut > 0 ? maxOut : "";
+        return maxOut > 0 ? roundKb(maxOut) : "";
       },
       sortable: true,
       hide: 599,

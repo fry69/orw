@@ -7,6 +7,10 @@ body {
   color: #fff;
 }
 
+h1 h2 h3 h4 h5 h6 {
+  text-align: center;
+}
+
 /* p {
   margin: 0;
   padding: 0;
@@ -43,21 +47,20 @@ nav ul {
   list-style-type: none;
   display: flex;
   width: 100%;
-  justify-content: space-between;
+  justify-content: left;
   align-items: center;
   margin: 0;
   padding: 0;
 }
 
 nav li {
-  align-self: center;
   font-size: x-large;
-  margin-right: 1rem;
+  /* margin-right: 1rem; */
 }
 
 nav ul li a.active {
   font-weight: bold;
-  color: skyblue;
+  color: coral;
 }
 
 nav a {
@@ -77,7 +80,7 @@ nav a:hover {
 
 nav li.changes-container {
   display: grid;
-  grid-template-columns: auto 20px;
+  grid-template-columns: auto 1em;
   column-gap: 0;
   align-items: center;
   margin: 0;
@@ -99,9 +102,13 @@ nav a.rss-link {
 
 nav li.dynamic-element {
   margin-left: auto;
+  margin-right: 0;
+  width: 300px;
 }
 
 nav li.info-container {
+  margin-left: auto;
+  margin-right: 0.5em;
   flex-shrink: 2;
   display: grid;
   grid-template-columns: 1fr auto;
@@ -112,7 +119,12 @@ nav li.info-container {
 }
 
 nav li .timestamp {
-  color: skyblue;
+  color: burlywood;
+  /* width: 1em; */
+}
+
+nav li b.timestamp.dynamic {
+  width: 3em;
 }
 
 nav li.info-container.gridgap {
@@ -170,7 +182,10 @@ pre {
 
 .model-details h2 {
   text-align: center;
-  margin-top: 0;
+}
+
+.model-details h4 {
+  text-align: center;
 }
 
 .model-details-col-container {
@@ -183,7 +198,7 @@ pre {
 }
 
 .change-model-name {
-  color: lightskyblue;
+  color: burlywood;
   align-self: center;
 }
 
@@ -201,6 +216,17 @@ pre {
   box-shadow: 0 2px 4px #888;
 }
 
+.price-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.5em;
+  row-gap: 0.25em;
+}
+
+.price-prefix {
+  text-align: end;
+}
+
 @media (max-width: 767px) {
   nav li.info-container {
     display: none;
@@ -214,6 +240,10 @@ pre {
   nav li {
     font-size: large;
     margin-right: 0;
+  }
+
+  .model-details-col-container {
+    flex-direction: column;
   }
 }
 
