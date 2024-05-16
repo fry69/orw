@@ -43,8 +43,11 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
     }));
   }, [filterText]);
 
-  const roundKb = (context: number) => {
-    return `${Math.ceil(context / 1024)}k`;
+  const roundKb = (num: number) => {
+    if (num < 1024) {
+      return num;
+    }
+    return `${Math.ceil(num / 1024)}k`;
   };
 
   const customSort = (rows: Model[], selector: any, direction: string) => {
