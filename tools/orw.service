@@ -6,7 +6,7 @@ WantedBy=default.target
 
 [Service]
 ExecStart=/usr/bin/bash ./tools/start.sh
-WorkingDirectory=/home/orw/watch-or
+WorkingDirectory=/home/orw/orw
 PrivateTmp=1
 Restart=always
 RestartSec=60

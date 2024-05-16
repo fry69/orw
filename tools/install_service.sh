@@ -10,13 +10,12 @@ cp "./tools/orw.service" "$service_dir"
 (
     $systemctl daemon-reload
     $systemctl enable orw
-    $systemctl is-active orw.service
+    $systemctl is-enabled orw.service
 )
 
 # shellcheck disable=SC2181
-if [ $? -eq 0 ]
-then
+if [ $? -eq 0 ]; then
     echo "OpenRouter API Watcher service sucessfully installed"
 else
-    echo "Service installation failed, check above for error messages."
+    echo "Service installation failed"
 fi

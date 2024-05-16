@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-script="./watch-or.ts"
+script="./orw.ts"
+dotenv_file="./.env.production"
 
 ## Make sure Bun is installed
+export PATH="$HOME/.bun/bin:$PATH"
+bun="$(command -v bun)" || bun="$HOME/.bun/bin/bun"
 
-bun="$(command -v bun)"
-
-if [ -x "$bun" ]
-then
+if [ -x "$bun" ]; then
     echo "Bun is installed, running upgrade to assure latest version is installed"
     $bun upgrade
 else
@@ -16,8 +16,7 @@ else
         curl -fsSL https://bun.sh/install | bash
     )
     bun="$HOME/.bun/bin/bun"
-    if [ -x "$bun" ]
-    then
+    if [ -x "$bun" ]; then
         echo "Bun was successfully installed"
     else
         echo "Installation failed, please check above for error messages"
@@ -25,15 +24,22 @@ else
     fi
 fi
 
-if [ -n "$WATCHOR_HOME" ]
-then
-    cd "$WATCHOR_HOME" || echo "cd $WATCHOR_HOME failed" && exit 1
+if [ -n "$ORW_HOME" ]; then
+    cd "$ORW_HOME" || echo "cd $ORW_HOME failed" && exit 1
 fi
 
-if [ ! -f "$script" ]
-then
-    echo "Script not found, make sure this is the correct working directory"
+if [ ! -f "$script" ]; then
+    echo "Watcher script not found, make sure $PWD is the correct working directory"
     exit 1
 fi
 
-$bun run $script
+if [ ! -f "$dotenv_file" ]; then
+    echo "Environment file not found"
+fi
+
+set -o allexport
+# shellcheck disable=SC1090
+source "$dotenv_file"
+set +o allexport
+
+$bun run start
