@@ -528,7 +528,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
           return serveStaticFile({ filePath: "static/sitemap.xml", request });
 
         case url.pathname === "/screenshot.png":
-          return serveStaticFile({ filePath: "screenshots/ChangeList_crop.png", request });
+          return serveStaticFile({ filePath: "screenshots/default_crop.png", request });
 
         case url.pathname === "/app.css":
           return serveStaticFile({ filePath: "static/app.css", request });
