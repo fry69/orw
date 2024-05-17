@@ -79,6 +79,23 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   };
 
   /**
+   * Retrieves the last modified timestamp for a file.
+   * @param {string} filePath - The path to the file.
+   * @returns {Promise<Date>} - The last modified timestamp of the file.
+   */
+  const getLastModifiedTimestamp = async (filePath: string): Promise<Date> => {
+    try {
+      const stats = await fs.promises.stat(filePath);
+      return stats.mtime;
+    } catch (error: any) {
+      if (error.code === "ENOENT") {
+        return new Date(0);
+      }
+      throw error;
+    }
+  };
+
+  /**
    * Options for caching and compressing a file.
    * @interface cacheAndCompressFileOptions
    * @property {string} cacheFilePath - The path to the cached file.
@@ -120,15 +137,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * @returns {Promise<boolean>} - True if the file is fresh, false otherwise.
    */
   const checkFileFreshness = async (filePath: string, lastModified: Date): Promise<boolean> => {
-    try {
-      const stats = await fs.promises.stat(filePath);
-      return stats.mtime >= lastModified;
-    } catch (error: any) {
-      if (error.code === "ENOENT") {
-        return false;
-      }
-      throw error;
-    }
+    return (await getLastModifiedTimestamp(filePath)) >= lastModified;
   };
 
   /**
@@ -159,6 +168,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * @property {string} [cacheControl] - The Cache-Control for the response
    * @property {string} [contentEncoing] - The Content-Encoding for the response
    * @property {string} [etag] - The Etag for the response
+   * @property {Date} [lastModified] - The Last-Modified timestamp for the response
    * @property {Request} request - The object containing the request
    */
   interface responseWrapperOptions {
@@ -167,6 +177,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     cacheControl?: string;
     contentEncoding?: string;
     etag?: string;
+    lastModified?: Date;
     request: Request;
   }
 
@@ -181,6 +192,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     cacheControl,
     contentEncoding,
     etag,
+    lastModified,
     request,
   }: responseWrapperOptions): Response => {
     // Create response headers
@@ -197,6 +209,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     }
     if (etag && etag !== "") {
       headers["Etag"] = etag;
+    }
+    if (lastModified) {
+      headers["Last-Modified"] = lastModified.toUTCString();
     }
     if (request.method === "HEAD") {
       // HTTP HEAD method, this should never return a body, but include all headers
@@ -300,6 +315,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     cacheControl,
     request,
   }: serveStaticFileOptions): Promise<Response> => {
+    const lastModified = await getLastModifiedTimestamp(filePath);
     const gzipFilePath = `${filePath}.gz`;
     const etagFilePath = `${filePath}.etag`;
     let etag = "";
@@ -315,14 +331,25 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
       return new Response(null, { status: 304 });
     }
 
+    // Check if the client has a cached version of the file
+    const clientLastModified = request.headers.get("If-Modified-Since");
+    if (clientLastModified) {
+      const clientModifiedDate = new Date(clientLastModified);
+      // Account for potential small differences in timestamps
+      const timeDiff = Math.abs(lastModified.getTime() - clientModifiedDate.getTime());
+      if (timeDiff <= 1000) {
+        return new Response(null, { status: 304 });
+      }
+    }
+
     // Check if the client accepts gzip compression
     const acceptsGzip = request.headers.get("Accept-Encoding")?.includes("gzip");
 
     if (await Bun.file(filePath).exists()) {
       // only check for compressed files if the original uncompressed file exists
       if (acceptsGzip && (await Bun.file(gzipFilePath).exists())) {
-        const uncompressedModTime = (await fs.promises.stat(filePath)).mtime.getTime();
-        const compressedModTime = (await fs.promises.stat(gzipFilePath)).mtime.getTime();
+        const uncompressedModTime = (await getLastModifiedTimestamp(filePath)).getTime();
+        const compressedModTime = (await getLastModifiedTimestamp(gzipFilePath)).getTime();
 
         // only serve compressed files that are at least as new as the original
         if (compressedModTime >= uncompressedModTime) {
@@ -332,6 +359,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
             cacheControl,
             contentEncoding: "gzip",
             etag,
+            lastModified,
             request,
           });
         }
@@ -342,6 +370,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
         contentType,
         cacheControl,
         etag,
+        lastModified,
         request,
       });
     } else {
