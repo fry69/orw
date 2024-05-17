@@ -150,7 +150,7 @@ export class OpenRouterAPIWatcher {
     this.db = db;
     runMigrations(db);
 
-    this.lastModelList = this.loadLastModelList();
+    this.lastModelList = this.loadLastModelList(true);
 
     if (this.lastModelList.length === 0) {
       // Seed the database with the current model list if it's a fresh database
@@ -319,9 +319,10 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Loads the most recent list of OpenRouter models from the SQLite database.
+   * @param {boolean} [initial] - If set allow resetting lastApiCheck timestamp from database.
    * @returns An array of Model objects.
    */
-  loadLastModelList(): Model[] {
+  loadLastModelList(initial: boolean = false): Model[] {
     let mostRecentTimestamp = new Date(0);
     const query = `
     WITH latest_added_models AS (
@@ -353,7 +354,7 @@ export class OpenRouterAPIWatcher {
         return parsedData;
       });
     this.status.dbLastChange = mostRecentTimestamp;
-    this.loadDBState();
+    this.loadDBState(initial);
     return models;
   }
 
@@ -376,14 +377,19 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Loads various state and counters from the database and updates the internal status
+   * @param {boolean} [initial] - If set allow resetting lastApiCheck timestamp from database.
    */
-  loadDBState() {
+  loadDBState(initial: boolean = false) {
     let result: any;
 
-    result = this.db.query("SELECT last_check, last_status FROM last_api_check WHERE id = 1").get();
-    if (result) {
-      this.status.apiLastCheck = new Date(result.last_check) ?? new Date(0);
-      this.status.apiLastCheckStatus = result.last_status ?? "unknown";
+    if (initial) {
+      result = this.db
+        .query("SELECT last_check, last_status FROM last_api_check WHERE id = 1")
+        .get();
+      if (result) {
+        this.status.apiLastCheck = new Date(result.last_check) ?? new Date(0);
+        this.status.apiLastCheckStatus = result.last_status ?? "unknown";
+      }
     }
 
     result = this.db.query("SELECT MIN(timestamp) as first_change_timestamp FROM changes").get();
