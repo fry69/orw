@@ -173,20 +173,23 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
   ];
 
   return (
-    <DataTable
-      columns={columns}
-      data={filteredModels}
-      onRowClicked={(row) => {
-        if (!props.removed) {
-          return navigate(`/model?id=${encodeURIComponent(row.id)}`);
-        }
-      }}
-      dense
-      highlightOnHover
-      defaultSortFieldId={3}
-      theme="dark"
-      sortFunction={customSort}
-      defaultSortAsc={false}
-    />
+    <>
+      <h2 style={{ textAlign: "center" }}>Models no longer available on OpenRouter or renamed:</h2>
+      <DataTable
+        columns={columns}
+        data={filteredModels}
+        onRowClicked={(row) => {
+          if (!props.removed) {
+            return navigate(`/model?id=${encodeURIComponent(row.id)}`);
+          }
+        }}
+        dense
+        highlightOnHover
+        defaultSortFieldId={3}
+        theme="dark"
+        sortFunction={customSort}
+        defaultSortAsc={false}
+      />
+    </>
   );
 };
