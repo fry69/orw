@@ -192,6 +192,7 @@ bun.lockb
 !.prettierrc.json
 
 # Backup, snapshot and cache files and folder
+screenshots/
 cache/
 backup/
 *.backup*
