@@ -70,7 +70,9 @@ export const ModelDetail: React.FC = () => {
   }
 
   if (!model) {
-    return <Error message="Loading..." type="info" />;
+    return <></>;
+    // This produces just unnecessary flicker
+    //   return <Error message="Loading..." type="info" />;
   }
 
   // Create a new object that hides the already shown 'description' property

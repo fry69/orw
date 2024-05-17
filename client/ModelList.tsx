@@ -193,6 +193,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
         theme="dark"
         sortFunction={customSort}
         defaultSortAsc={false}
+        noDataComponent=""
       />
     </>
   );
