@@ -246,6 +246,7 @@ export class OpenRouterAPIWatcher {
 
     try {
       const response = await fetch("https://openrouter.ai/api/v1/models");
+      this.status.apiLastCheck = new Date();
       if (response) {
         const { data } = await response.json();
         if (data) {
@@ -266,13 +267,11 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Updates the last check API timestamp in the database and application.
-   * @param {Date} timestamp - optional timestap to set the API last check.
    */
-  updateAPILastCheck(timestamp: Date = new Date()) {
-    this.status.apiLastCheck = timestamp;
+  updateAPILastCheck() {
     this.db.run(
       "INSERT OR REPLACE INTO last_api_check (id, last_check, last_status) VALUES (1, ?, ?);",
-      [timestamp.toISOString(), this.status.apiLastCheckStatus]
+      [this.status.apiLastCheck.toISOString(), this.status.apiLastCheckStatus]
     );
   }
 
@@ -557,11 +556,17 @@ export class OpenRouterAPIWatcher {
     if (this.initFlag) {
       this.initFlag = false;
     } else {
-      const newModels = await this.getModelList();
-      this.status.apiLastCheck = new Date();
+      let newModels = await this.getModelList();
       if (newModels.length === 0) {
-        this.status.apiLastCheckStatus = "failure";
-        this.error("empty model list from API, skipping check");
+        this.status.apiLastCheckStatus = "unknown";
+        this.updateAPILastCheck();
+        this.error("empty model list from API, retry in one minute");
+        await new Promise((resolve) => setTimeout(resolve, 60_000)); // 1 minute
+        newModels = await this.getModelList();
+      }
+      if (newModels.length === 0) {
+        this.status.apiLastCheckStatus = "failed";
+        this.error("empty model list from API after retry, skipping check");
       } else {
         const oldModels = this.lastModelList;
         const changes = this.findChanges(newModels, oldModels);
@@ -580,7 +585,7 @@ export class OpenRouterAPIWatcher {
         }
         this.status.apiLastCheckStatus = "success";
       }
-      this.updateAPILastCheck(this.status.apiLastCheck);
+      this.updateAPILastCheck();
     }
   }
 
