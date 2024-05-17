@@ -18,7 +18,7 @@ const App: React.FC = () => {
             <Route path="/removed" element={<ModelList removed />} />
             <Route path="/model" element={<ModelDetail />} />
             <Route path="/changes" element={<ChangeList />} />
-            <Route path="/" element={<Navigate to="/changes" replace />} />
+            <Route path="/" element={<Navigate to="/list" replace />} />
           </Routes>
         </div>
       </div>
