@@ -125,7 +125,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     const etagFilePath = `${cacheFilePath}.etag`;
 
     await pipeline(content, cacheFile);
-    pipeline(content, createGzip(), gzipFile); // create compressed file in background
+    await pipeline(content, createGzip(), gzipFile); // create compressed file in background
     await fs.promises.writeFile(etagFilePath, etag);
 
     return etag;
@@ -282,8 +282,8 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     ) {
       const content = contentGenerator();
       // create cache files in background while serving content direcly
-      const etag = await cacheAndCompressFile({ cacheFilePath, content, gzipFilePath });
-      return responseWrapper({ content, contentType, cacheControl, etag, request });
+      cacheAndCompressFile({ cacheFilePath, content, gzipFilePath });
+      return responseWrapper({ content, contentType, cacheControl, request });
     }
 
     // Serve the cached file
