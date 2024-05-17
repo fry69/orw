@@ -174,7 +174,11 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
 
   return (
     <>
-      <h2 style={{ textAlign: "center" }}>Models no longer available on OpenRouter or renamed:</h2>
+      {props.removed && (
+        <h2 style={{ textAlign: "center" }}>
+          Models no longer available on OpenRouter or renamed:
+        </h2>
+      )}
       <DataTable
         columns={columns}
         data={filteredModels}
