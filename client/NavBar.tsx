@@ -51,7 +51,7 @@ export const NavBar: React.FC = () => {
   return (
     <nav>
       <ul>
-        <li>
+        <li className="github-link">
           <a
             href="https://github.com/fry69/orw"
             target="_blank"

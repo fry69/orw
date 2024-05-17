@@ -87,6 +87,10 @@ nav li.changes-container {
   padding: 0;
 }
 
+nav li.github-link {
+  margin-top: 5px;
+}
+
 nav a.rss-link {
   padding: 0;
   overflow: hidden;
