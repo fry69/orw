@@ -52,24 +52,6 @@ The OpenRouter API Watcher includes a simple web interface that allows you to vi
 
 The OpenRouter API Watcher also includes a RSS feed generator, available at the `/rss` endpoint. It will serve the last 50 recorded changes as formatted JSON encapsulated in a `<code>` tag, so it does not look like a garbled mess in RSS readers.
 
-## Screenshots (slightly outdated)
-
-Model List:
-
-![Model List](screenshots/ModelList.png)
-
-Model List with Search:
-
-![Model List with search](screenshots/ModelList-search.png)
-
-Model Details:
-
-![Model Details](screenshots/ModelDetail.png)
-
-Change List:
-
-![Change List](screenshots/ChangeList.png)
-
 ## Testing
 
 You can run a set of simple test cases with the following command:
