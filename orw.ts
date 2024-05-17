@@ -570,6 +570,8 @@ export class OpenRouterAPIWatcher {
       } else {
         const oldModels = this.lastModelList;
         const changes = this.findChanges(newModels, oldModels);
+        this.status.apiLastCheckStatus = "success";
+        this.updateAPILastCheck();
         if (changes.length > 0) {
           const timestamp = new Date();
           this.storeModelList(newModels, timestamp);
@@ -582,8 +584,9 @@ export class OpenRouterAPIWatcher {
           this.status.dbLastChange = timestamp;
           // Create a database backup
           await this.backupDb();
+          // no need to fall through
+          return;
         }
-        this.status.apiLastCheckStatus = "success";
       }
       this.updateAPILastCheck();
     }
