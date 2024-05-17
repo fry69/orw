@@ -71,6 +71,11 @@ export class OpenRouterAPIWatcher {
     apiLastCheck: new Date(0),
 
     /**
+     * Status of the last API check
+     */
+    apiLastCheckStatus: "unknown",
+
+    /**
      * Number of changes in database
      */
     dbChangesCount: 0,
@@ -99,6 +104,13 @@ export class OpenRouterAPIWatcher {
    */
   get getAPILastCheck(): Date {
     return this.status.apiLastCheck;
+  }
+  /**
+   * Get status of the last OpenRouter API check result
+   * @returns {string} - Last API check result status
+   */
+  get getAPILastCheckStatus(): string {
+    return this.status.apiLastCheckStatus;
   }
   /**
    * Get number of changes recorded in the database
@@ -147,6 +159,8 @@ export class OpenRouterAPIWatcher {
 
       this.getModelList().then((newModels) => {
         if (newModels.length > 0) {
+          this.status.apiLastCheckStatus = "success";
+          this.updateAPILastCheck();
           this.lastModelList = newModels;
           this.status.dbLastChange = new Date();
           this.storeModelList(newModels, this.status.dbLastChange);
@@ -235,7 +249,6 @@ export class OpenRouterAPIWatcher {
       if (response) {
         const { data } = await response.json();
         if (data) {
-          this.updateAPILastCheck();
           return data;
         } else {
           return [];
@@ -257,9 +270,10 @@ export class OpenRouterAPIWatcher {
    */
   updateAPILastCheck(timestamp: Date = new Date()) {
     this.status.apiLastCheck = timestamp;
-    this.db.run("INSERT OR REPLACE INTO last_api_check (id, last_check) VALUES (1, ?);", [
-      timestamp.toISOString(),
-    ]);
+    this.db.run(
+      "INSERT OR REPLACE INTO last_api_check (id, last_check, last_status) VALUES (1, ?, ?);",
+      [timestamp.toISOString(), this.status.apiLastCheckStatus]
+    );
   }
 
   /**
@@ -367,9 +381,10 @@ export class OpenRouterAPIWatcher {
   loadDBState() {
     let result: any;
 
-    result = this.db.query("SELECT last_check FROM last_api_check WHERE id = 1").get();
+    result = this.db.query("SELECT last_check, last_status FROM last_api_check WHERE id = 1").get();
     if (result) {
       this.status.apiLastCheck = new Date(result.last_check) ?? new Date(0);
+      this.status.apiLastCheckStatus = result.last_status ?? "unknown";
     }
 
     result = this.db.query("SELECT MIN(timestamp) as first_change_timestamp FROM changes").get();
@@ -543,13 +558,13 @@ export class OpenRouterAPIWatcher {
       this.initFlag = false;
     } else {
       const newModels = await this.getModelList();
+      this.status.apiLastCheck = new Date();
       if (newModels.length === 0) {
+        this.status.apiLastCheckStatus = "failure";
         this.error("empty model list from API, skipping check");
       } else {
-        this.status.apiLastCheck = new Date();
         const oldModels = this.lastModelList;
         const changes = this.findChanges(newModels, oldModels);
-
         if (changes.length > 0) {
           const timestamp = new Date();
           this.storeModelList(newModels, timestamp);
@@ -563,7 +578,9 @@ export class OpenRouterAPIWatcher {
           // Create a database backup
           await this.backupDb();
         }
+        this.status.apiLastCheckStatus = "success";
       }
+      this.updateAPILastCheck(this.status.apiLastCheck);
     }
   }
 
@@ -622,9 +639,15 @@ export class OpenRouterAPIWatcher {
     }
     // schedule the next API check after the remaining wait time has elapsed
     const sleeptime = 3_600_000 - timeDiff;
-    this.log(`Next API check in ${(sleeptime / 1_000 / 60).toFixed(0)} minutes`);
-    setTimeout(() => this.runBackgroundLoop(), sleeptime);
-    // this also should never return...
+    if (sleeptime > 0) {
+      this.log(`Next API check in ${(sleeptime / 1_000 / 60).toFixed(0)} minutes`);
+      setTimeout(() => this.runBackgroundLoop(), sleeptime);
+      // this also should never return...
+    } else {
+      // this should never happen
+      this.log("Rip in the spacetime continuum detected, proceeding anyway");
+      await this.runBackgroundLoop();
+    }
   }
 
   /**

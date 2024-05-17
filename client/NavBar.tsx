@@ -85,7 +85,9 @@ export const NavBar: React.FC = () => {
           Last DB change:
           <b className="timestamp dynamic">{dbLastChangeDuration}</b>
           Next API check:
-          <b className="timestamp dynamic">{apiLastCheckDuration}</b>
+          <b className={globalState.status.apiLastCheckStatus + " timestamp dynamic"}>
+            {apiLastCheckDuration}
+          </b>
         </li>
         <li className="info-container">
           Active models:

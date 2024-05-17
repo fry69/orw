@@ -109,6 +109,16 @@ const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 5,
+    up: (db: Database) => {
+      // Create column to store last API check result status
+      db.run(`
+        ALTER TABLE last_api_check
+          ADD last_status TEXT
+      `);
+    },
+  },
 
   // Add more migrations here
 ];

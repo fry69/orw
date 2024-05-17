@@ -44,6 +44,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     status: {
       isDevelopment,
       apiLastCheck: watcher.getAPILastCheck.toISOString(),
+      apiLastCheckStatus: watcher.getAPILastCheckStatus,
       dbLastChange: watcher.getDBLastChange.toISOString(),
       dbModelCount: watcher.getDBModelCount,
       dbChangesCount: watcher.getDBChangesCount,

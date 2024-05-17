@@ -51,6 +51,7 @@ export interface ModelDiff {
 export type ServerStatus = {
   isDevelopment: boolean;
   apiLastCheck: string;
+  apiLastCheckStatus: string;
   dbLastChange: string;
   dbModelCount: number;
   dbChangesCount: number;
@@ -100,6 +101,11 @@ export interface Status {
    * Timestamp of the last API check
    */
   apiLastCheck: Date;
+
+  /**
+   * Status of the last API check
+   */
+  apiLastCheckStatus: string;
 
   /**
    * Timestamp of the data in the database

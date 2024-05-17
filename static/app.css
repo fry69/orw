@@ -120,7 +120,18 @@ nav li.info-container {
 
 nav li .timestamp {
   color: burlywood;
-  /* width: 1em; */
+}
+
+nav li .timestamp.success {
+  color: lightgreen;
+}
+
+nav li .timestamp.failure {
+  color: red;
+}
+
+nav li .timestamp.unknown {
+  color: yellow;
 }
 
 nav li b.timestamp.dynamic {
