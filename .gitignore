@@ -191,12 +191,13 @@ bun.lockb
 *.json
 !.prettierrc.json
 
-# Backup, snapshot and cache files and folder
+# Backup, snapshot and cache files and folder, images
 screenshots/
 cache/
 backup/
 *.backup*
 *.snapshot*
+*.png
 
 # Google site verification
 google*.html

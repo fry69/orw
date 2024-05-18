@@ -16,9 +16,20 @@ import RSS from "rss";
 export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void> => {
   const cacheDir = import.meta.env.ORW_CACHE_DIR ?? path.join(".", "cache");
   const clientDistDir = import.meta.env.ORW_CLIENT_PATH ?? path.join(".", "dist");
+  const staticDir = import.meta.env.ORW_STATIC_DIR ?? path.join(".", "static");
   const googleTokenFile = import.meta.env.ORW_GOOGLE;
   const disableCache = import.meta.env.ORW_DISABLE_CACHE;
   const contentSecurityPolicy = import.meta.env.ORW_CSP;
+
+  // Read all filenames in the static directory, make sure they are real files, no subdirs allowed
+  const staticFiles: string[] = [];
+  fs.readdirSync(staticDir).forEach((fileName) => {
+    const filePath = path.join(staticDir, fileName);
+    const stats = fs.statSync(filePath);
+    if (stats.isFile()) {
+      staticFiles.push(fileName);
+    }
+  });
 
   if (disableCache) {
     console.log("Caching disabled");
@@ -483,6 +494,13 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
     fetch(request) {
       const url = new URL(request.url);
+
+      // Serve all files found in the static directory from the root
+      if (staticFiles.includes(url.pathname.slice(1))) {
+        return serveStaticFile({ filePath: path.join(staticDir, url.pathname), request });
+      }
+
+      // All other endpoints require special handling
       switch (true) {
         case url.pathname === "/api/models":
           return cacheAndServeContent({
@@ -534,34 +552,6 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
             dbOnlyCheck: true,
             request,
           });
-
-        case url.pathname === "/robots.txt":
-          return serveStaticFile({ filePath: "static/robots.txt", request });
-
-        case url.pathname === "/favicon.ico":
-        case url.pathname === "/favicon.svg":
-          return serveStaticFile({ filePath: "static/favicon.svg", request });
-
-        case url.pathname === "/github.svg":
-          return serveStaticFile({ filePath: "static/github.svg", request });
-
-        case url.pathname === "/rss.svg":
-          return serveStaticFile({ filePath: "static/rss.svg", request });
-
-        case url.pathname.startsWith("/google"):
-          if (googleTokenFile && url.pathname === path.join("/", googleTokenFile)) {
-            return serveStaticFile({ filePath: path.join("static", googleTokenFile), request });
-          }
-          return error404(url.pathname);
-
-        case url.pathname === "/sitemap.xml":
-          return serveStaticFile({ filePath: "static/sitemap.xml", request });
-
-        case url.pathname === "/screenshot.png":
-          return serveStaticFile({ filePath: "screenshots/default_crop.png", request });
-
-        case url.pathname === "/app.css":
-          return serveStaticFile({ filePath: "static/app.css", request });
 
         case url.pathname === "/":
         case url.pathname === "/list":
