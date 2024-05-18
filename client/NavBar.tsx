@@ -32,21 +32,22 @@ export const NavBar: React.FC = () => {
       }
     };
 
-    // Start the interval after a short delay (e.g., 1 second)
-    // to account for globalState not being initialised from the API yet
-    const delayedStart = setTimeout(() => {
+    if (globalState.status.isValid) {
       updateDurations();
       interval = setInterval(updateDurations, 60_000); // Update every minute
-    }, 1_000);
+    }
 
     // Clean up the interval when the component is unmounted
     return () => {
-      clearTimeout(delayedStart);
       if (interval) {
         clearInterval(interval);
       }
     };
-  }, [globalState.status.dbLastChange, globalState.status.apiLastCheck]);
+  }, [
+    globalState.status.isValid,
+    globalState.status.dbLastChange,
+    globalState.status.apiLastCheck,
+  ]);
 
   return (
     <nav>

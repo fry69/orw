@@ -4,9 +4,12 @@ import type { GlobalState } from "./client";
 
 const defaultGlobalState: GlobalState = {
   status: {
+    isValid: false,
     isDevelopment: false,
     apiLastCheck: "",
+    apiLastCheckStatus: "",
     dbLastChange: "",
+    dbfirstChangeTimestamp: "",
     dbModelCount: 0,
     dbChangesCount: 0,
     dbRemovedModelCount: 0,

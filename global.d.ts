@@ -49,6 +49,7 @@ export interface ModelDiff {
  * Represents the server status information in an API response.
  */
 export type ServerStatus = {
+  isValid: boolean;
   isDevelopment: boolean;
   apiLastCheck: string;
   apiLastCheckStatus: string;

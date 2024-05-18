@@ -42,6 +42,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    */
   const apiRespone = <T extends ResponseDataSig>(data: T): APIResponse<T> => ({
     status: {
+      isValid: true,
       isDevelopment,
       apiLastCheck: watcher.getAPILastCheck.toISOString(),
       apiLastCheckStatus: watcher.getAPILastCheckStatus,
