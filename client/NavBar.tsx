@@ -32,7 +32,9 @@ export const NavBar: React.FC = () => {
       }
     };
 
-    if (globalState.status.isValid) {
+    // If the status from the API got received and there is not already an interval running,
+    // start the 60 second update interval
+    if (globalState.status.isValid && !interval) {
       updateDurations();
       interval = setInterval(updateDurations, 60_000); // Update every minute
     }
