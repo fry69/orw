@@ -101,12 +101,12 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * @interface cacheAndCompressFileOptions
    * @property {string} cacheFilePath - The path to the cached file.
    * @property {string} gzipFilePath - The path to the gzipped file.
-   * @property {string} content - The content to be cached and compressed.
+   * @property {Promise<string>} content - The content to be cached and compressed.
    */
   interface cacheAndCompressFileOptions {
     cacheFilePath: string;
     gzipFilePath: string;
-    content: string;
+    content: Promise<string>;
   }
 
   /**
@@ -140,9 +140,10 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
     const cacheFileHandle = fs.createWriteStream(cacheFilePathTmp);
     const gzipFileHandle = fs.createWriteStream(gzipFilePathTmp);
+    const realContent = await content;
 
-    await pipeline(content, cacheFileHandle);
-    await pipeline(content, createGzip(), gzipFileHandle);
+    await pipeline(realContent, cacheFileHandle);
+    await pipeline(realContent, createGzip(), gzipFileHandle);
     const etag = await calculateEtag(cacheFilePathTmp);
     await fs.promises.writeFile(etagFilePathTmp, etag);
 
@@ -187,7 +188,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
   /**
    * Options for wrapper around Response()
-   * @property {any} content - The content for the response
+   * @property {ArrayBuffer | Promise<string>} content - The content for the response
    * @property {string} [contentType] - The Content-Type for the response
    * @property {string} [cacheControl] - The Cache-Control for the response
    * @property {string} [contentEncoing] - The Content-Encoding for the response
@@ -196,7 +197,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * @property {Request} request - The object containing the request
    */
   interface responseWrapperOptions {
-    content: ArrayBuffer | string;
+    content: ArrayBuffer | Promise<string>;
     contentType?: string;
     cacheControl?: string;
     contentEncoding?: string;
@@ -208,9 +209,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   /**
    * Wrapper around Response()
    * @param  {responseWrapperOptions} - The options for responseWrapper
-   * @returns {Response} - The final response
+   * @returns {Promise<Response>} - The final response
    */
-  const responseWrapper = ({
+  const responseWrapper = async ({
     content,
     contentType,
     cacheControl,
@@ -218,7 +219,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     etag,
     lastModified,
     request,
-  }: responseWrapperOptions): Response => {
+  }: responseWrapperOptions): Promise<Response> => {
     // Create response headers
     const headers: any = {};
     headers["Content-Type"] = contentType;
@@ -237,21 +238,22 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     if (lastModified) {
       headers["Last-Modified"] = lastModified.toUTCString();
     }
+    const realContent = await content;
     if (request.method === "HEAD") {
       // HTTP HEAD method, this should never return a body, but include all headers
       // Content-Length gets overwritten by Response() to 0, if no body is present
       // X-Content-Length is a workaround to see the actual length of the resource
       let length = 0;
-      if (typeof content === "string") {
-        length = content.length ?? 0;
+      if (typeof realContent === "string") {
+        length = realContent.length ?? 0;
       } else {
         // assume content is an ArrayBuffer
-        length = content.byteLength ?? 0;
+        length = realContent.byteLength ?? 0;
       }
       headers["X-Content-Length"] = length;
       headers["Content-Length"] = length; // let's try anyway to see if it works sometime
     }
-    return new Response(request.method === "HEAD" ? null : content, { headers: headers });
+    return new Response(request.method === "HEAD" ? null : realContent, { headers: headers });
   };
 
   /**
@@ -260,7 +262,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * @property {string} fileName - The name of the file to cache.
    * @property {string} contentType - The content type of the file.
    * @property {string} [cacheControl] - The Cache-Control header for this resource.
-   * @property {() => string} contentGenerator - A function that generates the content to be cached.
+   * @property {() => Promise<string>} contentGenerator - A function that generates the content to be cached.
    * @property {boolean} [dbOnlyCheck] - Whether to check the database last change time instead of the API last check time.
    * @property {Request} request - The incoming request.
    */
@@ -268,7 +270,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     fileName: string;
     contentType: string;
     cacheControl?: string;
-    contentGenerator: () => string;
+    contentGenerator: () => Promise<string>;
     dbOnlyCheck?: boolean;
     request: Request;
   }
@@ -319,7 +321,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * @property {string} filePath - The path to the file to serve.
    * @property {string} [contentType] - The content type of the file.
    * @property {string} [cacheControl] - The Cache-Control header for this resource.
-   * @property {Request} request - The incoming request.
+   * @property {Promise<Request>} request - The incoming request.
    */
   interface serveStaticFileOptions {
     filePath: string;
@@ -404,9 +406,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
   /**
    * Generates an RSS feed XML string.
-   * @returns {string} - The RSS feed XML.
+   * @returns {Promise<string>} - The RSS feed XML.
    */
-  const generateRSSFeedXML = (): string => {
+  const generateRSSFeedXML = async (): Promise<string> => {
     const feed: RSS = new RSS({
       title: "OpenRouter Model Changes",
       description: "RSS feed for changes in OpenRouter models",
@@ -452,9 +454,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * Generates a response object with the given content.
    * @template T - The type of the response data.
    * @param {T} content - The response data.
-   * @returns {string} - The JSON-encoded response.
+   * @returns {Promise<string>} - The JSON-encoded response.
    */
-  const generateResponse = (content: ResponseDataSig): string => {
+  const generateResponse = async (content: ResponseDataSig): Promise<string> => {
     return JSON.stringify(apiRespone(content));
   };
 
@@ -462,9 +464,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * Generates a model response object with the given model and changes.
    * @param {string} modelId - The ID of the model.
    * @param {Model} model - The model object.
-   * @returns {string} - The JSON-encoded model response.
+   * @returns {Promise<string>} - The JSON-encoded model response.
    */
-  const generateModelResponse = (modelId: string, model: Model): string => {
+  const generateModelResponse = async (modelId: string, model: Model): Promise<string> => {
     const changes = watcher.loadChangesForModel(modelId, 50);
     return generateResponse({ model, changes });
   };
