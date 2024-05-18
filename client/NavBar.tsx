@@ -8,40 +8,40 @@ export const NavBar: React.FC = () => {
   const { globalState, setGlobalState } = useContext(GlobalContext);
   const [dbLastChangeDuration, setDbLastChangeDuration] = useState("");
   const [apiLastCheckDuration, setApiLastCheckDuration] = useState("");
+  const [startIntervalTrigger, setStartIntervalTrigger] = useState(false);
 
   let dbfirstChangeTimestamp: string = globalState.data.changes.at(-1)?.timestamp ?? "";
 
+  const loadData = async () => {
+    await fetch("/api/data")
+      .then((res) => res.json())
+      .then((data) => {
+        setGlobalState((prevState) => ({
+          ...prevState,
+          data: data.data,
+        }));
+      });
+  };
+
+  const loadStatus = async () => {
+    await fetch("/api/status")
+      .then((res) => res.json())
+      .then((data) => {
+        setGlobalState((prevState) => ({
+          ...prevState,
+          status: data.status,
+        }));
+      });
+  };
+
+  useEffect(() => {
+    loadData()
+      .then(() => loadStatus())
+      .then(() => setStartIntervalTrigger(true));
+  }, []);
+
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
-
-    const loadData = async () => {
-      fetch("/api/data")
-        .then((res) => res.json())
-        .then((data) => {
-          setGlobalState((prevState) => ({
-            ...prevState,
-            data: data.data,
-          }));
-        });
-    };
-
-    const loadStatus = async () => {
-      fetch("/api/status")
-        .then((res) => res.json())
-        .then((data) => {
-          setGlobalState((prevState) => ({
-            ...prevState,
-            status: data.status,
-          }));
-        });
-    };
-
-    const timerRefresh = () => {
-      setGlobalState((prevState) => ({
-        ...prevState,
-        timerRefreshTrigger: !prevState.timerRefreshTrigger, // This inversion triggers refreshing
-      }));
-    };
 
     const contentRefresh = () => {
       setGlobalState((prevState) => ({
@@ -51,7 +51,13 @@ export const NavBar: React.FC = () => {
     };
 
     const updateLoop = () => {
-      timerRefresh();
+      // Update duration strings
+      setDbLastChangeDuration(durationAgo(globalState.status.dbLastChange));
+      setApiLastCheckDuration(
+        globalState.status.isDevelopment
+          ? "[dev mode]"
+          : durationAgo(globalState.status.apiLastCheck, true)
+      );
       // If last API check is longer than an hour ago, check for new data, trigger a refresh if needed
       const now = Date.now();
       const oneHourAndOneMinute = 3600_000 + 6_000; // 1 hour + 1 minute in milliseconds
@@ -70,8 +76,6 @@ export const NavBar: React.FC = () => {
       contentRefresh();
       updateLoop();
       interval = setInterval(updateLoop, 60_000); // Update every minute
-    } else {
-      loadData().then(() => loadStatus());
     }
 
     // Clean up the interval when the component is unmounted
@@ -80,17 +84,7 @@ export const NavBar: React.FC = () => {
         clearInterval(interval);
       }
     };
-  }, [globalState.status.isValid]);
-
-  useEffect(() => {
-    // Update duration strings
-    setDbLastChangeDuration(durationAgo(globalState.status.dbLastChange));
-    setApiLastCheckDuration(
-      globalState.status.isDevelopment
-        ? "[dev mode]"
-        : durationAgo(globalState.status.apiLastCheck, true)
-    );
-  }, [globalState.timerRefreshTrigger]);
+  }, [startIntervalTrigger]);
 
   return (
     <nav>

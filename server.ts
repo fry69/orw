@@ -149,7 +149,8 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   };
 
   /**
-   * Checks if a file is fresh (i.e., its modification time is greater than or equal to the given last modified time).
+   * Checks if a file is fresh (i.e., its modification time is greater than
+   * or equal to the given last modified time).
    * @param {string} filePath - The path to the file.
    * @param {Date} lastModified - The last modified time to compare against.
    * @returns {Promise<boolean>} - True if the file is fresh, false otherwise.
@@ -494,6 +495,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
               };
               return JSON.stringify(response);
             },
+            dbOnlyCheck: true,
             request,
           });
 

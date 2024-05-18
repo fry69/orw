@@ -9,7 +9,6 @@ export interface GlobalState {
   };
   navBarDynamicElement: React.ReactElement;
   refreshTrigger: boolean;
-  timerRefreshTrigger: boolean;
 }
 
 export interface ModelDiffClient {
