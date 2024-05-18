@@ -17,7 +17,6 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   const cacheDir = import.meta.env.ORW_CACHE_DIR ?? path.join(".", "cache");
   const clientDistDir = import.meta.env.ORW_CLIENT_PATH ?? path.join(".", "dist");
   const staticDir = import.meta.env.ORW_STATIC_DIR ?? path.join(".", "static");
-  const googleTokenFile = import.meta.env.ORW_GOOGLE;
   const disableCache = import.meta.env.ORW_DISABLE_CACHE;
   const contentSecurityPolicy = import.meta.env.ORW_CSP;
 
@@ -215,6 +214,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     contentEncoding?: string;
     etag?: string;
     lastModified?: Date;
+    expires?: Date;
     request: Request;
   }
 
@@ -230,6 +230,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     contentEncoding,
     etag,
     lastModified,
+    expires,
     request,
   }: responseWrapperOptions): Promise<Response> => {
     // Create response headers
@@ -250,6 +251,14 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     if (lastModified) {
       headers["Last-Modified"] = lastModified.toUTCString();
     }
+    let expiresDate = new Date(0);
+    if (expires) {
+      expiresDate = expires;
+    } else {
+      expiresDate = new Date(new Date().getTime() + secondsUntilAPIcheck() * 1_000);
+    }
+    headers["Expires"] = expiresDate.toUTCString();
+
     const realContent = await content;
     if (request.method === "HEAD") {
       // HTTP HEAD method, this should never return a body, but include all headers
