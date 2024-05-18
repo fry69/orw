@@ -17,6 +17,7 @@ const defaultGlobalState: GlobalState = {
   },
   navBarDynamicElement: <></>,
   refreshTrigger: false,
+  timerRefreshTrigger: false,
 };
 
 export const GlobalContext = createContext<{

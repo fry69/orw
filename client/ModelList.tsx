@@ -19,7 +19,6 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
   const filterComponent = filterComponentWrapper(filterText, setFilterText);
 
   useEffect(() => {
-    let endpoint: string;
     if (props.removed) {
       setModels(globalState.data.removed);
     } else {
@@ -32,7 +31,7 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
       ...prevState,
       navBarDynamicElement: filterComponent,
     }));
-  }, [filterText]);
+  }, [filterText, globalState.refreshTrigger]);
 
   const roundKb = (num: number) => {
     if (num < 1024) {

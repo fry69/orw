@@ -13,6 +13,9 @@ export const durationAgo = (timestamp: DateTime | string, until: boolean = false
     let duration: Duration;
     if (until) {
       duration = timestamp.setLocale("en-us").plus({ hours: 1 }).diffNow();
+      if (duration.toMillis() < 0) {
+        return "[now]";
+      }
     } else {
       duration = timestamp.setLocale("en-us").diffNow();
     }

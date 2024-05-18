@@ -17,31 +17,18 @@ export const ModelDetail: React.FC = () => {
   const { globalState, setGlobalState } = useContext(GlobalContext);
 
   useEffect(() => {
-    const fetchModel = async () => {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get("id");
-        if (!id) {
-          setError("No model ID provided.");
-          return;
-        }
-
-        // setModel(data.data.model);
-        // setChanges(data.data.changes);
-      } catch (err) {
-        setError("An unexpected error occurred while fetching the model.");
-      }
-    };
-
-    fetchModel();
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get("id");
+    if (!id) {
+      setError("No model ID provided.");
+      // error = "No model ID provided.";
+      return;
+    }
+    const foundModel: Model = globalState.data.models.find((obj: Model) => obj.id === id);
+    setModel(foundModel);
+    const foundChanges: ModelDiffClient[] = globalState.data.changes.filter((obj) => obj.id === id);
+    setChanges(foundChanges);
   }, [globalState.refreshTrigger]);
-
-  // const modelStringMemo = useMemo(
-  //   () => <div className="model-id"> Model ID: {model?.id} </div>,
-  //   [model]
-  // );
-
-  // setDynamicElement(<div className="model-id"> Model ID: {model?.id} </div>); // <- 100% browser CPU
 
   useEffect(() => {
     setGlobalState((prevState) => ({
@@ -51,7 +38,7 @@ export const ModelDetail: React.FC = () => {
           <span className="dynamic-element"></span>
         </>
       ),
-    })); // <- using the memoized string is fine
+    }));
   }, [model]);
 
   if (error) {
