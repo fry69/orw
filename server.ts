@@ -130,22 +130,23 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     gzipFilePath,
     content,
   }: cacheAndCompressFileOptions): Promise<string> => {
-    // This async function runs in the background, so it can be raced
-    // Work around this problem by creating temporary files and check for their existence
+    // This async function runs in the background, so it can be raced.
+    // Work around this problem by creating temporary files and check for their existence.
 
     const cacheFilePathTmp = cacheFilePath + ".tmp";
     const gzipFilePathTmp = gzipFilePath + ".tmp";
     const etagFilePath = cacheFilePath + ".etag";
     const etagFilePathTmp = etagFilePath + ".tmp";
 
-    // Don't race me
+    // Don't race me!
     if (
       (await Bun.file(cacheFilePathTmp).exists()) ||
       (await Bun.file(gzipFilePathTmp).exists()) ||
       (await Bun.file(etagFilePathTmp).exists())
     ) {
-      // Another process called this while a different cache process runs
-      // Ignore and return seems fine
+      // Another process called this function while a different
+      // cacheAndCompressFile process is already running.
+      // Ignore this attempt and return seems fine.
       return "";
     }
 
@@ -158,7 +159,8 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     const etag = await calculateEtag(cacheFilePathTmp);
     await fs.promises.writeFile(etagFilePathTmp, etag);
 
-    // rename should be almost atomic
+    // Rename the temporary files to their final destinations,
+    // this should be almost atomic.
     await fs.promises.rename(cacheFilePathTmp, cacheFilePath);
     await fs.promises.rename(gzipFilePathTmp, gzipFilePath);
     await fs.promises.rename(etagFilePathTmp, etagFilePath);
