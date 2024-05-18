@@ -172,7 +172,8 @@ pre {
   padding: 10px;
   background-color: #555;
   color: #fff;
-  text-wrap: balance;
+  text-wrap: wrap;
+  white-space: pre-wrap;
 }
 
 /* ... */

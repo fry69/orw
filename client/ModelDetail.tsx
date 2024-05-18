@@ -145,7 +145,7 @@ export const ModelDetail: React.FC = () => {
       <h3>Description</h3>
       <pre>{model.description}</pre>
       <h3>Model Details</h3>
-      <pre>{JSON.stringify(modelDetails, null, 4)}</pre>
+      <code><pre>{JSON.stringify(modelDetails, null, 4)}</pre></code>
       {Changes()}
     </div>
   );
