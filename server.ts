@@ -411,9 +411,13 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   const generateRSSFeedXML = async (): Promise<string> => {
     const feed: RSS = new RSS({
       title: "OpenRouter Model Changes",
-      description: "RSS feed for changes in OpenRouter models",
-      feed_url: `${publicURL}rss`,
+      description: "RSS feed for detected changes in the OpenRouter model list",
+      feed_url: publicURL + "rss",
       site_url: publicURL,
+      image_url: publicURL + "favicon.svg",
+      docs: "https://github.com/fry69/orw",
+      language: "en",
+      ttl: 60,
       pubDate: watcher.getDBLastChange,
     });
 
