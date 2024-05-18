@@ -26,19 +26,8 @@ export const ModelDetail: React.FC = () => {
           return;
         }
 
-        const response = await fetch(`/api/model?id=${id}`);
-        if (!response.ok) {
-          setError(`Error fetching model: ${response.status} - ${response.statusText}`);
-          return;
-        }
-
-        const data = await response.json();
-        setModel(data.data.model);
-        setChanges(data.data.changes);
-        setGlobalState((prevState) => ({
-          ...prevState,
-          status: data.status,
-        }));
+        // setModel(data.data.model);
+        // setChanges(data.data.changes);
       } catch (err) {
         setError("An unexpected error occurred while fetching the model.");
       }

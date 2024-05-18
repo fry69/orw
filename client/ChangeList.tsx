@@ -17,15 +17,7 @@ export const ChangeList: React.FC = () => {
   const filterComponent = filterComponentWrapper(filterText, setFilterText);
 
   useEffect(() => {
-    fetch("/api/changes")
-      .then((res) => res.json())
-      .then((data) => {
-        setChanges(data.data.changes);
-        setGlobalState((prevState) => ({
-          ...prevState,
-          status: data.status,
-        }));
-      });
+    setChanges(globalState.data.changes);
   }, [globalState.refreshTrigger]);
 
   useEffect(() => {

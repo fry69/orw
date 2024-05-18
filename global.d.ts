@@ -54,45 +54,19 @@ export type ServerStatus = {
   apiLastCheck: string;
   apiLastCheckStatus: string;
   dbLastChange: string;
-  dbModelCount: number;
-  dbChangesCount: number;
-  dbRemovedModelCount: number;
-  dbfirstChangeTimestamp: string;
 };
 
 /**
- * Represents the structure of the data object in an API response.
- */
-export type ResponseDataSig =
-  | Model[]
-  | {
-      changes: ModelDiff[];
-      model?: Model;
-    };
-
-/**
  * Represents a generic API response.
- * @template T - The type of data in the response, must conform to ResponseDataSig.
  */
-export interface APIResponse<T extends ResponseDataSig> {
+export interface APIResponse {
   status: ServerStatus;
-  data: T;
+  data?: {
+    models: Model[];
+    removed: Model[];
+    changes: ModelDiff[];
+  };
 }
-
-/**
- * Represents a response containing a list of models.
- */
-export type ModelsResponse = APIResponse<Model[]>;
-
-/**
- * Represents a response containing a model and its changes.
- */
-export type ModelResponse = APIResponse<ResponseDataSig>;
-
-/**
- * Represents a response containing a list of changes.
- */
-export type ChangesResponse = APIResponse<ResponseDataSig>;
 
 /**
  * Represents the private status object
@@ -112,19 +86,4 @@ export interface Status {
    * Timestamp of the data in the database
    */
   dbLastChange: Date;
-
-  /**
-   * Number of changes in database
-   */
-  dbChangesCount: number;
-
-  /**
-   * Number of removed models in database
-   */
-  dbRemovedModelCount: number;
-
-  /**
-   * Timestamp of the first change in the database (aka 'birthday')
-   */
-  dbFirstChangeTimestamp: string;
 }

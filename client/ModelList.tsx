@@ -21,19 +21,10 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
   useEffect(() => {
     let endpoint: string;
     if (props.removed) {
-      endpoint = "/api/removed";
+      setModels(globalState.data.removed);
     } else {
-      endpoint = "/api/models";
+      setModels(globalState.data.models);
     }
-    fetch(endpoint)
-      .then((res) => res.json())
-      .then((data) => {
-        setModels(data.data);
-        setGlobalState((prevState) => ({
-          ...prevState,
-          status: data.status,
-        }));
-      });
   }, [props, globalState.refreshTrigger]);
 
   useEffect(() => {

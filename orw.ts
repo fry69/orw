@@ -74,21 +74,6 @@ export class OpenRouterAPIWatcher {
      * Status of the last API check
      */
     apiLastCheckStatus: "unknown",
-
-    /**
-     * Number of changes in database
-     */
-    dbChangesCount: 0,
-
-    /**
-     * Number of removed models in database
-     */
-    dbRemovedModelCount: 0,
-
-    /**
-     * Timestamp of the first change in the database (aka 'birthday')
-     */
-    dbFirstChangeTimestamp: "",
   };
 
   /**
@@ -112,34 +97,6 @@ export class OpenRouterAPIWatcher {
   get getAPILastCheckStatus(): string {
     return this.status.apiLastCheckStatus;
   }
-  /**
-   * Get number of changes recorded in the database
-   * @returns {number} - Number of changes recorded in database
-   */
-  get getDBChangesCount(): number {
-    return this.status.dbChangesCount;
-  }
-  /**
-   * Get number of models recorded in the database
-   * @returns {number} - Number of models recorded in database
-   */
-  get getDBModelCount(): number {
-    return this.lastModelList.length;
-  }
-  /**
-   * Get number of removed models recorded in the database
-   * @returns {number} - Number of removed models recorded in database
-   */
-  get getDBRemovedModelCount(): number {
-    return this.status.dbRemovedModelCount;
-  }
-  /**
-   * Get the timestamp of the first change in the database
-   * @returns {string} - Timestamp of the first change in database
-   */
-  get getDBFirstChangeTimestamp(): string {
-    return this.status.dbFirstChangeTimestamp;
-  }
 
   /**
    * Creates a new instance of the OpenRouterAPIWatcher class.
@@ -150,7 +107,8 @@ export class OpenRouterAPIWatcher {
     this.db = db;
     runMigrations(db);
 
-    this.lastModelList = this.loadLastModelList(true);
+    this.lastModelList = this.loadLastModelList();
+    this.loadAPILastCheck();
 
     if (this.lastModelList.length === 0) {
       // Seed the database with the current model list if it's a fresh database
@@ -319,10 +277,9 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Loads the most recent list of OpenRouter models from the SQLite database.
-   * @param {boolean} [initial] - If set allow resetting lastApiCheck timestamp from database.
    * @returns An array of Model objects.
    */
-  loadLastModelList(initial: boolean = false): Model[] {
+  loadLastModelList(): Model[] {
     let mostRecentTimestamp = new Date(0);
     const query = `
     WITH latest_added_models AS (
@@ -354,7 +311,6 @@ export class OpenRouterAPIWatcher {
         return parsedData;
       });
     this.status.dbLastChange = mostRecentTimestamp;
-    this.loadDBState(initial);
     return models;
   }
 
@@ -371,37 +327,20 @@ export class OpenRouterAPIWatcher {
         model["removed_at"] = row.timestamp;
         return model;
       });
-    this.loadDBState();
     return removedModels;
   }
 
   /**
    * Loads various state and counters from the database and updates the internal status
-   * @param {boolean} [initial] - If set allow resetting lastApiCheck timestamp from database.
    */
-  loadDBState(initial: boolean = false) {
-    let result: any;
-
-    if (initial) {
-      result = this.db
-        .query("SELECT last_check, last_status FROM last_api_check WHERE id = 1")
-        .get();
-      if (result) {
-        this.status.apiLastCheck = new Date(result.last_check) ?? new Date(0);
-        this.status.apiLastCheckStatus = result.last_status ?? "unknown";
-      }
-    }
-
-    result = this.db.query("SELECT MIN(timestamp) as first_change_timestamp FROM changes").get();
+  loadAPILastCheck() {
+    const result: any = this.db
+      .query("SELECT last_check, last_status FROM last_api_check WHERE id = 1")
+      .get();
     if (result) {
-      this.status.dbFirstChangeTimestamp = result.first_change_timestamp;
+      this.status.apiLastCheck = new Date(result.last_check) ?? new Date(0);
+      this.status.apiLastCheckStatus = result.last_status ?? "unknown";
     }
-
-    result = this.db.query("SELECT count(id) as changesCount FROM changes").get();
-    this.status.dbChangesCount = result.changesCount ?? 0;
-
-    result = this.db.query("SELECT count(id) as removedModelCount FROM removed_models").get();
-    this.status.dbRemovedModelCount = result.removedModelCount ?? 0;
   }
 
   /**
@@ -429,30 +368,21 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Loads the most recent model changes from the SQLite database.
-   * @param {number} n - The maximum number of changes to load.
+   * @param {number} [n] - The maximum number of changes to load.
    * @returns {ModelDiff[]} - An array of ModelDiff objects.
    */
-  loadChanges(n: number = 10): ModelDiff[] {
-    this.loadDBState();
-    return this.db
-      .query("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?")
-      .all(n)
-      .map(this.transformChangesRow);
-  }
-
-  /**
-   * Loads the most recent model changes from the SQLite database.
-   * @param {number} n - The maximum number of changes to load.
-   * @returns {ModelDiff[]} - An array of ModelDiff objects.
-   */
-  loadChangesForModel(id: string, n: number = 10): ModelDiff[] {
-    this.loadDBState();
-    return this.db
-      .query(
-        "SELECT id, type, changes, timestamp FROM changes WHERE id = ? ORDER BY timestamp DESC LIMIT ?"
-      )
-      .all(id, n)
-      .map(this.transformChangesRow);
+  loadChanges(n?: number): ModelDiff[] {
+    if (n) {
+      return this.db
+        .query("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?")
+        .all(n)
+        .map(this.transformChangesRow);
+    } else {
+      return this.db
+        .query("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC")
+        .all()
+        .map(this.transformChangesRow);
+    }
   }
 
   /**

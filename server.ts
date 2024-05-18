@@ -5,7 +5,7 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import { createGzip } from "node:zlib";
-import type { APIResponse, Model, ResponseDataSig } from "./global";
+import type { APIResponse } from "./global";
 import RSS from "rss";
 
 /**
@@ -43,27 +43,6 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
       }
     }
   }
-
-  /**
-   * Creates an API response object with status information.
-   * @template T - The type of the response data.
-   * @param {T} data - The response data.
-   * @returns {APIResponse<T>} - The API response object.
-   */
-  const apiRespone = <T extends ResponseDataSig>(data: T): APIResponse<T> => ({
-    status: {
-      isValid: true,
-      isDevelopment,
-      apiLastCheck: watcher.getAPILastCheck.toISOString(),
-      apiLastCheckStatus: watcher.getAPILastCheckStatus,
-      dbLastChange: watcher.getDBLastChange.toISOString(),
-      dbModelCount: watcher.getDBModelCount,
-      dbChangesCount: watcher.getDBChangesCount,
-      dbRemovedModelCount: watcher.getDBRemovedModelCount,
-      dbfirstChangeTimestamp: watcher.getDBFirstChangeTimestamp,
-    },
-    data: data,
-  });
 
   /**
    * Creates a 404 error response.
@@ -477,27 +456,6 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     return feed.xml();
   };
 
-  /**
-   * Generates a response object with the given content.
-   * @template T - The type of the response data.
-   * @param {T} content - The response data.
-   * @returns {Promise<string>} - The JSON-encoded response.
-   */
-  const generateResponse = async (content: ResponseDataSig): Promise<string> => {
-    return JSON.stringify(apiRespone(content));
-  };
-
-  /**
-   * Generates a model response object with the given model and changes.
-   * @param {string} modelId - The ID of the model.
-   * @param {Model} model - The model object.
-   * @returns {Promise<string>} - The JSON-encoded model response.
-   */
-  const generateModelResponse = async (modelId: string, model: Model): Promise<string> => {
-    const changes = watcher.loadChangesForModel(modelId, 50);
-    return generateResponse({ model, changes });
-  };
-
   const server = Bun.serve({
     development: isDevelopment,
     port: import.meta.env.ORW_PORT ?? 0,
@@ -511,51 +469,57 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
         return serveStaticFile({ filePath: path.join(staticDir, url.pathname), request });
       }
 
+      // Serve generated React client application assets from the dist/assets folder
+      if (url.pathname.startsWith("/assets")) {
+        // Serve the React client application assets
+        return serveStaticFile({
+          filePath: path.join(clientDistDir, url.pathname.slice(1)),
+          request,
+        });
+      }
+
+      const statusRepsone = () => ({
+        isValid: true,
+        isDevelopment,
+        apiLastCheck: watcher.getAPILastCheck.toISOString(),
+        apiLastCheckStatus: watcher.getAPILastCheckStatus,
+        dbLastChange: watcher.getDBLastChange.toISOString(),
+      });
+
       // All other endpoints require special handling
-      switch (true) {
-        case url.pathname === "/api/models":
+      switch (url.pathname) {
+        case "/api/data":
           return cacheAndServeContent({
-            fileName: "models.json",
+            fileName: "data.json",
             contentType: "application/json",
-            contentGenerator: () => generateResponse(watcher.getLastModelList),
+            contentGenerator: async (): Promise<string> => {
+              const response: APIResponse = {
+                status: statusRepsone(),
+                data: {
+                  models: watcher.getLastModelList,
+                  removed: watcher.loadRemovedModelList(),
+                  changes: watcher.loadChanges(),
+                },
+              };
+              return JSON.stringify(response);
+            },
             request,
           });
 
-        case url.pathname === "/api/removed":
+        case "/api/status":
           return cacheAndServeContent({
-            fileName: "removed.json",
+            fileName: "data.json",
             contentType: "application/json",
-            contentGenerator: () => generateResponse(watcher.loadRemovedModelList()),
+            contentGenerator: async (): Promise<string> => {
+              const response: APIResponse = {
+                status: statusRepsone(),
+              };
+              return JSON.stringify(response);
+            },
             request,
           });
 
-        case url.pathname === "/api/model":
-          const id_raw = url.searchParams.get("id");
-          if (id_raw) {
-            const id = decodeURIComponent(id_raw);
-            if (id.length < 256 && /^[a-zA-Z0-9\/\-:.]+$/.test(id)) {
-              const model = watcher.getLastModelList.find((m) => m.id === id);
-              if (model) {
-                return cacheAndServeContent({
-                  fileName: `model-${btoa(id)}.json`,
-                  contentType: "application/json",
-                  contentGenerator: () => generateModelResponse(id, model),
-                  request,
-                });
-              }
-            }
-          }
-          return error404("", "Model not found");
-
-        case url.pathname === "/api/changes":
-          return cacheAndServeContent({
-            fileName: "changes.json",
-            contentType: "application/json",
-            contentGenerator: () => generateResponse({ changes: watcher.loadChanges(100) }),
-            request,
-          });
-
-        case url.pathname === "/rss":
+        case "/rss":
           return cacheAndServeContent({
             fileName: "rss.xml",
             contentType: "application/rss+xml",
@@ -564,20 +528,13 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
             request,
           });
 
-        case url.pathname === "/":
-        case url.pathname === "/list":
-        case url.pathname === "/removed":
-        case url.pathname === "/changes":
-        case url.pathname === "/model":
+        case "/":
+        case "/list":
+        case "/removed":
+        case "/changes":
+        case "/model":
           // Serve the index.html file containing the React app
           return serveStaticFile({ filePath: path.join(clientDistDir, "index.html"), request });
-
-        case url.pathname.startsWith("/assets"):
-          // Serve the React client application assets
-          return serveStaticFile({
-            filePath: path.join(clientDistDir, url.pathname.slice(1)),
-            request,
-          });
 
         default:
           return error404(url.pathname);
