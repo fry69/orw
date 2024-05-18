@@ -15,18 +15,19 @@ import RSS from "rss";
  */
 export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void> => {
   const cacheDir = import.meta.env.ORW_CACHE_DIR ?? path.join(".", "cache");
-  const clientDistDir = import.meta.env.ORW_CLIENT_PATH ?? path.join(".", "dist");
-  const staticDir = import.meta.env.ORW_STATIC_DIR ?? path.join(".", "static");
+  const clientDir = import.meta.env.ORW_CLIENT_PATH ?? path.join(".", "dist");
   const disableCache = import.meta.env.ORW_DISABLE_CACHE;
   const contentSecurityPolicy = import.meta.env.ORW_CSP;
 
   // Read all filenames in the static directory, make sure they are real files, no subdirs allowed
   const staticFiles: string[] = [];
-  fs.readdirSync(staticDir).forEach((fileName) => {
-    const filePath = path.join(staticDir, fileName);
-    const stats = fs.statSync(filePath);
-    if (stats.isFile()) {
-      staticFiles.push(fileName);
+  fs.readdirSync(clientDir, { recursive: true }).forEach((fileName) => {
+    if (typeof fileName === "string") {
+      const filePath = path.join(clientDir, fileName);
+      const stats = fs.statSync(filePath);
+      if (stats.isFile()) {
+        staticFiles.push(fileName);
+      }
     }
   });
 
@@ -464,18 +465,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     fetch(request) {
       const url = new URL(request.url);
 
-      // Serve all files found in the static directory from the root
+      // Serve all files found in the client directory from the root
       if (staticFiles.includes(url.pathname.slice(1))) {
-        return serveStaticFile({ filePath: path.join(staticDir, url.pathname), request });
-      }
-
-      // Serve generated React client application assets from the dist/assets folder
-      if (url.pathname.startsWith("/assets")) {
-        // Serve the React client application assets
-        return serveStaticFile({
-          filePath: path.join(clientDistDir, url.pathname.slice(1)),
-          request,
-        });
+        return serveStaticFile({ filePath: path.join(clientDir, url.pathname), request });
       }
 
       const statusRepsone = () => ({
@@ -494,7 +486,6 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
             contentType: "application/json",
             contentGenerator: async (): Promise<string> => {
               const response: APIResponse = {
-                status: statusRepsone(),
                 data: {
                   models: watcher.getLastModelList,
                   removed: watcher.loadRemovedModelList(),
@@ -508,7 +499,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
         case "/api/status":
           return cacheAndServeContent({
-            fileName: "data.json",
+            fileName: "status.json",
             contentType: "application/json",
             contentGenerator: async (): Promise<string> => {
               const response: APIResponse = {
@@ -534,7 +525,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
         case "/changes":
         case "/model":
           // Serve the index.html file containing the React app
-          return serveStaticFile({ filePath: path.join(clientDistDir, "index.html"), request });
+          return serveStaticFile({ filePath: path.join(clientDir, "index.html"), request });
 
         default:
           return error404(url.pathname);

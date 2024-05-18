@@ -60,7 +60,7 @@ export type ServerStatus = {
  * Represents a generic API response.
  */
 export interface APIResponse {
-  status: ServerStatus;
+  status?: ServerStatus;
   data?: {
     models: Model[];
     removed: Model[];

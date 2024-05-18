@@ -20,7 +20,6 @@ export const NavBar: React.FC = () => {
         .then((data) => {
           setGlobalState((prevState) => ({
             ...prevState,
-            status: data.status,
             data: data.data,
           }));
         });
@@ -72,7 +71,7 @@ export const NavBar: React.FC = () => {
       updateLoop();
       interval = setInterval(updateLoop, 60_000); // Update every minute
     } else {
-      loadData();
+      loadData().then(() => loadStatus());
     }
 
     // Clean up the interval when the component is unmounted
