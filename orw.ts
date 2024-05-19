@@ -16,10 +16,11 @@ const dbFilePath = import.meta.env.ORW_DB_PATH ?? "./orw.db";
 let fixedModelList: Model[] = [];
 if (isDevelopment) {
   // Don't query the acutal API during development, use a fixed model list instead if present
-  // generate a current model list snapshot with
-  // `curl https://openrouter.ai/api/v1/models > models.json`
   if (await Bun.file(fixedModelFilePath).exists()) {
     fixedModelList = JSON.parse(await Bun.file(fixedModelFilePath).text()).data;
+  } else {
+    console.log("No fixed model list found for development, generate a snapshot with:");
+    console.log("curl https://openrouter.ai/api/v1/models > models.json");
   }
   console.log("--- Watcher initializing in development mode ---");
 }
@@ -208,18 +209,27 @@ export class OpenRouterAPIWatcher {
       if (response) {
         const { data } = await response.json();
         if (data) {
+          this.status.apiLastCheckStatus = "success";
+          this.updateAPILastCheck();
           return data;
         } else {
+          this.status.apiLastCheckStatus = "failed";
+          this.updateAPILastCheck();
           return [];
         }
       }
     } catch (err: unknown) {
+      let errorMessage: string;
       if (err instanceof Error) {
-        this.error(`model list fetch failed with ${err.message}`);
+        errorMessage = `model list fetch failed with ${err.message}`;
       } else {
-        this.error(`model list fetch failed with unknown error ${err}`);
+        errorMessage = `model list fetch failed with unknown error ${err}`;
       }
+      this.error(errorMessage);
+      this.status.apiLastCheckStatus = "failed";
     }
+    this.status.apiLastCheckStatus = "failed";
+    this.updateAPILastCheck();
     return [];
   }
 

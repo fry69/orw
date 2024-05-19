@@ -9,7 +9,7 @@ import type { APIResponse } from "./global";
 import RSS from "rss";
 
 /**
- * Creates a new server instance and starts watching the OpenRouter API.
+ * Creates a new server instance to serve the web client and changes as an RSS feed.
  * @param {OpenRouterAPIWatcher} watcher - The OpenRouterAPIWatcher instance to use.
  * @returns {Promise<void>}
  */
@@ -18,8 +18,10 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   const clientDir = import.meta.env.ORW_CLIENT_PATH ?? path.join(".", "dist");
   const disableCache = import.meta.env.ORW_DISABLE_CACHE;
   const contentSecurityPolicy = import.meta.env.ORW_CSP;
+  const port = import.meta.env.ORW_PORT ?? 0;
+  const hostname = import.meta.env.ORW_HOSTNAME ?? "0.0.0.0";
 
-  // Read all filenames in the static directory, make sure they are real files, no subdirs allowed
+  // Read all filenames in the static directory, make sure they are real files, including subdirs
   const staticFiles: string[] = [];
   fs.readdirSync(clientDir, { recursive: true }).forEach((fileName) => {
     if (typeof fileName === "string") {
@@ -460,8 +462,8 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
   const server = Bun.serve({
     development: isDevelopment,
-    port: import.meta.env.ORW_PORT ?? 0,
-    hostname: import.meta.env.ORW_HOSTNAME ?? "0.0.0.0",
+    port,
+    hostname,
 
     fetch(request) {
       const url = new URL(request.url);
