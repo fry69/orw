@@ -1,6 +1,8 @@
 // orw.ts
 import fs from "node:fs";
 import path from "node:path";
+import { createGzip } from "node:zlib";
+import { pipeline } from "node:stream/promises";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
 import type { Model, ModelDiff, Status } from "./global";
@@ -9,7 +11,7 @@ import { createServer } from "./server";
 
 export const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
 const fixedModelFilePath = import.meta.env.ORW_MODEL_FILE || "./models.json";
-const backupPath = import.meta.env.ORW_BACKUP_PATH || "./backup";
+const backupDir = import.meta.env.ORW_BACKUP_PATH || "./backup";
 const logFilePath = import.meta.env.ORW_LOG_PATH ?? "./orw.log";
 const dbFilePath = import.meta.env.ORW_DB_PATH ?? "./orw.db";
 
@@ -100,6 +102,14 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
+   * Get the path to the current database backup file.
+   * @returns {string} -  The path to the current database backup file.
+   */
+  get getDbBackupPath(): string {
+    return path.join(backupDir, path.basename(dbFilePath) + ".backup");
+  }
+
+  /**
    * Creates a new instance of the OpenRouterAPIWatcher class.
    * @param {Database} db  - The SQLite database to use for storing model changes.
    * @param {string} [logFilePath]  - Path to the logfile
@@ -139,13 +149,13 @@ export class OpenRouterAPIWatcher {
       }
     }
 
-    if (backupPath) {
+    if (backupDir) {
       // Create the backup directory if it doesn't exist
-      if (!fs.existsSync(backupPath)) {
+      if (!fs.existsSync(backupDir)) {
         try {
-          fs.mkdirSync(backupPath, { recursive: true });
+          fs.mkdirSync(backupDir, { recursive: true });
         } catch (err) {
-          const message = `Error creating backup directory at ${backupPath}: ${err}`;
+          const message = `Error creating backup directory at ${backupDir}: ${err}`;
           this.error(message);
           console.error(message);
           throw err;
@@ -551,13 +561,13 @@ export class OpenRouterAPIWatcher {
    */
   private async backupDb(initial: boolean = false) {
     const dbBackupFile = path.basename(dbFilePath) + ".backup";
-    const dbBackupFilePath = path.join(backupPath, dbBackupFile);
+    const dbBackupFilePath = path.join(backupDir, dbBackupFile);
     if (initial && (await Bun.file(dbBackupFilePath).exists())) {
       return;
     }
     const dbPrevBackupFilePath = dbBackupFilePath + ".prev";
     if (await Bun.file(dbBackupFilePath).exists()) {
-      this.log("Moving current backup");
+      this.log("Moving current database backup");
       if (await Bun.file(dbPrevBackupFilePath).exists()) {
         await fs.promises.unlink(dbPrevBackupFilePath);
       }
@@ -565,6 +575,18 @@ export class OpenRouterAPIWatcher {
     }
     this.log("Creating new database backup");
     this.db.run(`VACUUM INTO '${dbBackupFilePath}'`);
+
+    // create compressed backup file to serve for bootstrapping
+    const dbBackupFilePathGz = dbBackupFilePath + ".gz";
+    if (await Bun.file(dbBackupFilePathGz).exists()) {
+      await fs.promises.unlink(dbBackupFilePathGz);
+    }
+    await pipeline(
+      fs.createReadStream(dbBackupFilePath),
+      createGzip(),
+      fs.createWriteStream(dbBackupFilePathGz)
+    );
+
     this.log("Database backup finished");
   }
 

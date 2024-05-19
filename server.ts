@@ -15,7 +15,8 @@ import RSS from "rss";
  */
 export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void> => {
   const cacheDir = import.meta.env.ORW_CACHE_DIR ?? path.join(".", "cache");
-  const clientDir = import.meta.env.ORW_CLIENT_PATH ?? path.join(".", "dist");
+  const clientDir = import.meta.env.ORW_CLIENT_DIR ?? path.join(".", "dist");
+  const backupDir = import.meta.env.ORW_BACKUP_DIR ?? path.join(".", "backup");
   const disableCache = import.meta.env.ORW_DISABLE_CACHE;
   const contentSecurityPolicy = import.meta.env.ORW_CSP;
   const port = import.meta.env.ORW_PORT ?? 0;
@@ -186,6 +187,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * Options for wrapper around Response()
    * @property {ArrayBuffer | Promise<string>} content - The content for the response
    * @property {string} [contentType] - The Content-Type for the response
+   * @property {string} [contentDisposistion] - The Content-Disposistion for the response
    * @property {string} [cacheControl] - The Cache-Control for the response
    * @property {string} [contentEncoing] - The Content-Encoding for the response
    * @property {string} [etag] - The Etag for the response
@@ -194,7 +196,8 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    */
   interface responseWrapperOptions {
     content: ArrayBuffer | Promise<string>;
-    contentType?: string;
+    contentType: string;
+    contentDisposistion?: string;
     cacheControl?: string;
     contentEncoding?: string;
     etag?: string;
@@ -211,6 +214,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   const responseWrapper = async ({
     content,
     contentType,
+    contentDisposistion,
     cacheControl,
     contentEncoding,
     etag,
@@ -221,6 +225,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
     // Create response headers
     const headers: any = {};
     headers["Content-Type"] = contentType;
+    if (contentDisposistion) {
+      headers["Content-Disposistion"] = contentDisposistion;
+    }
     if (contentSecurityPolicy) {
       headers["Content-Security-Policy"] = contentSecurityPolicy;
     }
@@ -326,12 +333,14 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
    * @interface serveStaticFileOptions
    * @property {string} filePath - The path to the file to serve.
    * @property {string} [contentType] - The content type of the file.
+   * @property {string} [contentDisposistion] - The content disposistion if served as a file to download.
    * @property {string} [cacheControl] - The Cache-Control header for this resource.
    * @property {Promise<Request>} request - The incoming request.
    */
   interface serveStaticFileOptions {
     filePath: string;
     contentType?: string;
+    contentDisposistion?: string;
     cacheControl?: string;
     request: Request;
   }
@@ -344,11 +353,12 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   const serveStaticFile = async ({
     filePath,
     contentType = Bun.file(filePath).type,
+    contentDisposistion,
     cacheControl,
     request,
   }: serveStaticFileOptions): Promise<Response> => {
     const lastModified = await getLastModifiedTimestamp(filePath);
-    const gzipFilePath = `${filePath}.gz`;
+    const gzipFilePath = filePath.endsWith(".gz") ? filePath : `${filePath}.gz`;
     const etagFilePath = `${filePath}.etag`;
     let etag = "";
 
@@ -388,6 +398,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
           return responseWrapper({
             content: await Bun.file(gzipFilePath).arrayBuffer(),
             contentType,
+            contentDisposistion,
             cacheControl,
             contentEncoding: "gzip",
             etag,
@@ -400,6 +411,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
       return responseWrapper({
         content: await Bun.file(filePath).arrayBuffer(),
         contentType,
+        contentDisposistion,
         cacheControl,
         etag,
         lastModified,
@@ -530,6 +542,14 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
         case "/model":
           // Serve the index.html file containing the React app
           return serveStaticFile({ filePath: path.join(clientDir, "index.html"), request });
+
+        case "/orw.db.gz":
+          // Serve database backup file for bootstrapping other installations
+          return serveStaticFile({
+            filePath: watcher.getDbBackupPath + ".gz",
+            contentDisposistion: 'attachment; filename="orw.db.gz"',
+            request,
+          });
 
         default:
           return error404(url.pathname);
