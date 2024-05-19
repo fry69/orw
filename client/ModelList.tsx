@@ -19,6 +19,10 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
   const filterComponent = filterComponentWrapper(filterText, setFilterText);
 
   useEffect(() => {
+    if (!globalState.status.isValid) {
+      // No point in doing anything, if the data is not valid.
+      return;
+    }
     if (props.removed) {
       setModels(globalState.data.removed);
     } else {

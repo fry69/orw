@@ -4,11 +4,12 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "start:clean": "bun run dist-clean && bun run start",
+    "start": "bun run build && bun run orw.ts",
     "build": "vite build --mode production",
     "watch:vite-standalone": "vite build --watch --mode development",
     "watch:vite": "vite --mode development --open",
     "watch": "bun run --hot orw.ts & bun run watch:vite",
-    "start": "bun run orw.ts",
     "query": "bun run orw.ts --query",
     "once": "bun run orw.ts --once",
     "dist-clean": "rm -fR dist cache",

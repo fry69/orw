@@ -18,6 +18,10 @@ export const ModelDetail: React.FC = () => {
   const { globalState, setGlobalState } = useContext(GlobalContext);
 
   useEffect(() => {
+    if (!globalState.status.isValid) {
+      // No point in doing anything, if the data is not valid.
+      return;
+    }
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get("id");
     if (!id) {
@@ -35,6 +39,7 @@ export const ModelDetail: React.FC = () => {
         return;
       }
     }
+    setError(null); // Clear any set error, now we found a valid model.
     setModel(foundModel);
     const foundChanges: ModelDiffClient[] = globalState.data.changes.filter((obj) => obj.id === id);
     setChanges(foundChanges);
@@ -57,7 +62,7 @@ export const ModelDetail: React.FC = () => {
 
   if (!model) {
     return <></>;
-    // This produces just unnecessary flicker
+    // This produces unnecessary flicker:
     //   return <Error message="Loading..." type="info" />;
   }
 

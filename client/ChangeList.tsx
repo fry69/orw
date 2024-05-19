@@ -17,6 +17,10 @@ export const ChangeList: React.FC = () => {
   const filterComponent = filterComponentWrapper(filterText, setFilterText);
 
   useEffect(() => {
+    if (!globalState.status.isValid) {
+      // No point in doing anything, if the data is not valid.
+      return;
+    }
     setChanges(globalState.data.changes);
   }, [globalState.refreshTrigger]);
 
