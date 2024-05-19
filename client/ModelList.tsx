@@ -8,8 +8,14 @@ import { filterComponentWrapper } from "./FilterComponent";
 
 export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
   const navigate = useNavigate();
-  const [models, setModels] = useState<Model[]>([]);
-  const { globalState, setGlobalState } = useContext(GlobalContext);
+  const { globalData, setGlobalClient } = useContext(GlobalContext);
+
+  let models: Model[];
+  if (props.removed) {
+    models = globalData.removed;
+  } else {
+    models = globalData.models;
+  }
 
   const [filterText, setFilterText] = useState("");
   const filteredModels = models.filter(
@@ -19,23 +25,11 @@ export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
   const filterComponent = filterComponentWrapper(filterText, setFilterText);
 
   useEffect(() => {
-    if (!globalState.status.isValid) {
-      // No point in doing anything, if the data is not valid.
-      return;
-    }
-    if (props.removed) {
-      setModels(globalState.data.removed);
-    } else {
-      setModels(globalState.data.models);
-    }
-  }, [props, globalState.refreshTrigger]);
-
-  useEffect(() => {
-    setGlobalState((prevState) => ({
+    setGlobalClient((prevState) => ({
       ...prevState,
       navBarDynamicElement: filterComponent,
     }));
-  }, [filterText, globalState.refreshTrigger]);
+  }, [filterText]);
 
   const roundKb = (num: number) => {
     if (num < 1024) {

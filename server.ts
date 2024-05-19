@@ -5,7 +5,8 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import { createGzip } from "node:zlib";
-import type { APIResponse } from "./global";
+import { APIVersion } from "./version";
+import type { APIResponse, ServerStatus } from "./global";
 import RSS from "rss";
 
 /**
@@ -16,7 +17,6 @@ import RSS from "rss";
 export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void> => {
   const cacheDir = import.meta.env.ORW_CACHE_DIR ?? path.join(".", "cache");
   const clientDir = import.meta.env.ORW_CLIENT_DIR ?? path.join(".", "dist");
-  const backupDir = import.meta.env.ORW_BACKUP_DIR ?? path.join(".", "backup");
   const disableCache = import.meta.env.ORW_DISABLE_CACHE;
   const contentSecurityPolicy = import.meta.env.ORW_CSP;
   const port = import.meta.env.ORW_PORT ?? 0;
@@ -483,7 +483,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
         return serveStaticFile({ filePath: path.join(clientDir, url.pathname), request });
       }
 
-      const statusRepsone = () => ({
+      const statusRepsone = (): ServerStatus => ({
         isValid: true,
         isDevelopment,
         apiLastCheck: watcher.getAPILastCheck.toISOString(),
@@ -499,6 +499,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
             contentType: "application/json",
             contentGenerator: async (): Promise<string> => {
               const response: APIResponse = {
+                version: APIVersion,
                 data: {
                   models: watcher.getLastModelList,
                   removed: watcher.loadRemovedModelList(),
@@ -517,6 +518,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
             contentType: "application/json",
             contentGenerator: async (): Promise<string> => {
               const response: APIResponse = {
+                version: APIVersion,
                 status: statusRepsone(),
               };
               return JSON.stringify(response);

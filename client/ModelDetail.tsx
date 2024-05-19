@@ -1,24 +1,22 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import type { Model } from "../global";
 import { GlobalContext } from "./GlobalState";
-import type { ModelDiffClient } from "./client";
+import type { ModelDiffClient as ModelDiff } from "./client";
 import {
   calcCostPerMillion,
   calcCostPerThousand,
   changeSnippet,
   dateStringDuration,
 } from "./utils";
-import Error from "./Error";
 
 export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
-  const [changes, setChanges] = useState<ModelDiffClient[]>([]);
+  const [changes, setChanges] = useState<ModelDiff[]>([]);
   const [removed, setRemoved] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const { globalState, setGlobalState } = useContext(GlobalContext);
+  const { globalStatus, globalData, setGlobalClient, setError } = useContext(GlobalContext);
 
   useEffect(() => {
-    if (!globalState.status.isValid) {
+    if (!globalStatus.isValid) {
       // No point in doing anything, if the data is not valid.
       return;
     }
@@ -28,9 +26,9 @@ export const ModelDetail: React.FC = () => {
       setError("No model ID provided.");
       return;
     }
-    let foundModel: Model = globalState.data.models.find((obj: Model) => obj.id === id);
+    let foundModel: Model = globalData.models.find((obj: Model) => obj.id === id);
     if (!foundModel) {
-      const removedModel: Model = globalState.data.removed.find((obj: Model) => obj.id === id);
+      const removedModel: Model = globalData.removed.find((obj: Model) => obj.id === id);
       if (removedModel) {
         setRemoved(true);
         foundModel = removedModel;
@@ -39,14 +37,13 @@ export const ModelDetail: React.FC = () => {
         return;
       }
     }
-    setError(null); // Clear any set error, now we found a valid model.
     setModel(foundModel);
-    const foundChanges: ModelDiffClient[] = globalState.data.changes.filter((obj) => obj.id === id);
+    const foundChanges: ModelDiff[] = globalData.changes.filter((obj) => obj.id === id);
     setChanges(foundChanges);
-  }, [globalState.refreshTrigger]);
+  }, [globalData, globalStatus]);
 
   useEffect(() => {
-    setGlobalState((prevState) => ({
+    setGlobalClient((prevState) => ({
       ...prevState,
       navBarDynamicElement: (
         <>
@@ -54,16 +51,10 @@ export const ModelDetail: React.FC = () => {
         </>
       ),
     }));
-  }, [model]);
-
-  if (error) {
-    return <Error message={error} type="error" />;
-  }
+  }, []);
 
   if (!model) {
     return <></>;
-    // This produces unnecessary flicker:
-    //   return <Error message="Loading..." type="info" />;
   }
 
   // Create a new object that hides the already shown 'description' property

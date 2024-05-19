@@ -1,14 +1,24 @@
-import type { ServerStatus } from "../global";
+import type { ServerData, ServerStatus } from "../global";
 
-export interface GlobalState {
-  status: ServerStatus;
-  data: {
-    models: Model[];
-    removed: Model[];
-    changes: ModelDiffClient[];
-  };
+export interface GlobalClient {
   navBarDynamicElement: React.ReactElement;
-  refreshTrigger: boolean;
+}
+
+export interface GlobalError {
+  isError: boolean;
+  message: string;
+}
+
+export interface ServerDataClient {
+  models: Model[];
+  removed: Model[];
+  changes: ModelDiffClient[];
+}
+
+export interface APIResponseClient {
+  version: number;
+  status?: ServerStatus;
+  data?: ServerDataClient;
 }
 
 export interface ModelDiffClient {

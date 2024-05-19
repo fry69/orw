@@ -1,37 +1,79 @@
 // src/GlobalState.tsx
 import { createContext, useState } from "react";
-import type { GlobalState } from "./client";
+import type { GlobalClient, GlobalError, ServerDataClient as ServerData } from "./client";
+import type { ServerStatus } from "../global";
 
-const defaultGlobalState: GlobalState = {
-  status: {
-    isValid: false,
-    isDevelopment: false,
-    apiLastCheck: "",
-    apiLastCheckStatus: "",
-    dbLastChange: "",
-  },
-  data: {
-    models: [],
-    removed: [],
-    changes: [],
-  },
+const defaultGlobalStatus: ServerStatus = {
+  isValid: false,
+  isDevelopment: false,
+  apiLastCheck: "",
+  apiLastCheckStatus: "",
+  dbLastChange: "",
+};
+
+const defaultGlobalData: ServerData = {
+  models: [],
+  removed: [],
+  changes: [],
+};
+
+const defaultGlobalClient: GlobalClient = {
   navBarDynamicElement: <></>,
-  refreshTrigger: false,
+};
+
+const defaultGlobalError: GlobalError = {
+  isError: false,
+  message: "",
 };
 
 export const GlobalContext = createContext<{
-  globalState: GlobalState;
-  setGlobalState: React.Dispatch<React.SetStateAction<GlobalState>>;
+  globalStatus: ServerStatus;
+  setGlobalStatus: React.Dispatch<React.SetStateAction<ServerStatus>>;
+  globalData: ServerData;
+  setGlobalData: React.Dispatch<React.SetStateAction<ServerData>>;
+  globalClient: GlobalClient;
+  setGlobalClient: React.Dispatch<React.SetStateAction<GlobalClient>>;
+  globalError: GlobalError;
+  setError: (message?: string) => void;
 }>({
-  globalState: defaultGlobalState,
-  setGlobalState: () => {},
+  globalStatus: defaultGlobalStatus,
+  setGlobalStatus: () => {},
+  globalData: defaultGlobalData,
+  setGlobalData: () => {},
+  globalClient: defaultGlobalClient,
+  setGlobalClient: () => {},
+  globalError: defaultGlobalError,
+  setError: (messsage?: string) => {},
 });
 
 export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [globalState, setGlobalState] = useState<GlobalState>(defaultGlobalState);
+  const [globalStatus, setGlobalStatus] = useState<ServerStatus>(defaultGlobalStatus);
+  const [globalData, setGlobalData] = useState<ServerData>(defaultGlobalData);
+  const [globalClient, setGlobalClient] = useState<GlobalClient>(defaultGlobalClient);
+  const [globalError, setGlobalError] = useState<GlobalError>(defaultGlobalError);
+
+  const setError = (message?: string) => {
+    if (message) {
+      console.error(message);
+      setGlobalError({ isError: true, message });
+    } else if (!message || message === "") {
+      setGlobalError({ isError: false, message: "" });
+    }
+  };
 
   return (
-    <GlobalContext.Provider value={{ globalState, setGlobalState }}>
+    <GlobalContext.Provider
+      value={{
+        globalStatus,
+        setGlobalStatus,
+        globalData,
+        setGlobalData,
+        globalClient,
+        setGlobalClient,
+        globalError,
+        setError,
+      }}
+    >
       {children}
     </GlobalContext.Provider>
   );

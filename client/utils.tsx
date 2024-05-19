@@ -1,6 +1,6 @@
 import { DateTime, Duration } from "luxon";
 import { toHumanDurationExtended } from "@kitsuyui/luxon-ext";
-import type { ModelDiffClient } from "./client";
+import type { ModelDiffClient as ModelDiff } from "./client";
 
 export const dateString = (timestamp: string) =>
   DateTime.fromISO(timestamp).setLocale("en-us").toLocaleString(DateTime.DATETIME_MED);
@@ -52,7 +52,7 @@ export const calcCostPerMillion = (floatString: string, unit?: string): string =
 export const calcCostPerThousand = (floatString: string, unit?: string): string =>
   calcCost(floatString, 1_000, unit ? "per thousand " + unit : "");
 
-export const changeSnippet = (change: ModelDiffClient) => {
+export const changeSnippet = (change: ModelDiff) => {
   if (change.changes) {
     return (
       <>

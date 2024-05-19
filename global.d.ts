@@ -57,15 +57,21 @@ export type ServerStatus = {
 };
 
 /**
+ * Represents the server data in an API response.
+ */
+export type ServerData = {
+  models: Model[];
+  removed: Model[];
+  changes: ModelDiff[];
+};
+
+/**
  * Represents a generic API response.
  */
 export interface APIResponse {
+  version: number;
   status?: ServerStatus;
-  data?: {
-    models: Model[];
-    removed: Model[];
-    changes: ModelDiff[];
-  };
+  data?: ServerData;
 }
 
 /**

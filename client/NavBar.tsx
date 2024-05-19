@@ -3,77 +3,104 @@ import { NavLink } from "react-router-dom";
 import { GlobalContext } from "./GlobalState";
 import { durationAgo } from "./utils";
 import { DateTime } from "luxon";
+import { APIVersion } from "../version";
+import type { APIResponseClient as APIResponse } from "./client";
 
 export const NavBar: React.FC = () => {
-  const { globalState, setGlobalState } = useContext(GlobalContext);
+  const { globalStatus, setGlobalStatus, globalData, setGlobalData, globalClient, setError } =
+    useContext(GlobalContext);
   const [dbLastChangeDuration, setDbLastChangeDuration] = useState("");
   const [apiLastCheckDuration, setApiLastCheckDuration] = useState("");
   const [startIntervalTrigger, setStartIntervalTrigger] = useState(false);
 
-  let dbfirstChangeTimestamp: string = globalState.data.changes.at(-1)?.timestamp ?? "";
+  let dbfirstChangeTimestamp: string = globalData.changes.at(-1)?.timestamp ?? "";
 
-  const loadData = async () => {
-    await fetch("/api/data")
-      .then((res) => res.json())
-      .then((data) => {
-        setGlobalState((prevState) => ({
-          ...prevState,
-          data: data.data,
-        }));
-      });
-  };
-
-  const loadStatus = async () => {
-    await fetch("/api/status")
-      .then((res) => res.json())
-      .then((data) => {
-        setGlobalState((prevState) => ({
-          ...prevState,
-          status: data.status,
-        }));
-      });
+  const fetchAPI = async (endpoint: string): Promise<APIResponse> => {
+    try {
+      const response = await fetch(endpoint);
+      const data: APIResponse = await response.json();
+      if (!data) {
+        throw "No data received from API";
+      }
+      if (data.version !== APIVersion) {
+        throw "API version mismatch, please reload client";
+      }
+      return data;
+    } catch (err) {
+      console.error(err);
+    }
+    return { version: -1 };
   };
 
   useEffect(() => {
-    loadData()
-      .then(() => loadStatus())
-      .then(() => setStartIntervalTrigger(true));
+    // On first mount, load all API data unconditionally
+    const loadAPI = async () => {
+      const { data } = await fetchAPI("/api/data");
+      if (data) {
+        setGlobalData(() => data);
+      }
+      const { status } = await fetchAPI("/api/status");
+      if (status) {
+        setGlobalStatus(() => status);
+      }
+    };
+
+    loadAPI()
+      .then(() => setStartIntervalTrigger(true))
+      .catch((err) => {
+        setError(err.message);
+        console.error(err.message);
+      });
   }, []);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
+    let localStatus = globalStatus;
 
-    const handleHardRefresh = () => {
-      window.location.href = window.location.href;
-    };
-
-    const contentRefresh = () => {
-      setGlobalState((prevState) => ({
-        ...prevState,
-        refreshTrigger: !prevState.refreshTrigger,
-      }));
+    const handleHardRefresh = async () => {
+      // Only load data from the API when database has changed
+      try {
+        const prevDbTimestamp = new Date(globalStatus.dbLastChange).getTime();
+        const { status } = await fetchAPI("/api/status");
+        if (status) {
+          setGlobalStatus(() => status);
+          localStatus = status;
+          const newDbTimestamp = new Date(status.dbLastChange).getTime();
+          if (newDbTimestamp > prevDbTimestamp) {
+            const { data } = await fetchAPI("/api/data");
+            if (data) {
+              setGlobalData(() => data);
+            }
+          }
+        }
+      } catch (err: any) {
+        setError(err.message);
+        console.error(err.message);
+      }
+      if (interval) {
+        clearInterval(interval); // Kill existing interval
+        updateLoop(); // Show new duration immediately because interval starts with delay
+        interval = setInterval(updateLoop, 60_000); // Restart update every minute
+      }
     };
 
     const updateLoop = () => {
       // Update duration strings
-      setDbLastChangeDuration(durationAgo(globalState.status.dbLastChange));
+      setDbLastChangeDuration(durationAgo(localStatus.dbLastChange));
       setApiLastCheckDuration(
-        globalState.status.isDevelopment
-          ? "[dev mode]"
-          : durationAgo(globalState.status.apiLastCheck, true)
+        localStatus.isDevelopment ? "[dev mode]" : durationAgo(localStatus.apiLastCheck, true)
       );
       // If last API check is longer than an hour ago, check for new data, trigger a refresh if needed
       const now = Date.now();
-      const oneHourAndOneMinute = 3600_000 + 6_000; // 1 hour + 1 minute in milliseconds
-      if (now - new Date(globalState.status.apiLastCheck).getTime() > oneHourAndOneMinute) {
-        handleHardRefresh();
+      const oneHourAndOneMinute = 3600_000 + 60_000; // 1 hour + 1 minute in milliseconds
+      if (now - new Date(localStatus.apiLastCheck).getTime() > oneHourAndOneMinute) {
+        handleHardRefresh().catch(console.error);
       }
     };
 
     // Start the 60 second update interval if API data is valid, otherwise load data from API
-    if (globalState.status.isValid && !interval) {
-      contentRefresh();
-      updateLoop();
+    if (localStatus.isValid && !interval) {
+      updateLoop(); // Immediate call to update duration strings because interval starts with delay
       interval = setInterval(updateLoop, 60_000); // Update every minute
     }
 
@@ -117,24 +144,24 @@ export const NavBar: React.FC = () => {
             <img className="image-link" src="/rss.svg" alt="RSS Feeed" width="16" height="16" />
           </a>
         </li>
-        <li className="dynamic-element">{globalState.navBarDynamicElement}</li>
+        <li className="dynamic-element">{globalClient.navBarDynamicElement}</li>
         <li className="info-container">
           Last DB change:
           <b className="timestamp dynamic">{dbLastChangeDuration}</b>
           Next API check:
-          <b className={globalState.status.apiLastCheckStatus + " timestamp dynamic"}>
+          <b className={globalStatus.apiLastCheckStatus + " timestamp dynamic"}>
             {apiLastCheckDuration}
           </b>
         </li>
         <li className="info-container">
           Active models:
-          <b className="timestamp">{globalState.data.models.length}</b>
+          <b className="timestamp">{globalData.models.length}</b>
           Removed models:
-          <b className="timestamp">{globalState.data.removed.length}</b>
+          <b className="timestamp">{globalData.removed.length}</b>
         </li>
         <li className="info-container gridgap">
           Recorded changes:
-          <b className="timestamp rowspan">{globalState.data.changes.length}</b>
+          <b className="timestamp rowspan">{globalData.changes.length}</b>
           <span>(since {DateTime.fromISO(dbfirstChangeTimestamp ?? "").toISODate()})</span>
         </li>
       </ul>
