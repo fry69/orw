@@ -43,6 +43,10 @@ export const NavBar: React.FC = () => {
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
 
+    const handleHardRefresh = () => {
+      window.location.href = window.location.href;
+    };
+
     const contentRefresh = () => {
       setGlobalState((prevState) => ({
         ...prevState,
@@ -62,12 +66,7 @@ export const NavBar: React.FC = () => {
       const now = Date.now();
       const oneHourAndOneMinute = 3600_000 + 6_000; // 1 hour + 1 minute in milliseconds
       if (now - new Date(globalState.status.apiLastCheck).getTime() > oneHourAndOneMinute) {
-        const prevDbLastChange = globalState.status.dbLastChange;
-        loadStatus().then(() => {
-          if (prevDbLastChange !== globalState.status.dbLastChange) {
-            loadData().then(() => contentRefresh());
-          }
-        });
+        handleHardRefresh();
       }
     };
 
