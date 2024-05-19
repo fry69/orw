@@ -13,6 +13,7 @@ import Error from "./Error";
 export const ModelDetail: React.FC = () => {
   const [model, setModel] = useState<Model | null>(null);
   const [changes, setChanges] = useState<ModelDiffClient[]>([]);
+  const [removed, setRemoved] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { globalState, setGlobalState } = useContext(GlobalContext);
 
@@ -21,10 +22,19 @@ export const ModelDetail: React.FC = () => {
     const id = urlParams.get("id");
     if (!id) {
       setError("No model ID provided.");
-      // error = "No model ID provided.";
       return;
     }
-    const foundModel: Model = globalState.data.models.find((obj: Model) => obj.id === id);
+    let foundModel: Model = globalState.data.models.find((obj: Model) => obj.id === id);
+    if (!foundModel) {
+      const removedModel: Model = globalState.data.removed.find((obj: Model) => obj.id === id);
+      if (removedModel) {
+        setRemoved(true);
+        foundModel = removedModel;
+      } else {
+        setError("Unknown model ID.");
+        return;
+      }
+    }
     setModel(foundModel);
     const foundChanges: ModelDiffClient[] = globalState.data.changes.filter((obj) => obj.id === id);
     setChanges(foundChanges);
@@ -118,7 +128,8 @@ export const ModelDetail: React.FC = () => {
         : calcCostPerMillion(price, unit);
       return (
         <>
-          <span className="price-prefix">{prefix}</span> <b>{formattedPrice}</b>
+          <span className={"price-prefix" + (removed ? " removed" : "")}>{prefix}</span>
+          <b className={removed ? "removed" : ""}>{formattedPrice}</b>
         </>
       );
     }
@@ -132,12 +143,15 @@ export const ModelDetail: React.FC = () => {
           {Price()}
         </div>
         <div>
-          <h2 className="change-model-name">{model.name}</h2>
-          <h4>{model.id}</h4>
+          <h2 className="model-details-model-name">{model.name + (removed ? " (removed)" : "")}</h2>
+          <h4 className={removed ? "removed" : ""}>{model.id}</h4>
         </div>
         <div>
           <h3>Context Length</h3>
-          <p style={{ fontSize: "x-large", textAlign: "center" }}>
+          <p
+            className={removed ? "removed" : ""}
+            style={{ fontSize: "x-large", textAlign: "center" }}
+          >
             {model.context_length.toLocaleString()}
           </p>
         </div>
@@ -145,7 +159,9 @@ export const ModelDetail: React.FC = () => {
       <h3>Description</h3>
       <pre>{model.description}</pre>
       <h3>Model Details</h3>
-      <code><pre>{JSON.stringify(modelDetails, null, 4)}</pre></code>
+      <code>
+        <pre>{JSON.stringify(modelDetails, null, 4)}</pre>
+      </code>
       {Changes()}
     </div>
   );

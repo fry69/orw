@@ -213,9 +213,13 @@ pre {
   text-overflow: "";
 }
 
-.change-model-name {
+.model-details-model-name {
   color: burlywood;
   align-self: center;
+}
+
+.removed {
+  text-decoration: line-through 2px solid red;
 }
 
 .change-list {
