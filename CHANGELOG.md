@@ -1,3 +1,15 @@
+v0.2.0:
+
+Web client improvments:
+
+- code cleanup/simplification
+- much improved error handling
+- no more hard refresh
+- API version check to prevent future incompatiblity problems
+- much improved update loop
+- improved API handling
+- show version
+
 v0.1.0:
 
 - massive internal simplification
