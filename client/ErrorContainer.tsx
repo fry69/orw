@@ -8,7 +8,11 @@ export const ErrorContainer: React.FC<{ children: React.ReactNode }> = ({ childr
   const location = useLocation();
 
   useEffect(() => {
-    setError();
+    if (globalError.preventClearing) {
+      // prevent clearing error (e.g. problems connecting to the API)
+      return;
+    }
+    setError(); // clear out error on location change (e.g. soft error like wrong model ID)
   }, [location]);
 
   if (globalError.isError) {

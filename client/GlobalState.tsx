@@ -23,6 +23,7 @@ const defaultGlobalClient: GlobalClient = {
 
 const defaultGlobalError: GlobalError = {
   isError: false,
+  preventClearing: false,
   message: "",
 };
 
@@ -34,7 +35,7 @@ export const GlobalContext = createContext<{
   globalClient: GlobalClient;
   setGlobalClient: React.Dispatch<React.SetStateAction<GlobalClient>>;
   globalError: GlobalError;
-  setError: (message?: string) => void;
+  setError: (message?: string, preventClearing?: boolean) => void;
 }>({
   globalStatus: defaultGlobalStatus,
   setGlobalStatus: () => {},
@@ -43,7 +44,7 @@ export const GlobalContext = createContext<{
   globalClient: defaultGlobalClient,
   setGlobalClient: () => {},
   globalError: defaultGlobalError,
-  setError: (messsage?: string) => {},
+  setError: (message?: string, preventClearing?: boolean) => {},
 });
 
 export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -52,12 +53,12 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [globalClient, setGlobalClient] = useState<GlobalClient>(defaultGlobalClient);
   const [globalError, setGlobalError] = useState<GlobalError>(defaultGlobalError);
 
-  const setError = (message?: string) => {
+  const setError = (message?: string, preventClearing: boolean = false) => {
     if (message) {
       console.error(message);
-      setGlobalError({ isError: true, message });
+      setGlobalError({ isError: true, message, preventClearing });
     } else if (!message || message === "") {
-      setGlobalError({ isError: false, message: "" });
+      setGlobalError({ isError: false, message: "", preventClearing: false });
     }
   };
 

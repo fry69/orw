@@ -6,6 +6,7 @@ export interface GlobalClient {
 
 export interface GlobalError {
   isError: boolean;
+  preventClearing: boolean;
   message: string;
 }
 

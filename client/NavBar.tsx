@@ -23,10 +23,11 @@ export const NavBar: React.FC = () => {
         throw "No data received from API";
       }
       if (data.version !== APIVersion) {
-        throw "API version mismatch, please reload client";
+        throw "API version mismatch: Please try reloading, clear caches, etc.";
       }
       return data;
-    } catch (err) {
+    } catch (err: any) {
+      setError(err ?? "API error", true);
       console.error(err);
     }
     return { version: -1 };
@@ -48,8 +49,8 @@ export const NavBar: React.FC = () => {
     loadAPI()
       .then(() => setStartIntervalTrigger(true))
       .catch((err) => {
-        setError(err.message);
-        console.error(err.message);
+        setError(err ?? "Error loading data from API", true);
+        console.error(err);
       });
   }, []);
 
@@ -74,8 +75,8 @@ export const NavBar: React.FC = () => {
           }
         }
       } catch (err: any) {
-        setError(err.message);
-        console.error(err.message);
+        setError(err ?? "Error reloading data from API", true);
+        console.error(err);
       }
       if (interval) {
         clearInterval(interval); // Kill existing interval
