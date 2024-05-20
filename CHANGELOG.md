@@ -1,3 +1,10 @@
+v0.2.1:
+
+Server/watcher improvements:
+
+- revamped memory caching
+- fixed dbLastChange bug
+
 v0.2.0:
 
 Web client improvments:
