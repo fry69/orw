@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { GlobalContext } from "./GlobalState";
 import { durationAgo } from "./utils";
 import { DateTime } from "luxon";
-import { APIVersion } from "../version";
+import { VERSION, APIVersion } from "../version";
 import type { APIResponseClient as APIResponse } from "./client";
 
 export const NavBar: React.FC = () => {
@@ -164,6 +164,9 @@ export const NavBar: React.FC = () => {
           Recorded changes:
           <b className="timestamp rowspan">{globalData.changes.length}</b>
           <span>(since {DateTime.fromISO(dbfirstChangeTimestamp ?? "").toISODate()})</span>
+        </li>
+        <li className="info-container single-column">
+          Version: <b>{VERSION}</b>
         </li>
       </ul>
     </nav>

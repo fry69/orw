@@ -122,6 +122,11 @@ nav li.info-container {
   text-align: end;
 }
 
+nav li.info-container.single-column {
+  grid-template-columns: 1fr;
+  text-align: center;
+}
+
 nav li .timestamp {
   color: burlywood;
 }

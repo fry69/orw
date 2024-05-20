@@ -8,6 +8,7 @@ import { diff } from "deep-diff";
 import type { Model, ModelDiff, Status } from "./global";
 import { runMigrations } from "./db-migration";
 import { createServer } from "./server";
+import { VERSION } from "./version";
 
 export const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
 const fixedModelFilePath = import.meta.env.ORW_MODEL_FILE || "./models.json";
@@ -654,7 +655,10 @@ export class OpenRouterAPIWatcher {
 
 if (import.meta.main) {
   // Usage:
-  if (Bun.argv.includes("--query")) {
+  if (Bun.argv.includes("--version")) {
+    console.log(`orw Version ${VERSION}`);
+    process.exit(0);
+  } else if (Bun.argv.includes("--query")) {
     if (!fs.existsSync(dbFilePath)) {
       console.error(`Error: database ${dbFilePath} not found`);
       process.exit(1);
