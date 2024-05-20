@@ -501,9 +501,9 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
               const response: APIResponse = {
                 version: APIVersion,
                 data: {
-                  models: watcher.getLastModelList,
-                  removed: watcher.loadRemovedModelList(),
-                  changes: watcher.loadChanges(),
+                  models: watcher.getModelList,
+                  removed: watcher.getRemovedModelList,
+                  changes: watcher.getChangesList,
                 },
               };
               return JSON.stringify(response);

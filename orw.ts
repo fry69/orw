@@ -50,14 +50,40 @@ export class OpenRouterAPIWatcher {
   /**
    * Memory cache for the last model list from the database
    */
-  private lastModelList: Model[] = [];
+  private modelList: Model[] = [];
 
   /**
    * Get cached model list
    * @returns {Model[]} - The cached model list
    */
-  get getLastModelList(): Model[] {
-    return this.lastModelList;
+  get getModelList(): Model[] {
+    return this.modelList;
+  }
+
+  /**
+   * Memory cache for the last model list from the database
+   */
+  private removedModelList: Model[] = [];
+
+  /**
+   * Get cached model list
+   * @returns {Model[]} - The cached model list
+   */
+  get getRemovedModelList(): Model[] {
+    return this.removedModelList;
+  }
+
+  /**
+   * Memory cache for the last changes list from the database
+   */
+  private changeslList: ModelDiff[] = [];
+
+  /**
+   * Get cached changes list
+   * @returns {ModelDiff[]} - The cached model list
+   */
+  get getChangesList(): ModelDiff[] {
+    return this.changeslList;
   }
 
   /**
@@ -119,19 +145,24 @@ export class OpenRouterAPIWatcher {
     this.db = db;
     runMigrations(db);
 
-    this.lastModelList = this.loadLastModelList();
+    this.modelList = this.loadModelList();
+    this.removedModelList = this.loadRemovedModelList();
+    this.changeslList = this.loadChanges();
     this.loadAPILastCheck();
+    if (this.changeslList.length > 0) {
+      this.status.dbLastChange = this.changeslList.at(0)?.timestamp ?? new Date(0);
+    }
 
-    if (this.lastModelList.length === 0) {
+    if (this.modelList.length === 0) {
       // Seed the database with the current model list if it's a fresh database
       this.log("empty model list in database");
       this.initFlag = true;
 
-      this.getModelList().then((newModels) => {
+      this.getAPIModelList().then((newModels) => {
         if (newModels.length > 0) {
           this.status.apiLastCheckStatus = "success";
           this.updateAPILastCheck();
-          this.lastModelList = newModels;
+          this.modelList = newModels;
           this.status.dbLastChange = new Date();
           this.storeModelList(newModels, this.status.dbLastChange);
           this.log("seeded database with model list from API");
@@ -206,7 +237,7 @@ export class OpenRouterAPIWatcher {
    * Fetches the current list of OpenRouter models from the API.
    * @returns {Model[]} - A Promise that resolves to an array of Model objects.
    */
-  async getModelList(): Promise<Model[]> {
+  async getAPIModelList(): Promise<Model[]> {
     if (isDevelopment) {
       this.log(
         "Warning: using fixed model list, switch to production mode to load live model list from API"
@@ -300,8 +331,7 @@ export class OpenRouterAPIWatcher {
    * Loads the most recent list of OpenRouter models from the SQLite database.
    * @returns An array of Model objects.
    */
-  loadLastModelList(): Model[] {
-    let mostRecentTimestamp = new Date(0);
+  loadModelList(): Model[] {
     const query = `
     WITH latest_added_models AS (
       SELECT id, MAX(timestamp) AS latest_timestamp
@@ -321,17 +351,12 @@ export class OpenRouterAPIWatcher {
       .query(query)
       .all()
       .map((row: any) => {
-        const currentTimestamp = new Date(row.model_timestamp);
-        if (currentTimestamp > mostRecentTimestamp) {
-          mostRecentTimestamp = currentTimestamp;
-        }
         const parsedData = JSON.parse(row.data);
         if (row.added_timestamp) {
           return { ...parsedData, added_at: row.added_timestamp };
         }
         return parsedData;
       });
-    this.status.dbLastChange = mostRecentTimestamp;
     return models;
   }
 
@@ -513,19 +538,19 @@ export class OpenRouterAPIWatcher {
     if (this.initFlag) {
       this.initFlag = false;
     } else {
-      let newModels = await this.getModelList();
+      let newModels = await this.getAPIModelList();
       if (newModels.length === 0) {
         this.status.apiLastCheckStatus = "unknown";
         this.updateAPILastCheck();
         this.error("empty model list from API, retry in one minute");
         await new Promise((resolve) => setTimeout(resolve, 60_000)); // 1 minute
-        newModels = await this.getModelList();
+        newModels = await this.getAPIModelList();
       }
       if (newModels.length === 0) {
         this.status.apiLastCheckStatus = "failed";
         this.error("empty model list from API after retry, skipping check");
       } else {
-        const oldModels = this.lastModelList;
+        const oldModels = this.modelList;
         const changes = this.findChanges(newModels, oldModels);
         this.status.apiLastCheckStatus = "success";
         this.updateAPILastCheck();
@@ -535,10 +560,14 @@ export class OpenRouterAPIWatcher {
           this.storeChanges(changes);
           this.log("Changes detected:");
           this.log(JSON.stringify(changes, null, 4));
-          // re-load model list from db to keep added_at properties
+
+          // re-load model lists from db to keep added_at properties
           // copying the API model list removes all added_at properties
-          this.lastModelList = this.loadLastModelList();
+          this.modelList = this.loadModelList();
+          this.removedModelList = this.loadRemovedModelList();
+          this.changeslList = this.loadChanges();
           this.status.dbLastChange = timestamp;
+
           // Create a database backup
           await this.backupDb();
           // no need to fall through

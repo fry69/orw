@@ -70,7 +70,7 @@ describe("OpenRouterAPIWatcher", () => {
     const models: Model[] = [dummyModel];
 
     watcher.storeModelList(models, new Date());
-    const loadedModels = watcher.loadLastModelList();
+    const loadedModels = watcher.loadModelList();
 
     expect(loadedModels).toEqual(models);
   });
@@ -164,12 +164,12 @@ describe("OpenRouterAPIWatcher", () => {
     const date2 = new Date(2023, 4, 2);
     watcher.storeModelList(newModels, date2);
 
-    const loadedModels = watcher.loadLastModelList();
+    const loadedModels = watcher.loadModelList();
     expect(loadedModels).toEqual([dummyModel, otherModel]);
   });
 
   test("should handle an empty database", () => {
-    const loadedModels = watcher.loadLastModelList();
+    const loadedModels = watcher.loadModelList();
     expect(loadedModels).toEqual([]);
   });
 });
