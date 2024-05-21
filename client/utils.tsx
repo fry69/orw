@@ -52,7 +52,7 @@ export const calcCostPerMillion = (floatString: string, unit?: string): string =
 export const calcCostPerThousand = (floatString: string, unit?: string): string =>
   calcCost(floatString, 1_000, unit ? "per thousand " + unit : "");
 
-export const changeSnippet = (change: ModelDiff) => {
+export const ChangeSnippet = (change: ModelDiff) => {
   if (change.changes) {
     return (
       <>

@@ -2,7 +2,7 @@ import { useContext, useEffect, useState, type FC } from "react";
 import { filterComponentWrapper } from "./FilterComponent";
 import { GlobalContext } from "./GlobalState";
 import { Link } from "react-router-dom";
-import { changeSnippet, dateStringDuration } from "./utils";
+import { ChangeSnippet, dateStringDuration } from "./utils";
 
 export const ChangeList: FC = () => {
   const { globalData, setGlobalClient } = useContext(GlobalContext);
@@ -31,7 +31,7 @@ export const ChangeList: FC = () => {
             </Link>{" "}
             {change.type} at {dateStringDuration(change.timestamp)}
           </p>
-          {changeSnippet(change)}
+          {change.type === "removed" ? "" : ChangeSnippet(change)}
         </div>
       ))}
     </div>

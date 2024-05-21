@@ -5,7 +5,7 @@ import { GlobalContext } from "./GlobalState";
 import {
   calcCostPerMillion,
   calcCostPerThousand,
-  changeSnippet,
+  ChangeSnippet,
   dateStringDuration,
 } from "./utils";
 
@@ -60,7 +60,7 @@ export const ModelDetail: FC = () => {
   }
 
   // Create a new object that hides the already shown 'description' property
-  const modelDetails: any = { ...model };
+  const modelDetails: Model = { ...model };
   modelDetails["description"] = "[...]";
 
   const Changes = () => {
@@ -73,7 +73,7 @@ export const ModelDetail: FC = () => {
               <p>
                 {change.type} at {dateStringDuration(change.timestamp)}
               </p>
-              {change.type === "added" ? "" : changeSnippet(change)}
+              {change.type === "changed" ? ChangeSnippet(change) : ""}
             </div>
           ))}
         </>
@@ -97,10 +97,15 @@ export const ModelDetail: FC = () => {
       return (
         <>
           <p className="price-container" style={{ fontSize: "large" }}>
-            {PriceElement("Input:", model.pricing.prompt, "tokens")}
-            {PriceElement("Output:", model.pricing.completion, "tokens")}
-            {PriceElement("Request:", model.pricing.request, "requests", true)}
-            {PriceElement("Image:", model.pricing.image, "images", true)}
+            <PriceElement prefix="Input:" price={model.pricing.prompt} unit="tokens" />
+            <PriceElement prefix="Output:" price={model.pricing.completion} unit="tokens" />
+            <PriceElement
+              prefix="Request:"
+              price={model.pricing.request}
+              unit="requests"
+              thousands
+            />
+            <PriceElement prefix="Image:" price={model.pricing.image} unit="images" thousands />
           </p>
         </>
       );
@@ -125,12 +130,14 @@ export const ModelDetail: FC = () => {
     return children;
   };
 
-  const PriceElement = (
-    prefix: string,
-    price: string,
-    unit: string,
-    thousands: boolean = false
-  ) => {
+  interface PriceElementOptions {
+    prefix: string;
+    price: string;
+    unit: string;
+    thousands?: boolean;
+  }
+
+  const PriceElement = ({ prefix, price, unit, thousands = false }: PriceElementOptions) => {
     if (parseFloat(price) > 0) {
       const formattedPrice = thousands
         ? calcCostPerThousand(price, unit)
@@ -161,10 +168,14 @@ export const ModelDetail: FC = () => {
       <div className="model-details-col-container">
         <div>
           <h3>Price</h3>
-          <DelContainer>{Price()}</DelContainer>
+          <DelContainer>
+            <Price />
+          </DelContainer>
         </div>
         <div>
-          <h2 className="model-details-model-name">{ModelName()}</h2>
+          <h2 className="model-details-model-name">
+            <ModelName />
+          </h2>
           <DelContainer>
             <h4>{model.id}</h4>
           </DelContainer>
@@ -184,7 +195,7 @@ export const ModelDetail: FC = () => {
       <code>
         <pre>{JSON.stringify(modelDetails, null, 4)}</pre>
       </code>
-      {Changes()}
+      <Changes />
     </div>
   );
 };

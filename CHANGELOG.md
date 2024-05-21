@@ -3,6 +3,7 @@ v0.2.2-dev:
 - refactor main API/update logic from NavBar into Brain
 - consolidate client/server types
 - improved fetch error handling
+- minor other refactor
 
 v0.2.1:
 
