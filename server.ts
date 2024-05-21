@@ -462,7 +462,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
           null,
           2
         )}</code>`,
-        url: `${publicURL}model?id=${change.id}&timestamp=${change.timestamp.toISOString()}`,
+        url: `${publicURL}model?id=${change.id}&timestamp=${change.timestamp}`,
         date: change.timestamp,
       });
     }
