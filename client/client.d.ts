@@ -2,6 +2,10 @@ import type { ServerData, ServerStatus } from "../global";
 
 export interface GlobalClient {
   navBarDynamicElement: React.ReactElement;
+  navBarDurations: {
+    dbLastChange: string;
+    apiLastCheck: string;
+  }
 }
 
 export interface GlobalError {

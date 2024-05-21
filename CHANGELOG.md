@@ -1,3 +1,7 @@
+v0.2.2-dev:
+
+- refactor main API/update logic from NavBar into Brain
+
 v0.2.1:
 
 Server/watcher improvements:

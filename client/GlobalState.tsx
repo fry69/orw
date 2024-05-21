@@ -19,6 +19,10 @@ const defaultGlobalData: ServerData = {
 
 const defaultGlobalClient: GlobalClient = {
   navBarDynamicElement: <></>,
+  navBarDurations: {
+    dbLastChange: "",
+    apiLastCheck: "",
+  },
 };
 
 const defaultGlobalError: GlobalError = {

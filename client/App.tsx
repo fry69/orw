@@ -7,10 +7,12 @@ import { ChangeList } from "./ChangeList";
 import { ModelList } from "./ModelList";
 import { GlobalProvider } from "./GlobalState";
 import { ErrorContainer } from "./ErrorContainer";
+import { Brain } from "./Brain";
 
 const App: React.FC = () => {
   return (
     <GlobalProvider>
+      <Brain />
       <div className="content-container">
         <NavBar />
         <div className="main-content">
