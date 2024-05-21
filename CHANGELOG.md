@@ -4,6 +4,9 @@ v0.2.2-dev:
 - consolidate client/server types
 - improved fetch error handling
 - minor other refactor
+- implemented soft fetch error backoff
+  - every error doubles interval time
+  - hard refresh browser window after doubling 5 times (153 min)
 
 v0.2.1:
 

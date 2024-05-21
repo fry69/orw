@@ -1,14 +1,21 @@
-import { useContext, useEffect, useState, type FC } from "react";
+import { useContext, useEffect, useRef, useState, type FC } from "react";
 import { GlobalContext } from "./GlobalState";
 import type { APIResponse } from "../global";
 import { APIVersion } from "../version";
 import { durationAgo } from "./utils";
 
-const updateInterval = 60_000; // One minute in milliseconds
+const initialUpdateInterval = 60_000; // One minute in milliseconds
 const refreshInterval = 3600_000 + 60_000; // One hour and one minute in milliseconds
 
+// Values for testing during development
+// const initialUpdateInterval = 5_000; // Five seconds in milliseconds
+// const refreshInterval = 10_000; // Ten seconds in milliseconds
+
+let updateInterval = initialUpdateInterval; // Current update interval, adjustable for soft error backoff
+
+// Fake fetch function for testing error conditions
 // const fail = async (ignore: any) => {
-//   await new Promise((resolve) => setTimeout(resolve, 1_000)); // 1 sec
+//   await new Promise((resolve) => setTimeout(resolve, 1_000)); // 1 sec delay to not fail too fast repeatedly
 //   return new Response(null, { status: 200 });
 // };
 
@@ -16,6 +23,14 @@ export const Brain: FC = () => {
   const { globalStatus, setGlobalStatus, setGlobalData, setGlobalClient, setError } =
     useContext(GlobalContext);
   const [startIntervalTrigger, setStartIntervalTrigger] = useState(false);
+  const errorCount = useRef(0);
+
+  const errorHandler = (message: string) => {
+    setError(message, true);
+    console.error(message);
+    errorCount.current++;
+    updateInterval *= 2; // Double interval with every error
+  };
 
   const fetchAPI = async (endpoint: string): Promise<APIResponse> => {
     try {
@@ -35,11 +50,14 @@ export const Brain: FC = () => {
       if (data.version !== APIVersion) {
         throw "Version mismatch: Please try reloading, clear caches, etc.";
       }
+      // If we made it here, everythings seems fine, let's clear any existing error
+      setError();
+      // Reset updateInterval and error count
+      updateInterval = initialUpdateInterval;
+      errorCount.current = 0;
       return data;
     } catch (err) {
-      const errorMessage = `API failed to load, please try again in a few minutes (${err})`;
-      setError(errorMessage, true);
-      console.error(errorMessage);
+      errorHandler(`API failed to load (${err})`);
     }
     return { version: -1 };
   };
@@ -60,9 +78,7 @@ export const Brain: FC = () => {
     loadAPI()
       .then(() => setStartIntervalTrigger(true))
       .catch((err) => {
-        const errorMessage = `Error loading data from API: ${err}`;
-        setError(errorMessage, true);
-        console.error(errorMessage);
+        errorHandler(`Error loading data from API: ${err}`);
       });
   }, []);
 
@@ -70,7 +86,20 @@ export const Brain: FC = () => {
     let interval: ReturnType<typeof setInterval> | null = null;
     let localStatus = globalStatus;
 
-    const handleHardRefresh = async () => {
+    const updateDuration = () => {
+      // Update duration strings
+      setGlobalClient((prevState) => ({
+        ...prevState,
+        navBarDurations: {
+          dbLastChange: durationAgo(localStatus.dbLastChange),
+          apiLastCheck: localStatus.isDevelopment
+            ? "[dev mode]"
+            : durationAgo(localStatus.apiLastCheck, true),
+        },
+      }));
+    };
+
+    const handleRefresh = async () => {
       // Only load data from the API when database has changed
       try {
         const prevDbTimestamp = new Date(localStatus.dbLastChange).getTime();
@@ -87,43 +116,36 @@ export const Brain: FC = () => {
           }
         }
       } catch (err: any) {
-        const errorMessage = `Error reloading data from API: ${err}`;
-        setError(errorMessage, true);
-        console.error(errorMessage);
+        errorHandler(`Error reloading data from API: ${err}`);
       }
       if (interval) {
+        // After doubling interval 5 times (153 min), let's hard refresh the browser window
+        if (errorCount.current > 5) {
+          // A clear error message is better than a stale client
+          console.log("Giving up retrying after 5 times, refreshing window");
+          window.location.reload();
+        }
         clearInterval(interval); // Kill existing interval
-        updateLoop(); // Show new duration immediately because interval starts with delay
-        interval = setInterval(updateLoop, updateInterval); // Restart update every minute
+        updateDuration(); // Show new duration immediately because interval starts with delay
+        interval = setInterval(updateLoop, updateInterval); // Restart update with current interval
       }
     };
 
     const updateLoop = () => {
-      // Update duration strings
-      setGlobalClient((prevState) => ({
-        ...prevState,
-        navBarDurations: {
-          dbLastChange: durationAgo(localStatus.dbLastChange),
-          apiLastCheck: localStatus.isDevelopment
-            ? "[dev mode]"
-            : durationAgo(localStatus.apiLastCheck, true),
-        },
-      }));
+      updateDuration();
       // If last API check is longer than an hour ago, check for new data, trigger a refresh if needed
       const now = Date.now();
       if (now - new Date(localStatus.apiLastCheck).getTime() > refreshInterval) {
-        handleHardRefresh().catch((err: any) => {
-          const errorMessage = `Error trying to reload data from API: ${err}`;
-          setError(errorMessage, true);
-          console.error(errorMessage);
+        handleRefresh().catch((err: any) => {
+          errorHandler(`Error trying to reload data from API: ${err}`);
         });
       }
     };
 
     // Start the 60 second update interval if API data is valid, otherwise load data from API
     if (localStatus.isValid && !interval) {
-      updateLoop(); // Immediate call to update duration strings because interval starts with delay
-      interval = setInterval(updateLoop, updateInterval); // Update every minute
+      updateDuration(); // Immediate call to update duration strings because interval starts with delay
+      interval = setInterval(updateLoop, updateInterval); // Start interval
     }
 
     // Clean up the interval when the component is unmounted
