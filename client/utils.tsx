@@ -1,6 +1,6 @@
 import { DateTime, Duration } from "luxon";
 import { toHumanDurationExtended } from "@kitsuyui/luxon-ext";
-import type { ModelDiffClient as ModelDiff } from "./client";
+import type { ModelDiff } from "../global";
 
 export const dateString = (timestamp: string) =>
   DateTime.fromISO(timestamp).setLocale("en-us").toLocaleString(DateTime.DATETIME_MED);

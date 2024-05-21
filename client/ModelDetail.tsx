@@ -1,7 +1,6 @@
 import { useContext, useEffect, useState } from "react";
-import type { Model } from "../global";
+import type { Model, ModelDiff } from "../global";
 import { GlobalContext } from "./GlobalState";
-import type { ModelDiffClient as ModelDiff } from "./client";
 import {
   calcCostPerMillion,
   calcCostPerThousand,
@@ -26,9 +25,11 @@ export const ModelDetail: React.FC = () => {
       setError("No model ID provided.");
       return;
     }
-    let foundModel: Model = globalData.models.find((obj: Model) => obj.id === id);
+    let foundModel: Model | undefined = globalData.models.find((obj: Model) => obj.id === id);
     if (!foundModel) {
-      const removedModel: Model = globalData.removed.find((obj: Model) => obj.id === id);
+      const removedModel: Model | undefined = globalData.removed.find(
+        (obj: Model) => obj.id === id
+      );
       if (removedModel) {
         setRemoved(true);
         foundModel = removedModel;

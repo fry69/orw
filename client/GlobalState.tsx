@@ -1,7 +1,7 @@
 // src/GlobalState.tsx
 import { createContext, useState } from "react";
-import type { GlobalClient, GlobalError, ServerDataClient as ServerData } from "./client";
-import type { ServerStatus } from "../global";
+import type { GlobalClient, GlobalError } from "./client";
+import type { ServerStatus, ServerData } from "../global";
 
 const defaultGlobalStatus: ServerStatus = {
   isValid: false,

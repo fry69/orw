@@ -150,7 +150,7 @@ export class OpenRouterAPIWatcher {
     this.changeslList = this.loadChanges();
     this.loadAPILastCheck();
     if (this.changeslList.length > 0) {
-      this.status.dbLastChange = this.changeslList.at(0)?.timestamp ?? new Date(0);
+      this.status.dbLastChange = new Date(Date.parse(this.changeslList.at(0)?.timestamp!)) ?? new Date(0);
     }
 
     if (this.modelList.length === 0) {
@@ -401,14 +401,14 @@ export class OpenRouterAPIWatcher {
         id: row.id,
         type: row.type,
         changes,
-        timestamp: new Date(row.timestamp),
+        timestamp: row.timestamp,
       };
     }
     return {
       id: row.id,
       type: row.type,
       model: changes,
-      timestamp: new Date(row.timestamp),
+      timestamp: row.timestamp,
     };
   };
 
@@ -441,7 +441,7 @@ export class OpenRouterAPIWatcher {
         change.id,
         change.type,
         change.changes ? JSON.stringify(change.changes) : JSON.stringify(change.model),
-        change.timestamp.toISOString(),
+        change.timestamp,
       ]);
     }
   }
@@ -464,7 +464,7 @@ export class OpenRouterAPIWatcher {
           id: newModel.id,
           type: "added",
           model: newModel,
-          timestamp,
+          timestamp: timestamp.toISOString(),
         });
         this.storeAddedModel(newModel, timestamp);
       }
@@ -479,7 +479,7 @@ export class OpenRouterAPIWatcher {
           id: oldModel.id,
           type: "removed",
           model: oldModel,
-          timestamp,
+          timestamp: timestamp.toISOString(),
         });
         this.storeRemovedModel(oldModel, timestamp);
       }
@@ -495,7 +495,7 @@ export class OpenRouterAPIWatcher {
             ...diff,
             id: newModel.id,
             type: "changed",
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
           });
         }
       }

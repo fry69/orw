@@ -42,7 +42,7 @@ export interface ModelDiff {
   type: ModelChangeType;
   model?: Model;
   changes?: { [key: string]: { old: any; new: any } };
-  timestamp: Date;
+  timestamp: string;
 }
 
 /**

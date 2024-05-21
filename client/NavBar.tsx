@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { GlobalContext } from "./GlobalState";
 import { DateTime } from "luxon";
-import { VERSION, APIVersion } from "../version";
+import { VERSION } from "../version";
 
 export const NavBar: React.FC = () => {
   const { globalStatus, globalData, globalClient } =

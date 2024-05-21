@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "./GlobalState";
-import type { APIResponseClient as APIResponse } from "./client";
+import type { APIResponse } from "../global";
 import { APIVersion } from "../version";
 import { durationAgo } from "./utils";
 
