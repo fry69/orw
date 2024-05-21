@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, type FC } from "react";
 import { filterComponentWrapper } from "./FilterComponent";
 import { GlobalContext } from "./GlobalState";
 import { Link } from "react-router-dom";
 import { changeSnippet, dateStringDuration } from "./utils";
 
-export const ChangeList: React.FC = () => {
+export const ChangeList: FC = () => {
   const { globalData, setGlobalClient } = useContext(GlobalContext);
 
   const [filterText, setFilterText] = useState("");

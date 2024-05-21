@@ -223,7 +223,7 @@ pre {
   align-self: center;
 }
 
-.removed {
+del {
   text-decoration: line-through 2px solid red;
 }
 
@@ -246,10 +246,6 @@ pre {
   grid-template-columns: auto 1fr;
   column-gap: 0.5em;
   row-gap: 0.25em;
-}
-
-.price-prefix {
-  text-align: end;
 }
 
 @media (max-width: 767px) {

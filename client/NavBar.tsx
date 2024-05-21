@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, type FC } from "react";
 import { NavLink } from "react-router-dom";
 import { GlobalContext } from "./GlobalState";
 import { DateTime } from "luxon";
 import { VERSION } from "../version";
 
-export const NavBar: React.FC = () => {
+export const NavBar: FC = () => {
   const { globalStatus, globalData, globalClient } =
     useContext(GlobalContext);
 

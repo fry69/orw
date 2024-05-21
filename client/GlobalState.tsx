@@ -1,5 +1,6 @@
 // src/GlobalState.tsx
 import { createContext, useState } from "react";
+import type { FC, ReactNode, Dispatch, SetStateAction} from "react";
 import type { GlobalClient, GlobalError } from "./client";
 import type { ServerStatus, ServerData } from "../global";
 
@@ -33,11 +34,11 @@ const defaultGlobalError: GlobalError = {
 
 export const GlobalContext = createContext<{
   globalStatus: ServerStatus;
-  setGlobalStatus: React.Dispatch<React.SetStateAction<ServerStatus>>;
+  setGlobalStatus: Dispatch<SetStateAction<ServerStatus>>;
   globalData: ServerData;
-  setGlobalData: React.Dispatch<React.SetStateAction<ServerData>>;
+  setGlobalData: Dispatch<SetStateAction<ServerData>>;
   globalClient: GlobalClient;
-  setGlobalClient: React.Dispatch<React.SetStateAction<GlobalClient>>;
+  setGlobalClient: Dispatch<SetStateAction<GlobalClient>>;
   globalError: GlobalError;
   setError: (message?: string, preventClearing?: boolean) => void;
 }>({
@@ -51,7 +52,7 @@ export const GlobalContext = createContext<{
   setError: (message?: string, preventClearing?: boolean) => {},
 });
 
-export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const GlobalProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [globalStatus, setGlobalStatus] = useState<ServerStatus>(defaultGlobalStatus);
   const [globalData, setGlobalData] = useState<ServerData>(defaultGlobalData);
   const [globalClient, setGlobalClient] = useState<GlobalClient>(defaultGlobalClient);

@@ -1,5 +1,5 @@
 // client/App.tsx
-import React from "react";
+import type { FC } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { NavBar } from "./NavBar";
 import { ModelDetail } from "./ModelDetail";
@@ -9,7 +9,7 @@ import { GlobalProvider } from "./GlobalState";
 import { ErrorContainer } from "./ErrorContainer";
 import { Brain } from "./Brain";
 
-const App: React.FC = () => {
+const App: FC = () => {
   return (
     <GlobalProvider>
       <Brain />

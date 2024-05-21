@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, type FC } from "react";
 import { GlobalContext } from "./GlobalState";
 import type { APIResponse } from "../global";
 import { APIVersion } from "../version";
 import { durationAgo } from "./utils";
 
-export const Brain: React.FC = () => {
+export const Brain: FC = () => {
   const { globalStatus, setGlobalStatus, setGlobalData, setGlobalClient, setError } =
     useContext(GlobalContext);
   const [startIntervalTrigger, setStartIntervalTrigger] = useState(false);

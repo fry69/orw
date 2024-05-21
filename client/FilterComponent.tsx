@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import type { ChangeEvent, KeyboardEvent, SetStateAction } from "react";
 import styled from "styled-components";
 import Button from "./Button";
 
@@ -33,9 +34,9 @@ const ClearButton = styled(Button)`
 
 interface FilterComponentProps {
   filterText: string;
-  onFilter: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onFilter: (event: ChangeEvent<HTMLInputElement>) => void;
   onClear: () => void;
-  onKeydown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onKeydown?: (event: KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export const FilterComponent = ({
@@ -89,11 +90,11 @@ export const FilterComponent = ({
 
 export const filterComponentWrapper = (
   filterText: string,
-  setFilterText: (value: React.SetStateAction<string>) => void
+  setFilterText: (value: SetStateAction<string>) => void
 ) => (
   <FilterComponent
     filterText={filterText}
-    onFilter={(e: React.ChangeEvent<HTMLInputElement>) => setFilterText(e.target.value)}
+    onFilter={(e: ChangeEvent<HTMLInputElement>) => setFilterText(e.target.value)}
     onClear={() => {
       if (filterText) {
         setFilterText("");

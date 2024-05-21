@@ -1,9 +1,9 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, type FC, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { GlobalContext } from "./GlobalState";
 import Error from "./Error";
 
-export const ErrorContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ErrorContainer: FC<{ children: ReactNode }> = ({ children }) => {
   const { globalError, setError } = useContext(GlobalContext);
   const location = useLocation();
 

@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import { useEffect, type FC } from "react";
 
 interface ErrorProps {
   message: string;
   type?: "error" | "info";
 }
 
-const Error: React.FC<ErrorProps> = ({ message, type = "error" }) => {
+const Error: FC<ErrorProps> = ({ message, type = "error" }) => {
   useEffect(() => {
     // Add the "noindex" meta tag to the document's head if it's an error
     if (type === "error") {

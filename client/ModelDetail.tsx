@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import type { FC, ReactNode } from "react";
 import type { Model, ModelDiff } from "../global";
 import { GlobalContext } from "./GlobalState";
 import {
@@ -8,7 +9,7 @@ import {
   dateStringDuration,
 } from "./utils";
 
-export const ModelDetail: React.FC = () => {
+export const ModelDetail: FC = () => {
   const [model, setModel] = useState<Model | null>(null);
   const [changes, setChanges] = useState<ModelDiff[]>([]);
   const [removed, setRemoved] = useState<boolean>(false);
@@ -113,6 +114,17 @@ export const ModelDetail: React.FC = () => {
     );
   };
 
+  const DelContainer: FC<{ children: ReactNode }> = ({ children }): ReactNode => {
+    if (removed) {
+      return (
+        <>
+          <del>{children}</del>
+        </>
+      );
+    }
+    return children;
+  };
+
   const PriceElement = (
     prefix: string,
     price: string,
@@ -125,11 +137,23 @@ export const ModelDetail: React.FC = () => {
         : calcCostPerMillion(price, unit);
       return (
         <>
-          <span className={"price-prefix" + (removed ? " removed" : "")}>{prefix}</span>
-          <b className={removed ? "removed" : ""}>{formattedPrice}</b>
+          {prefix}
+          <b>{formattedPrice}</b>
         </>
       );
     }
+  };
+
+  const ModelName = (): ReactNode => {
+    if (removed) {
+      return (
+        <>
+          {model.name + " "}
+          <b style={{ color: "red" }}>(removed)</b>
+        </>
+      );
+    }
+    return <>{model.name}</>;
   };
 
   return (
@@ -137,20 +161,21 @@ export const ModelDetail: React.FC = () => {
       <div className="model-details-col-container">
         <div>
           <h3>Price</h3>
-          {Price()}
+          <DelContainer>{Price()}</DelContainer>
         </div>
         <div>
-          <h2 className="model-details-model-name">{model.name + (removed ? " (removed)" : "")}</h2>
-          <h4 className={removed ? "removed" : ""}>{model.id}</h4>
+          <h2 className="model-details-model-name">{ModelName()}</h2>
+          <DelContainer>
+            <h4>{model.id}</h4>
+          </DelContainer>
         </div>
         <div>
           <h3>Context Length</h3>
-          <p
-            className={removed ? "removed" : ""}
-            style={{ fontSize: "x-large", textAlign: "center" }}
-          >
-            {model.context_length.toLocaleString()}
-          </p>
+          <DelContainer>
+            <p style={{ fontSize: "x-large", textAlign: "center" }}>
+              {model.context_length.toLocaleString()}
+            </p>
+          </DelContainer>
         </div>
       </div>
       <h3>Description</h3>

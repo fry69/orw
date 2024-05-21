@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable, { type TableColumn } from "react-data-table-component";
 import type { Model } from "../global";
@@ -6,7 +6,7 @@ import { GlobalContext } from "./GlobalState";
 import { calcCostPerMillion, durationAgo } from "./utils";
 import { filterComponentWrapper } from "./FilterComponent";
 
-export const ModelList: React.FC<{ removed?: boolean }> = (props) => {
+export const ModelList: FC<{ removed?: boolean }> = (props) => {
   const navigate = useNavigate();
   const { globalData, setGlobalClient } = useContext(GlobalContext);
 
