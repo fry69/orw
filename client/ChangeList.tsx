@@ -31,7 +31,7 @@ export const ChangeList: FC = () => {
             </Link>{" "}
             {change.type} at {dateStringDuration(change.timestamp)}
           </p>
-          {change.type === "removed" ? "" : ChangeSnippet(change)}
+          <ChangeSnippet change={change} hideTypes={["removed"]} />
         </div>
       ))}
     </div>

@@ -73,7 +73,7 @@ export const ModelDetail: FC = () => {
               <p>
                 {change.type} at {dateStringDuration(change.timestamp)}
               </p>
-              {change.type === "changed" ? ChangeSnippet(change) : ""}
+              <ChangeSnippet change={change} hideTypes={["added", "removed"]} />
             </div>
           ))}
         </>
@@ -130,14 +130,14 @@ export const ModelDetail: FC = () => {
     return children;
   };
 
-  interface PriceElementOptions {
+  interface PriceElementProps {
     prefix: string;
     price: string;
     unit: string;
     thousands?: boolean;
   }
 
-  const PriceElement = ({ prefix, price, unit, thousands = false }: PriceElementOptions) => {
+  const PriceElement = ({ prefix, price, unit, thousands = false }: PriceElementProps) => {
     if (parseFloat(price) > 0) {
       const formattedPrice = thousands
         ? calcCostPerThousand(price, unit)
@@ -151,7 +151,7 @@ export const ModelDetail: FC = () => {
     }
   };
 
-  const ModelName = (): ReactNode => {
+  const ModelName = () => {
     if (removed) {
       return (
         <>

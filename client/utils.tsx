@@ -1,6 +1,6 @@
 import { DateTime, Duration } from "luxon";
 import { toHumanDurationExtended } from "@kitsuyui/luxon-ext";
-import type { ModelDiff } from "../global";
+import type { ModelChangeType, ModelDiff } from "../global";
 
 export const dateString = (timestamp: string) =>
   DateTime.fromISO(timestamp).setLocale("en-us").toLocaleString(DateTime.DATETIME_MED);
@@ -52,7 +52,15 @@ export const calcCostPerMillion = (floatString: string, unit?: string): string =
 export const calcCostPerThousand = (floatString: string, unit?: string): string =>
   calcCost(floatString, 1_000, unit ? "per thousand " + unit : "");
 
-export const ChangeSnippet = (change: ModelDiff) => {
+interface ChangeSnippetProps {
+  change: ModelDiff;
+  hideTypes: ModelChangeType[];
+}
+
+export const ChangeSnippet = ({ change, hideTypes }: ChangeSnippetProps) => {
+  if (hideTypes.includes(change.type)) {
+    return;
+  }
   if (change.changes) {
     return (
       <>
