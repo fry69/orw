@@ -8,13 +8,13 @@ import { filterComponentWrapper } from "./FilterComponent";
 
 export const ModelList: FC<{ removed?: boolean }> = (props) => {
   const navigate = useNavigate();
-  const { globalData, setGlobalClient } = useContext(GlobalContext);
+  const { globalLists, setGlobalClient } = useContext(GlobalContext);
 
   let models: Model[];
   if (props.removed) {
-    models = globalData.removed;
+    models = globalLists.removed;
   } else {
-    models = globalData.models;
+    models = globalLists.models;
   }
 
   const [filterText, setFilterText] = useState("");

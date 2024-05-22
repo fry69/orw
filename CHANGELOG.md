@@ -1,4 +1,14 @@
-v0.2.2-dev:
+v0.3.0-dev:
+
+New API Version 3:
+
+- /api/data -> /api/lists
+
+Watcher:
+
+- refactor separate in-memory lists into one object
+
+Web client:
 
 - refactor main API/update logic from NavBar into Brain
 - consolidate client/server types
@@ -6,7 +16,7 @@ v0.2.2-dev:
 - minor other refactor
 - implemented soft fetch error backoff
   - every error doubles interval time
-  - hard refresh browser window after doubling 5 times (153 min)
+  - hard refresh browser window after doubling 5 times (2!+3!+4!+5!+6! min ~ 15h)
 
 v0.2.1:
 

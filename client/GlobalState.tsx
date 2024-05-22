@@ -1,10 +1,10 @@
 // src/GlobalState.tsx
 import { createContext, useState } from "react";
-import type { FC, ReactNode, Dispatch, SetStateAction} from "react";
+import type { FC, ReactNode, Dispatch, SetStateAction } from "react";
 import type { GlobalClient, GlobalError } from "./client";
-import type { ServerStatus, ServerData } from "../global";
+import type { APIStatus, Lists } from "../global";
 
-const defaultGlobalStatus: ServerStatus = {
+const defaultGlobalStatus: APIStatus = {
   isValid: false,
   isDevelopment: false,
   apiLastCheck: "",
@@ -12,7 +12,7 @@ const defaultGlobalStatus: ServerStatus = {
   dbLastChange: "",
 };
 
-const defaultGlobalData: ServerData = {
+const defaultGlobalLists: Lists = {
   models: [],
   removed: [],
   changes: [],
@@ -33,10 +33,10 @@ const defaultGlobalError: GlobalError = {
 };
 
 export const GlobalContext = createContext<{
-  globalStatus: ServerStatus;
-  setGlobalStatus: Dispatch<SetStateAction<ServerStatus>>;
-  globalData: ServerData;
-  setGlobalData: Dispatch<SetStateAction<ServerData>>;
+  globalStatus: APIStatus;
+  setGlobalStatus: Dispatch<SetStateAction<APIStatus>>;
+  globalLists: Lists;
+  setGlobalLists: Dispatch<SetStateAction<Lists>>;
   globalClient: GlobalClient;
   setGlobalClient: Dispatch<SetStateAction<GlobalClient>>;
   globalError: GlobalError;
@@ -44,8 +44,8 @@ export const GlobalContext = createContext<{
 }>({
   globalStatus: defaultGlobalStatus,
   setGlobalStatus: () => {},
-  globalData: defaultGlobalData,
-  setGlobalData: () => {},
+  globalLists: defaultGlobalLists,
+  setGlobalLists: () => {},
   globalClient: defaultGlobalClient,
   setGlobalClient: () => {},
   globalError: defaultGlobalError,
@@ -53,8 +53,8 @@ export const GlobalContext = createContext<{
 });
 
 export const GlobalProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [globalStatus, setGlobalStatus] = useState<ServerStatus>(defaultGlobalStatus);
-  const [globalData, setGlobalData] = useState<ServerData>(defaultGlobalData);
+  const [globalStatus, setGlobalStatus] = useState<APIStatus>(defaultGlobalStatus);
+  const [globalLists, setGlobalLists] = useState<Lists>(defaultGlobalLists);
   const [globalClient, setGlobalClient] = useState<GlobalClient>(defaultGlobalClient);
   const [globalError, setGlobalError] = useState<GlobalError>(defaultGlobalError);
 
@@ -72,8 +72,8 @@ export const GlobalProvider: FC<{ children: ReactNode }> = ({ children }) => {
       value={{
         globalStatus,
         setGlobalStatus,
-        globalData,
-        setGlobalData,
+        globalLists,
+        setGlobalLists,
         globalClient,
         setGlobalClient,
         globalError,

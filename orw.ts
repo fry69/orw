@@ -5,10 +5,10 @@ import { createGzip } from "node:zlib";
 import { pipeline } from "node:stream/promises";
 import { Database } from "bun:sqlite";
 import { diff } from "deep-diff";
-import type { Model, ModelDiff, Status } from "./global";
+import type { Model, ModelDiff, Lists, Status } from "./global";
 import { runMigrations } from "./db-migration";
 import { createServer } from "./server";
-import { VERSION } from "./version";
+import { VERSION } from "./constants";
 
 export const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
 const fixedModelFilePath = import.meta.env.ORW_MODEL_FILE || "./models.json";
@@ -48,42 +48,20 @@ export class OpenRouterAPIWatcher {
   private logFilePath?: string;
 
   /**
-   * Memory cache for the last model list from the database
+   * Memory cache for lists from database.
    */
-  private modelList: Model[] = [];
+  private lists: Lists = {
+    models: [],
+    removed: [],
+    changes: [],
+  };
 
   /**
-   * Get cached model list
-   * @returns {Model[]} - The cached model list
+   * Get cached database lists
+   * @returns {Lists} - The cached database lists object.
    */
-  get getModelList(): Model[] {
-    return this.modelList;
-  }
-
-  /**
-   * Memory cache for the last model list from the database
-   */
-  private removedModelList: Model[] = [];
-
-  /**
-   * Get cached model list
-   * @returns {Model[]} - The cached model list
-   */
-  get getRemovedModelList(): Model[] {
-    return this.removedModelList;
-  }
-
-  /**
-   * Memory cache for the last changes list from the database
-   */
-  private changeslList: ModelDiff[] = [];
-
-  /**
-   * Get cached changes list
-   * @returns {ModelDiff[]} - The cached model list
-   */
-  get getChangesList(): ModelDiff[] {
-    return this.changeslList;
+  get getLists(): Lists {
+    return this.lists;
   }
 
   /**
@@ -145,15 +123,14 @@ export class OpenRouterAPIWatcher {
     this.db = db;
     runMigrations(db);
 
-    this.modelList = this.loadModelList();
-    this.removedModelList = this.loadRemovedModelList();
-    this.changeslList = this.loadChanges();
+    this.loadLists();
     this.loadAPILastCheck();
-    if (this.changeslList.length > 0) {
-      this.status.dbLastChange = new Date(Date.parse(this.changeslList.at(0)?.timestamp!)) ?? new Date(0);
+    if (this.lists.changes.length > 0) {
+      this.status.dbLastChange =
+        new Date(Date.parse(this.lists.changes.at(0)?.timestamp!)) ?? new Date(0);
     }
 
-    if (this.modelList.length === 0) {
+    if (this.lists.models.length === 0) {
       // Seed the database with the current model list if it's a fresh database
       this.log("empty model list in database");
       this.initFlag = true;
@@ -162,7 +139,7 @@ export class OpenRouterAPIWatcher {
         if (newModels.length > 0) {
           this.status.apiLastCheckStatus = "success";
           this.updateAPILastCheck();
-          this.modelList = newModels;
+          this.lists.models = newModels;
           this.status.dbLastChange = new Date();
           this.storeModelList(newModels, this.status.dbLastChange);
           this.log("seeded database with model list from API");
@@ -276,55 +253,12 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
-   * Updates the last check API timestamp in the database and application.
+   * Loads all relevant lists from database.
    */
-  updateAPILastCheck() {
-    this.db.run(
-      "INSERT OR REPLACE INTO last_api_check (id, last_check, last_status) VALUES (1, ?, ?);",
-      [this.status.apiLastCheck.toISOString(), this.status.apiLastCheckStatus]
-    );
-  }
-
-  /**
-   * Stores the current list of OpenRouter models in the SQLite database.
-   * @param {Model[]} models - An array of Model objects to store.
-   * @param {Date} [timestamp] - The timestamp to associate with the model list.
-   */
-  storeModelList(models: Model[], timestamp: Date = new Date()) {
-    this.db.run("DELETE FROM models");
-    for (const model of models) {
-      this.db.run("INSERT INTO models (id, data, timestamp) VALUES (?, ?, ?)", [
-        model.id,
-        JSON.stringify(model),
-        timestamp.toISOString(),
-      ]);
-    }
-  }
-
-  /**
-   * Stores a removed model from the OpenRouter models list in the SQLite database.
-   * @param {Model} model - Removed Model object to store.
-   * @param {Date} [timestamp] - The timestamp to associate with the removal.
-   */
-  storeRemovedModel(model: Model, timestamp: Date = new Date()) {
-    this.db.run("INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)", [
-      model.id,
-      JSON.stringify(model),
-      timestamp.toISOString(),
-    ]);
-  }
-
-  /**
-   * Stores an added model to the OpenRouter models list in the SQLite database.
-   * @param {Model} model - Added Model object to store.
-   * @param {Date} [timestamp] - The timestamp to associate with the addition.
-   */
-  storeAddedModel(model: Model, timestamp: Date = new Date()) {
-    this.db.run("INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)", [
-      model.id,
-      JSON.stringify(model),
-      timestamp.toISOString(),
-    ]);
+  loadLists() {
+    this.lists.models = this.loadModelList();
+    this.lists.removed = this.loadRemovedModelList();
+    this.lists.changes = this.loadChanges();
   }
 
   /**
@@ -361,6 +295,22 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
+   * Stores the current list of OpenRouter models in the SQLite database.
+   * @param {Model[]} models - An array of Model objects to store.
+   * @param {Date} [timestamp] - The timestamp to associate with the model list.
+   */
+  storeModelList(models: Model[], timestamp: Date = new Date()) {
+    this.db.run("DELETE FROM models");
+    for (const model of models) {
+      this.db.run("INSERT INTO models (id, data, timestamp) VALUES (?, ?, ?)", [
+        model.id,
+        JSON.stringify(model),
+        timestamp.toISOString(),
+      ]);
+    }
+  }
+
+  /**
    * Loads list of removed OpenRouter models from the SQLite database.
    * @returns An array of Model objects.
    */
@@ -377,15 +327,34 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
-   * Loads various state and counters from the database and updates the internal status
+   * Stores a removed model from the OpenRouter models list in the SQLite database.
+   * @param {Model} model - Removed Model object to store.
+   * @param {Date} [timestamp] - The timestamp to associate with the removal.
    */
-  loadAPILastCheck() {
-    const result: any = this.db
-      .query("SELECT last_check, last_status FROM last_api_check WHERE id = 1")
-      .get();
-    if (result) {
-      this.status.apiLastCheck = new Date(result.last_check) ?? new Date(0);
-      this.status.apiLastCheckStatus = result.last_status ?? "unknown";
+  storeRemovedModel(model: Model, timestamp: Date = new Date()) {
+    this.db.run("INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)", [
+      model.id,
+      JSON.stringify(model),
+      timestamp.toISOString(),
+    ]);
+  }
+
+  /**
+   * Loads the most recent model changes from the SQLite database.
+   * @param {number} [n] - The maximum number of changes to load.
+   * @returns {ModelDiff[]} - An array of ModelDiff objects.
+   */
+  loadChanges(n?: number): ModelDiff[] {
+    if (n) {
+      return this.db
+        .query("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?")
+        .all(n)
+        .map(this.transformChangesRow);
+    } else {
+      return this.db
+        .query("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC")
+        .all()
+        .map(this.transformChangesRow);
     }
   }
 
@@ -413,25 +382,6 @@ export class OpenRouterAPIWatcher {
   };
 
   /**
-   * Loads the most recent model changes from the SQLite database.
-   * @param {number} [n] - The maximum number of changes to load.
-   * @returns {ModelDiff[]} - An array of ModelDiff objects.
-   */
-  loadChanges(n?: number): ModelDiff[] {
-    if (n) {
-      return this.db
-        .query("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?")
-        .all(n)
-        .map(this.transformChangesRow);
-    } else {
-      return this.db
-        .query("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC")
-        .all()
-        .map(this.transformChangesRow);
-    }
-  }
-
-  /**
    * Stores a list of model changes in the SQLite database.
    * @param {ModelDiff[]} changes - An array of ModelDiff objects to store.
    */
@@ -444,6 +394,42 @@ export class OpenRouterAPIWatcher {
         change.timestamp,
       ]);
     }
+  }
+
+  /**
+   * Stores an added model to the OpenRouter models list in the SQLite database.
+   * @param {Model} model - Added Model object to store.
+   * @param {Date} [timestamp] - The timestamp to associate with the addition.
+   */
+  storeAddedModel(model: Model, timestamp: Date = new Date()) {
+    this.db.run("INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)", [
+      model.id,
+      JSON.stringify(model),
+      timestamp.toISOString(),
+    ]);
+  }
+
+  /**
+   * Loads last API check timestamp and result status from database and updates internal status.
+   */
+  loadAPILastCheck() {
+    const result: any = this.db
+      .query("SELECT last_check, last_status FROM last_api_check WHERE id = 1")
+      .get();
+    if (result) {
+      this.status.apiLastCheck = new Date(result.last_check) ?? new Date(0);
+      this.status.apiLastCheckStatus = result.last_status ?? "unknown";
+    }
+  }
+
+  /**
+   * Updates the last check API timestamp and result status in the database.
+   */
+  updateAPILastCheck() {
+    this.db.run(
+      "INSERT OR REPLACE INTO last_api_check (id, last_check, last_status) VALUES (1, ?, ?);",
+      [this.status.apiLastCheck.toISOString(), this.status.apiLastCheckStatus]
+    );
   }
 
   /**
@@ -550,7 +536,7 @@ export class OpenRouterAPIWatcher {
         this.status.apiLastCheckStatus = "failed";
         this.error("empty model list from API after retry, skipping check");
       } else {
-        const oldModels = this.modelList;
+        const oldModels = this.lists.models;
         const changes = this.findChanges(newModels, oldModels);
         this.status.apiLastCheckStatus = "success";
         this.updateAPILastCheck();
@@ -561,11 +547,9 @@ export class OpenRouterAPIWatcher {
           this.log("Changes detected:");
           this.log(JSON.stringify(changes, null, 4));
 
-          // re-load model lists from db to keep added_at properties
-          // copying the API model list removes all added_at properties
-          this.modelList = this.loadModelList();
-          this.removedModelList = this.loadRemovedModelList();
-          this.changeslList = this.loadChanges();
+          // re-load lists from db to keep added properties
+          // copying the API model list removes all added properties
+          this.loadLists();
           this.status.dbLastChange = timestamp;
 
           // Create a database backup
@@ -605,6 +589,7 @@ export class OpenRouterAPIWatcher {
     }
     this.log("Creating new database backup");
     this.db.run(`VACUUM INTO '${dbBackupFilePath}'`);
+    // TODO: VACUUM INTO can fail under extreme circumstances (e.g. concurrent write operation)
 
     // create compressed backup file to serve for bootstrapping
     const dbBackupFilePathGz = dbBackupFilePath + ".gz";

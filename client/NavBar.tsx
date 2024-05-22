@@ -2,13 +2,12 @@ import { useContext, type FC } from "react";
 import { NavLink } from "react-router-dom";
 import { GlobalContext } from "./GlobalState";
 import { DateTime } from "luxon";
-import { VERSION } from "../version";
+import { VERSION } from "../constants";
 
 export const NavBar: FC = () => {
-  const { globalStatus, globalData, globalClient } =
-    useContext(GlobalContext);
+  const { globalStatus, globalLists, globalClient } = useContext(GlobalContext);
 
-  let dbfirstChangeTimestamp: string = globalData.changes.at(-1)?.timestamp ?? "";
+  let dbfirstChangeTimestamp: string = globalLists.changes.at(-1)?.timestamp ?? "";
 
   return (
     <nav>
@@ -53,13 +52,13 @@ export const NavBar: FC = () => {
         </li>
         <li className="info-container">
           Active models:
-          <b className="timestamp">{globalData.models.length}</b>
+          <b className="timestamp">{globalLists.models.length}</b>
           Removed models:
-          <b className="timestamp">{globalData.removed.length}</b>
+          <b className="timestamp">{globalLists.removed.length}</b>
         </li>
         <li className="info-container gridgap">
           Recorded changes:
-          <b className="timestamp rowspan">{globalData.changes.length}</b>
+          <b className="timestamp rowspan">{globalLists.changes.length}</b>
           <span>(since {DateTime.fromISO(dbfirstChangeTimestamp ?? "").toISODate()})</span>
         </li>
         <li className="info-container single-column">

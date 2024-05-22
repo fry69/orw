@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState, type FC } from "react";
 import { GlobalContext } from "./GlobalState";
 import type { APIResponse } from "../global";
-import { APIVersion } from "../version";
+import { APILISTS, APISTATUS, APIVERSION } from "../constants";
 import { durationAgo } from "./utils";
 
 const initialUpdateInterval = 60_000; // One minute in milliseconds
@@ -20,7 +20,7 @@ let updateInterval = initialUpdateInterval; // Current update interval, adjustab
 // };
 
 export const Brain: FC = () => {
-  const { globalStatus, setGlobalStatus, setGlobalData, setGlobalClient, setError } =
+  const { globalStatus, setGlobalStatus, setGlobalLists, setGlobalClient, setError } =
     useContext(GlobalContext);
   const [startIntervalTrigger, setStartIntervalTrigger] = useState(false);
   const errorCount = useRef(0);
@@ -43,11 +43,11 @@ export const Brain: FC = () => {
       if (responseText.length === 0) {
         throw "Empty response";
       }
-      const data: APIResponse = JSON.parse(responseText);
-      if (!data || Object.keys(data).length === 0) {
+      const apiResponse: APIResponse = JSON.parse(responseText);
+      if (!apiResponse || Object.keys(apiResponse).length === 0) {
         throw "No JSON data received";
       }
-      if (data.version !== APIVersion) {
+      if (apiResponse.version !== APIVERSION) {
         throw "Version mismatch: Please try reloading, clear caches, etc.";
       }
       // If we made it here, everythings seems fine, let's clear any existing error
@@ -55,9 +55,9 @@ export const Brain: FC = () => {
       // Reset updateInterval and error count
       updateInterval = initialUpdateInterval;
       errorCount.current = 0;
-      return data;
+      return apiResponse;
     } catch (err) {
-      errorHandler(`API failed to load (${err})`);
+      errorHandler(`API failed to load, try #${errorCount.current} (${err})`);
     }
     return { version: -1 };
   };
@@ -65,11 +65,11 @@ export const Brain: FC = () => {
   useEffect(() => {
     // On first mount, load all API data unconditionally
     const loadAPI = async () => {
-      const { data } = await fetchAPI("/api/data");
-      if (data) {
-        setGlobalData(() => data);
+      const { lists } = await fetchAPI(APILISTS);
+      if (lists) {
+        setGlobalLists(() => lists);
       }
-      const { status } = await fetchAPI("/api/status");
+      const { status } = await fetchAPI(APISTATUS);
       if (status) {
         setGlobalStatus(() => status);
       }
@@ -103,15 +103,17 @@ export const Brain: FC = () => {
       // Only load data from the API when database has changed
       try {
         const prevDbTimestamp = new Date(localStatus.dbLastChange).getTime();
-        const { status } = await fetchAPI("/api/status");
+        let apiResponse: APIResponse = await fetchAPI(APISTATUS);
+        const status = apiResponse.status;
         if (status) {
           setGlobalStatus(() => status);
           localStatus = status;
           const newDbTimestamp = new Date(status.dbLastChange).getTime();
           if (newDbTimestamp > prevDbTimestamp) {
-            const { data } = await fetchAPI("/api/data");
-            if (data) {
-              setGlobalData(() => data);
+            apiResponse = await fetchAPI(APILISTS);
+            const lists = apiResponse.lists;
+            if (lists) {
+              setGlobalLists(() => lists);
             }
           }
         }
@@ -119,7 +121,7 @@ export const Brain: FC = () => {
         errorHandler(`Error reloading data from API: ${err}`);
       }
       if (interval) {
-        // After doubling interval 5 times (153 min), let's hard refresh the browser window
+        // After doubling interval 5 times (~ 15h), let's hard refresh the browser window
         if (errorCount.current > 5) {
           // A clear error message is better than a stale client
           console.log("Giving up retrying after 5 times, refreshing window");

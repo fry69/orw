@@ -13,7 +13,7 @@ export const ModelDetail: FC = () => {
   const [model, setModel] = useState<Model | null>(null);
   const [changes, setChanges] = useState<ModelDiff[]>([]);
   const [removed, setRemoved] = useState<boolean>(false);
-  const { globalStatus, globalData, setGlobalClient, setError } = useContext(GlobalContext);
+  const { globalStatus, globalLists, setGlobalClient, setError } = useContext(GlobalContext);
 
   useEffect(() => {
     if (!globalStatus.isValid) {
@@ -26,9 +26,9 @@ export const ModelDetail: FC = () => {
       setError("No model ID provided.");
       return;
     }
-    let foundModel: Model | undefined = globalData.models.find((obj: Model) => obj.id === id);
+    let foundModel: Model | undefined = globalLists.models.find((obj: Model) => obj.id === id);
     if (!foundModel) {
-      const removedModel: Model | undefined = globalData.removed.find(
+      const removedModel: Model | undefined = globalLists.removed.find(
         (obj: Model) => obj.id === id
       );
       if (removedModel) {
@@ -40,9 +40,9 @@ export const ModelDetail: FC = () => {
       }
     }
     setModel(foundModel);
-    const foundChanges: ModelDiff[] = globalData.changes.filter((obj) => obj.id === id);
+    const foundChanges: ModelDiff[] = globalLists.changes.filter((obj) => obj.id === id);
     setChanges(foundChanges);
-  }, [globalData, globalStatus]);
+  }, [globalLists, globalStatus]);
 
   useEffect(() => {
     setGlobalClient((prevState) => ({

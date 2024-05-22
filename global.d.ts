@@ -46,9 +46,9 @@ export interface ModelDiff {
 }
 
 /**
- * Represents the server status information in an API response.
+ * Represents status information in an API response.
  */
-export type ServerStatus = {
+export type APIStatus = {
   isValid: boolean;
   isDevelopment: boolean;
   apiLastCheck: string;
@@ -57,9 +57,9 @@ export type ServerStatus = {
 };
 
 /**
- * Represents the server data in an API response.
+ * Represents a list of model and changes lists.
  */
-export type ServerData = {
+export type Lists = {
   models: Model[];
   removed: Model[];
   changes: ModelDiff[];
@@ -70,12 +70,12 @@ export type ServerData = {
  */
 export interface APIResponse {
   version: number;
-  status?: ServerStatus;
-  data?: ServerData;
+  status?: APIStatus;
+  lists?: Lists;
 }
 
 /**
- * Represents the private status object
+ * Represents the private watcher status object
  */
 export interface Status {
   /**

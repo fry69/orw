@@ -5,10 +5,10 @@ import { Link } from "react-router-dom";
 import { ChangeSnippet, dateStringDuration } from "./utils";
 
 export const ChangeList: FC = () => {
-  const { globalData, setGlobalClient } = useContext(GlobalContext);
+  const { globalLists, setGlobalClient } = useContext(GlobalContext);
 
   const [filterText, setFilterText] = useState("");
-  const filteredChanges = globalData.changes.filter(
+  const filteredChanges = globalLists.changes.filter(
     (item) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase())
   );
 

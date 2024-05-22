@@ -5,8 +5,8 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import { createGzip } from "node:zlib";
-import { APIVersion } from "./version";
-import type { APIResponse, ServerStatus } from "./global";
+import { APILISTS, APISTATUS, APIVERSION } from "./constants";
+import type { APIResponse, APIStatus } from "./global";
 import RSS from "rss";
 
 /**
@@ -429,7 +429,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
   const generateRSSFeedXML = async (): Promise<string> => {
     const feed: RSS = new RSS({
       title: "OpenRouter Model Changes",
-      description: "RSS feed for detected changes in the OpenRouter model list",
+      description: "Feed for detected changes in the OpenRouter model list",
       feed_url: publicURL + "rss",
       site_url: publicURL,
       image_url: publicURL + "favicon.svg",
@@ -439,7 +439,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
       pubDate: watcher.getDBLastChange,
     });
 
-    const changesRSS = watcher.loadChanges(50);
+    const changesRSS = watcher.getLists.changes.slice(0, 49); // first 50 entries, sorted newest first
 
     const replaceDescription = (obj: any) => {
       for (const key in obj) {
@@ -483,7 +483,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
         return serveStaticFile({ filePath: path.join(clientDir, url.pathname), request });
       }
 
-      const statusRepsone = (): ServerStatus => ({
+      const statusRepsone = (): APIStatus => ({
         isValid: true,
         isDevelopment,
         apiLastCheck: watcher.getAPILastCheck.toISOString(),
@@ -493,18 +493,14 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
       // All other endpoints require special handling
       switch (url.pathname) {
-        case "/api/data":
+        case APILISTS:
           return cacheAndServeContent({
-            fileName: "data.json",
+            fileName: "lists.json",
             contentType: "application/json",
             contentGenerator: async (): Promise<string> => {
               const response: APIResponse = {
-                version: APIVersion,
-                data: {
-                  models: watcher.getModelList,
-                  removed: watcher.getRemovedModelList,
-                  changes: watcher.getChangesList,
-                },
+                version: APIVERSION,
+                lists: watcher.getLists,
               };
               return JSON.stringify(response);
             },
@@ -512,13 +508,13 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
             request,
           });
 
-        case "/api/status":
+        case APISTATUS:
           return cacheAndServeContent({
             fileName: "status.json",
             contentType: "application/json",
             contentGenerator: async (): Promise<string> => {
               const response: APIResponse = {
-                version: APIVersion,
+                version: APIVERSION,
                 status: statusRepsone(),
               };
               return JSON.stringify(response);
