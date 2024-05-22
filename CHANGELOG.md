@@ -32,7 +32,7 @@ Web client improvments:
 - code cleanup/simplification
 - much improved error handling
 - no more hard refresh
-- API version check to prevent future incompatiblity problems
+- API version check to prevent future incompatibility problems
 - much improved update loop
 - improved API handling
 - show version

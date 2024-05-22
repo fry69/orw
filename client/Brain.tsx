@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState, type FC } from "react";
 import { GlobalContext } from "./GlobalState";
 import type { APIResponse } from "../global";
-import { APILISTS, APISTATUS, APIVERSION } from "../constants";
+import { APILISTS, APISTATUS, APIVERSION, VERSION } from "../constants";
 import { durationAgo } from "./utils";
 
 const initialUpdateInterval = 60_000; // One minute in milliseconds
@@ -35,7 +35,11 @@ export const Brain: FC = () => {
   const fetchAPI = async (endpoint: string): Promise<APIResponse> => {
     try {
       // const response = await fail(endpoint);
-      const response = await fetch(endpoint);
+      const response = await fetch(endpoint, {
+        headers: {
+          "X-ORW-Version": VERSION,
+        },
+      });
       if (!response.ok) {
         throw `Unsuccessful response status ${response.status} received`;
       }
