@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start:clean": "bun run dist-clean && bun run start",
-    "start": "bun run build && bun run orw.ts",
+    "start": "bun install && bun run build && bun run orw.ts",
     "build": "vite build --mode production",
     "watch:vite-standalone": "vite build --watch --mode development",
     "watch:vite": "vite --mode development --open",
