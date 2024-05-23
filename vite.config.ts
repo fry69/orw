@@ -2,11 +2,20 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { compression } from "vite-plugin-compression2";
 
+const ReactCompilerConfig = {};
+
 export default defineConfig({
   build: {
     sourcemap: false, // Enable source maps
   },
-  plugins: [react(), compression()],
+  plugins: [
+    react({
+      babel: {
+        plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
+      },
+    }),
+    compression(),
+  ],
   server: {
     port: 6500,
     proxy: {

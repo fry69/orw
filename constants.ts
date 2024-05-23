@@ -1,7 +1,7 @@
 /**
  * Global version string
  */
-export const VERSION = "0.3.0-dev2";
+export const VERSION = "0.3.0-dev3";
 
 /**
  * API version number, server and client must match to be considered valid
