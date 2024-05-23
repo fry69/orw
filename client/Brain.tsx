@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState, type FC } from "react";
 import { GlobalContext } from "./GlobalState";
 import type { APIResponse } from "../global";
-import { APILISTS, APISTATUS, APIVERSION, VERSION } from "../constants";
+import { API__LISTS, API__STATUS, API_VERSION, FETCH_TIMEOUT, VERSION } from "../constants";
 import { durationAgo } from "./utils";
 
 const initialUpdateInterval = 60_000; // One minute in milliseconds
@@ -36,6 +36,7 @@ export const Brain: FC = () => {
     try {
       // const response = await fail(endpoint);
       const response = await fetch(endpoint, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT),
         headers: {
           "X-ORW-Version": VERSION,
         },
@@ -51,7 +52,7 @@ export const Brain: FC = () => {
       if (!apiResponse || Object.keys(apiResponse).length === 0) {
         throw "No JSON data received";
       }
-      if (apiResponse.version !== APIVERSION) {
+      if (apiResponse.version !== API_VERSION) {
         throw "Version mismatch: Please try reloading, clear caches, etc.";
       }
       // If we made it here, everythings seems fine, let's clear any existing error
@@ -69,11 +70,11 @@ export const Brain: FC = () => {
   useEffect(() => {
     // On first mount, load all API data unconditionally
     const loadAPI = async () => {
-      const { lists } = await fetchAPI(APILISTS);
+      const { lists } = await fetchAPI(API__LISTS);
       if (lists) {
         setGlobalLists(() => lists);
       }
-      const { status } = await fetchAPI(APISTATUS);
+      const { status } = await fetchAPI(API__STATUS);
       if (status) {
         setGlobalStatus(() => status);
       }
@@ -104,17 +105,17 @@ export const Brain: FC = () => {
     };
 
     const handleRefresh = async () => {
-      // Only load data from the API when database has changed
       try {
         const prevDbTimestamp = new Date(localStatus.dbLastChange).getTime();
-        let apiResponse: APIResponse = await fetchAPI(APISTATUS);
+        let apiResponse: APIResponse = await fetchAPI(API__STATUS);
         const status = apiResponse.status;
         if (status) {
           setGlobalStatus(() => status);
           localStatus = status;
           const newDbTimestamp = new Date(status.dbLastChange).getTime();
+          // Only load data from the API when database has changed
           if (newDbTimestamp > prevDbTimestamp) {
-            apiResponse = await fetchAPI(APILISTS);
+            apiResponse = await fetchAPI(API__LISTS);
             const lists = apiResponse.lists;
             if (lists) {
               setGlobalLists(() => lists);

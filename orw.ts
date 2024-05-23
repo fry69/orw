@@ -8,10 +8,10 @@ import { diff } from "deep-diff";
 import type { Model, ModelDiff, Lists, Status } from "./global";
 import { runMigrations } from "./db-migration";
 import { createServer } from "./server";
-import { VERSION } from "./constants";
+import { FETCH_TIMEOUT, OPENROUTER_API_URL, VERSION } from "./constants";
 
 export const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
-const fixedModelFilePath = import.meta.env.ORW_MODEL_FILE || "./models.json";
+const fixedModelFilePath = import.meta.env.ORW_FIXED_MODEL_FILE || "./models.json";
 const backupDir = import.meta.env.ORW_BACKUP_PATH || "./backup";
 const logFilePath = import.meta.env.ORW_LOG_PATH ?? "./orw.log";
 const dbFilePath = import.meta.env.ORW_DB_PATH ?? "./orw.db";
@@ -223,7 +223,9 @@ export class OpenRouterAPIWatcher {
     }
 
     try {
-      const response = await fetch("https://openrouter.ai/api/v1/models");
+      const response = await fetch(OPENROUTER_API_URL, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT),
+      });
       this.status.apiLastCheck = new Date();
       if (response) {
         const { data } = await response.json();

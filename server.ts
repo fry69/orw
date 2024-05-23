@@ -5,7 +5,7 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import { createGzip } from "node:zlib";
-import { APILISTS, APISTATUS, APIVERSION } from "./constants";
+import { API__LISTS, API__STATUS, API_VERSION } from "./constants";
 import type { APIResponse, APIStatus } from "./global";
 import RSS from "rss";
 
@@ -493,13 +493,13 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
       // All other endpoints require special handling
       switch (url.pathname) {
-        case APILISTS:
+        case API__LISTS:
           return cacheAndServeContent({
             fileName: "lists.json",
             contentType: "application/json",
             contentGenerator: async (): Promise<string> => {
               const response: APIResponse = {
-                version: APIVERSION,
+                version: API_VERSION,
                 lists: watcher.getLists,
               };
               return JSON.stringify(response);
@@ -508,13 +508,13 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
             request,
           });
 
-        case APISTATUS:
+        case API__STATUS:
           return cacheAndServeContent({
             fileName: "status.json",
             contentType: "application/json",
             contentGenerator: async (): Promise<string> => {
               const response: APIResponse = {
-                version: APIVERSION,
+                version: API_VERSION,
                 status: statusRepsone(),
               };
               return JSON.stringify(response);
