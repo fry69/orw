@@ -1,4 +1,5 @@
 // server.ts
+import Bun from "bun";
 import { OpenRouterAPIWatcher, isDevelopment } from "./orw";
 import path from "node:path";
 import fs from "node:fs";
@@ -439,7 +440,7 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
       pubDate: watcher.getDBLastChange,
     });
 
-    const changesRSS = watcher.getLists.changes.slice(0, 49); // first 50 entries, sorted newest first
+    const changesRSS = watcher.getLists.changes.slice(0, 50); // first 50 entries, sorted newest first
 
     const replaceDescription = (obj: any) => {
       for (const key in obj) {

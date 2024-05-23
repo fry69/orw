@@ -83,7 +83,7 @@ describe("OpenRouterAPIWatcher", () => {
         changes: {
           name: { old: "Model 1", new: "Model 1 Updated" },
         },
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       },
     ];
 
@@ -113,7 +113,7 @@ describe("OpenRouterAPIWatcher", () => {
           "architecture.instruct_type": { old: null, new: "instruct" },
           "top_provider.is_moderated": { old: true, new: false },
         },
-        timestamp: expect.any(Date),
+        timestamp: expect.stringContaining("Z"),
       },
     ]);
   });
@@ -136,7 +136,7 @@ describe("OpenRouterAPIWatcher", () => {
         id: "2",
         type: "added",
         model: otherModel,
-        timestamp: expect.any(Date),
+        timestamp: expect.stringContaining("Z"),
       },
     ]);
   });
@@ -150,7 +150,7 @@ describe("OpenRouterAPIWatcher", () => {
         id: "2",
         type: "removed",
         model: oldModels[1],
-        timestamp: expect.any(Date),
+        timestamp: expect.stringContaining("Z"),
       },
     ]);
   });

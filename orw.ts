@@ -1,4 +1,6 @@
 // orw.ts
+import Bun from "bun";
+import process from "node:process";
 import fs from "node:fs";
 import path from "node:path";
 import { createGzip } from "node:zlib";
@@ -126,8 +128,15 @@ export class OpenRouterAPIWatcher {
     this.loadLists();
     this.loadAPILastCheck();
     if (this.lists.changes.length > 0) {
-      this.status.dbLastChange =
-        new Date(Date.parse(this.lists.changes.at(0)?.timestamp!)) ?? new Date(0);
+      const lastChangeTimestamp = this.lists.changes.at(0)?.timestamp;
+      if (lastChangeTimestamp) {
+        const lastChangeDate = Date.parse(lastChangeTimestamp);
+        if (lastChangeDate) {
+          this.status.dbLastChange = new Date(lastChangeDate);
+        } else {
+          this.status.dbLastChange = new Date(0);
+        }
+      }
     }
 
     if (this.lists.models.length === 0) {
@@ -419,7 +428,11 @@ export class OpenRouterAPIWatcher {
       .query("SELECT last_check, last_status FROM last_api_check WHERE id = 1")
       .get();
     if (result) {
-      this.status.apiLastCheck = new Date(result.last_check) ?? new Date(0);
+      if (result.last_check) {
+        this.status.apiLastCheck = new Date(result.last_check);
+      } else {
+        this.status.apiLastCheck = new Date(0);
+      }
       this.status.apiLastCheckStatus = result.last_status ?? "unknown";
     }
   }
@@ -694,7 +707,7 @@ if (import.meta.main) {
   } else {
     const db = new Database(dbFilePath);
     const watcher = new OpenRouterAPIWatcher(db, logFilePath);
-    const server = createServer(watcher);
+    createServer(watcher);
     watcher.enterBackgroundMode();
     // db.close(); // Don't close the database here, as the background mode runs indefinitely
   }

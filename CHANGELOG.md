@@ -18,6 +18,10 @@ Web client:
   - every error doubles interval time
   - hard refresh browser window after doubling 5 times (2!+3!+4!+5!+6! min ~ 15h)
 
+Misc:
+
+- added eslint
+
 v0.2.1:
 
 Server/watcher improvements:

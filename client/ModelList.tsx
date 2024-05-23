@@ -1,10 +1,9 @@
 import { useContext, useEffect, useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
-import DataTable, { type TableColumn } from "react-data-table-component";
+import DataTable, { type Selector, type TableColumn } from "react-data-table-component";
 import type { Model } from "../global";
 import { GlobalContext } from "./GlobalState";
-import { calcCostPerMillion, durationAgo } from "./utils";
-import { filterComponentWrapper } from "./FilterComponent";
+import { filterComponentWrapper, calcCostPerMillion, durationAgo } from "./utils";
 
 export const ModelList: FC<{ removed?: boolean }> = (props) => {
   const navigate = useNavigate();
@@ -38,7 +37,7 @@ export const ModelList: FC<{ removed?: boolean }> = (props) => {
     return `${Math.ceil(num / 1024)}k`;
   };
 
-  const customSort = (rows: Model[], selector: any, direction: string) => {
+  const customSort = (rows: Model[], selector: Selector<Model>, direction: string) => {
     return rows.sort((a, b) => {
       let comparison = 0;
 
@@ -46,7 +45,7 @@ export const ModelList: FC<{ removed?: boolean }> = (props) => {
       const aField = selector(a);
       const bField = selector(b);
 
-      if (typeof aField === "string" || typeof bField === "string") {
+      if (typeof aField === "string" && typeof bField === "string") {
         // String comparison
         // empty string should stay at bottom to not clutter reverse sort (e.g. Instruct)
         if (aField === "" && bField === "") {
@@ -60,7 +59,7 @@ export const ModelList: FC<{ removed?: boolean }> = (props) => {
         } else if (aField.toLowerCase() < bField.toLowerCase()) {
           comparison = -1;
         }
-      } else if (typeof aField === "number" || typeof bField === "number") {
+      } else if (typeof aField === "number" && typeof bField === "number") {
         // Number comparison
         // 0 should stay at bottom to not clutter reverse sort (e.g. maxOut)
         // pricing gets sorted via string sort and obeys 0 at top

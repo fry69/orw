@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import type { ChangeEvent, KeyboardEvent, SetStateAction } from "react";
+import type { ChangeEvent, KeyboardEvent } from "react";
 import styled from "styled-components";
-import Button from "./Button";
+import { Button } from "./Button";
 
 const TextField = styled.input`
   height: 32px;
@@ -87,18 +87,3 @@ export const FilterComponent = ({
     </>
   );
 };
-
-export const filterComponentWrapper = (
-  filterText: string,
-  setFilterText: (value: SetStateAction<string>) => void
-) => (
-  <FilterComponent
-    filterText={filterText}
-    onFilter={(e: ChangeEvent<HTMLInputElement>) => setFilterText(e.target.value)}
-    onClear={() => {
-      if (filterText) {
-        setFilterText("");
-      }
-    }}
-  />
-);

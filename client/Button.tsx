@@ -1,3 +1,4 @@
+import type { FC, ReactNode } from "react";
 import styled from "styled-components";
 
 const ButtonStyle = styled.button`
@@ -16,6 +17,9 @@ const ButtonStyle = styled.button`
   }
 `;
 
-// eslint-disable-next-line react/prop-
-// @ts-ignore
-export default ({ children, ...rest }) => <ButtonStyle {...rest}>{children}</ButtonStyle>;
+export const Button: FC<{ children: ReactNode }> = ({
+  children,
+  ...rest
+}: {
+  children: ReactNode;
+}) => <ButtonStyle {...rest}>{children}</ButtonStyle>;

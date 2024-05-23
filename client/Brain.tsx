@@ -122,7 +122,7 @@ export const Brain: FC = () => {
             }
           }
         }
-      } catch (err: any) {
+      } catch (err) {
         errorHandler(`Error reloading data from API: ${err}`);
       }
       if (interval) {
@@ -143,7 +143,7 @@ export const Brain: FC = () => {
       // If last API check is longer than an hour ago, check for new data, trigger a refresh if needed
       const now = Date.now();
       if (now - new Date(localStatus.apiLastCheck).getTime() > refreshInterval) {
-        handleRefresh().catch((err: any) => {
+        handleRefresh().catch((err) => {
           errorHandler(`Error trying to reload data from API: ${err}`);
         });
       }

@@ -1,8 +1,9 @@
 import { useContext, useEffect, useState, type FC } from "react";
-import { filterComponentWrapper } from "./FilterComponent";
+import { filterComponentWrapper } from "./utils";
 import { GlobalContext } from "./GlobalState";
 import { Link } from "react-router-dom";
-import { ChangeSnippet, dateStringDuration } from "./utils";
+import { dateStringDuration } from "./utils";
+import { ChangeSnippet } from "./ChangeSnippet";
 
 export const ChangeList: FC = () => {
   const { globalLists, setGlobalClient } = useContext(GlobalContext);

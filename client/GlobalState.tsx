@@ -49,7 +49,8 @@ export const GlobalContext = createContext<{
   globalClient: defaultGlobalClient,
   setGlobalClient: () => {},
   globalError: defaultGlobalError,
-  setError: (message?: string, preventClearing?: boolean) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setError: (_message?: string, _preventClearing?: boolean) => {},
 });
 
 export const GlobalProvider: FC<{ children: ReactNode }> = ({ children }) => {

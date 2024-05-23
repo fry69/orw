@@ -2,18 +2,25 @@ import { useContext, useEffect, useState } from "react";
 import type { FC, ReactNode } from "react";
 import type { Model, ModelDiff } from "../global";
 import { GlobalContext } from "./GlobalState";
-import {
-  calcCostPerMillion,
-  calcCostPerThousand,
-  ChangeSnippet,
-  dateStringDuration,
-} from "./utils";
+import { calcCostPerMillion, calcCostPerThousand, dateStringDuration } from "./utils";
+import { ChangeSnippet } from "./ChangeSnippet";
 
 export const ModelDetail: FC = () => {
   const [model, setModel] = useState<Model | null>(null);
   const [changes, setChanges] = useState<ModelDiff[]>([]);
   const [removed, setRemoved] = useState<boolean>(false);
   const { globalStatus, globalLists, setGlobalClient, setError } = useContext(GlobalContext);
+
+  useEffect(() => {
+    setGlobalClient((prevState) => ({
+      ...prevState,
+      navBarDynamicElement: (
+        <>
+          <span className="dynamic-element"></span>
+        </>
+      ),
+    }));
+  }, []);
 
   useEffect(() => {
     if (!globalStatus.isValid) {
@@ -43,17 +50,6 @@ export const ModelDetail: FC = () => {
     const foundChanges: ModelDiff[] = globalLists.changes.filter((obj) => obj.id === id);
     setChanges(foundChanges);
   }, [globalLists, globalStatus]);
-
-  useEffect(() => {
-    setGlobalClient((prevState) => ({
-      ...prevState,
-      navBarDynamicElement: (
-        <>
-          <span className="dynamic-element"></span>
-        </>
-      ),
-    }));
-  }, []);
 
   if (!model) {
     return <></>;

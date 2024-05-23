@@ -1,5 +1,7 @@
+import type { ReactElement } from "react";
+
 export interface GlobalClient {
-  navBarDynamicElement: React.ReactElement;
+  navBarDynamicElement: ReactElement;
   navBarDurations: {
     dbLastChange: string;
     apiLastCheck: string;
