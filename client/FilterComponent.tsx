@@ -1,7 +1,6 @@
-import { useEffect, useRef } from "react";
-import type { ChangeEvent, KeyboardEvent } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
 import styled from "styled-components";
-import { Button } from "./Button";
 
 const TextField = styled.input`
   height: 32px;
@@ -19,7 +18,18 @@ const TextField = styled.input`
   }
 `;
 
-const ClearButton = styled(Button)`
+const ClearButton = styled.button`
+  background-color: #2979ff;
+  border: none;
+  color: white;
+  padding: 8px 32px 8px 32px;
+  text-decoration: none;
+  font-size: 16px;
+
+  &:hover {
+    cursor: pointer;
+  }
+
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   border-top-right-radius: 5px;
@@ -33,30 +43,29 @@ const ClearButton = styled(Button)`
 `;
 
 interface FilterComponentProps {
-  filterText: string;
-  onFilter: (event: ChangeEvent<HTMLInputElement>) => void;
-  onClear: () => void;
-  onKeydown?: (event: KeyboardEvent<HTMLInputElement>) => void;
+  filter: (filterText: string) => void;
 }
 
-export const FilterComponent = ({
-  filterText,
-  onFilter,
-  onClear,
-  onKeydown,
-}: FilterComponentProps) => {
+export const FilterComponent = ({ filter }: FilterComponentProps) => {
+  const [filterText, setFilterText] = useState("");
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
-  }, [filterText]);
+    filter(filterText);
+  }, [filter, filterText]);
 
   const handleClear = () => {
-    if (filterText && typeof onClear === "function") {
-      onClear();
-    }
+    setFilterText("");
+    filter("");
+  };
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const filterText = event.target.value;
+    setFilterText(filterText);
   };
 
   return (
@@ -68,12 +77,9 @@ export const FilterComponent = ({
           placeholder="Filter By Name"
           aria-label="Search Input"
           value={filterText}
-          onChange={onFilter}
+          onChange={handleChange}
           ref={inputRef}
           onKeyDown={(e) => {
-            if (typeof onKeydown === "function") {
-              onKeydown(e);
-            }
             if (e.key === "Escape") {
               e.currentTarget.blur();
               handleClear();

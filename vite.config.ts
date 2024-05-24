@@ -6,7 +6,7 @@ const ReactCompilerConfig = {};
 
 export default defineConfig({
   build: {
-    sourcemap: false, // Enable source maps
+    sourcemap: true, // Enable source maps
   },
   plugins: [
     react({

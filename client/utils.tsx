@@ -1,7 +1,5 @@
 import { DateTime, Duration } from "luxon";
 import { toHumanDurationExtended } from "@kitsuyui/luxon-ext";
-import type { ChangeEvent, SetStateAction } from "react";
-import { FilterComponent } from "./FilterComponent";
 
 export const dateString = (timestamp: string) =>
   DateTime.fromISO(timestamp).setLocale("en-us").toLocaleString(DateTime.DATETIME_MED);
@@ -52,18 +50,3 @@ export const calcCostPerMillion = (floatString: string, unit?: string): string =
 
 export const calcCostPerThousand = (floatString: string, unit?: string): string =>
   calcCost(floatString, 1_000, unit ? "per thousand " + unit : "");
-
-export const filterComponentWrapper = (
-  filterText: string,
-  setFilterText: (value: SetStateAction<string>) => void
-) => (
-  <FilterComponent
-    filterText={filterText}
-    onFilter={(e: ChangeEvent<HTMLInputElement>) => setFilterText(e.target.value)}
-    onClear={() => {
-      if (filterText) {
-        setFilterText("");
-      }
-    }}
-  />
-);

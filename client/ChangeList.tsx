@@ -1,26 +1,28 @@
 import { useContext, useEffect, useState, type FC } from "react";
-import { filterComponentWrapper } from "./utils";
+import { FilterComponent } from "./FilterComponent";
 import { GlobalContext } from "./GlobalState";
 import { Link } from "react-router-dom";
 import { dateStringDuration } from "./utils";
 import { ChangeSnippet } from "./ChangeSnippet";
+import type { ModelDiff } from "../global";
 
 export const ChangeList: FC = () => {
   const { globalLists, setGlobalClient } = useContext(GlobalContext);
+  const [filteredChanges, setFilteredChanges] = useState<ModelDiff[]>([]);
 
-  const [filterText, setFilterText] = useState("");
-  const filteredChanges = globalLists.changes.filter(
-    (item) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase())
-  );
-
-  const filterComponent = filterComponentWrapper(filterText, setFilterText);
+  const filterChanges = (filterText: string) =>
+    setFilteredChanges(
+      globalLists.changes.filter(
+        (item) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase())
+      )
+    );
 
   useEffect(() => {
     setGlobalClient((prevState) => ({
       ...prevState,
-      navBarDynamicElement: filterComponent,
+      navBarDynamicElement: <FilterComponent filter={filterChanges} />,
     }));
-  }, [filterText]);
+  }, [globalLists.changes, filterChanges]);
 
   return (
     <div className="change-list">

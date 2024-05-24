@@ -28,14 +28,10 @@ export const ChangeSnippet = ({ change, hideTypes }: ChangeSnippetProps) => {
           if (key.includes("description")) {
             return (
               <div key={key}>
-                <p>
-                  Description (old):
-                  <pre>{old}</pre>
-                </p>
-                <p>
-                  Description (new):
-                  <pre>{newValue}</pre>
-                </p>
+                Description (old):
+                <pre>{old}</pre>
+                Description (new):
+                <pre>{newValue}</pre>
               </div>
             );
           }

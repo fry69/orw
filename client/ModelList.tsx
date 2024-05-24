@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import DataTable, { type Selector, type TableColumn } from "react-data-table-component";
 import type { Model } from "../global";
 import { GlobalContext } from "./GlobalState";
-import { filterComponentWrapper, calcCostPerMillion, durationAgo } from "./utils";
+import { calcCostPerMillion, durationAgo } from "./utils";
+import { FilterComponent } from "./FilterComponent";
 
 export const ModelList: FC<{ removed?: boolean }> = (props) => {
   const navigate = useNavigate();
   const { globalLists, setGlobalClient } = useContext(GlobalContext);
+  const [filteredModels, setFilteredModels] = useState<Model[]>([]);
 
   let models: Model[];
   if (props.removed) {
@@ -16,19 +18,17 @@ export const ModelList: FC<{ removed?: boolean }> = (props) => {
     models = globalLists.models;
   }
 
-  const [filterText, setFilterText] = useState("");
-  const filteredModels = models.filter(
-    (item) => item.name && item.name.toLowerCase().includes(filterText.toLowerCase())
-  );
-
-  const filterComponent = filterComponentWrapper(filterText, setFilterText);
+  const filterModels = (filterText: string) =>
+    setFilteredModels(
+      models.filter((item) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase()))
+    );
 
   useEffect(() => {
     setGlobalClient((prevState) => ({
       ...prevState,
-      navBarDynamicElement: filterComponent,
+      navBarDynamicElement: <FilterComponent filter={filterModels} />,
     }));
-  }, [filterText]);
+  }, [models, filterModels]);
 
   const roundKb = (num: number) => {
     if (num < 1024) {
