@@ -6,6 +6,24 @@ interface ChangeSnippetProps {
   hideTypes: ModelChangeType[];
 }
 
+const calcCost = (
+  oldValue: string,
+  newValue: string,
+  calcFn: typeof calcCostPerMillion,
+  unit: string
+): [oldPrice: string, newPrice: string, percentage: string] => {
+  const oldPrice = calcFn(oldValue, unit);
+  const newPrice = calcFn(newValue, unit);
+  let percentageString: string;
+  if (parseFloat(oldValue) <= 0 || parseFloat(newValue) <= 0) {
+    percentageString = "";
+  } else {
+    const percentage = ((parseFloat(newValue) - parseFloat(oldValue)) / parseFloat(oldValue)) * 100;
+    percentageString = "(" + (percentage > 0 ? "+" : "") + percentage.toFixed(0) + "%)";
+  }
+  return [oldPrice, newPrice, percentageString];
+};
+
 export const ChangeSnippet = ({ change, hideTypes }: ChangeSnippetProps) => {
   if (hideTypes.includes(change.type)) {
     return;
@@ -14,15 +32,13 @@ export const ChangeSnippet = ({ change, hideTypes }: ChangeSnippetProps) => {
     return (
       <>
         {Object.entries(change.changes).map(([key, { old, new: newValue }]) => {
+          let percentage = "";
           if (key === "pricing.prompt" || key === "pricing.completion") {
-            old = calcCostPerMillion(old, "tokens");
-            newValue = calcCostPerMillion(newValue, "tokens");
+            [old, newValue, percentage] = calcCost(old, newValue, calcCostPerMillion, "tokens");
           } else if (key === "pricing.request") {
-            old = calcCostPerThousand(old, "requests");
-            newValue = calcCostPerThousand(newValue, "requests");
+            [old, newValue, percentage] = calcCost(old, newValue, calcCostPerThousand, "requests");
           } else if (key === "pricing.image") {
-            old = calcCostPerThousand(old, "images");
-            newValue = calcCostPerThousand(newValue, "images");
+            [old, newValue, percentage] = calcCost(old, newValue, calcCostPerThousand, "images");
           }
 
           if (key.includes("description")) {
@@ -37,7 +53,7 @@ export const ChangeSnippet = ({ change, hideTypes }: ChangeSnippetProps) => {
           }
           return (
             <p key={key}>
-              {key}: {old} → {newValue}
+              {key}: {old.toLocaleString()} → {newValue.toLocaleString()} {percentage}
             </p>
           );
         })}
