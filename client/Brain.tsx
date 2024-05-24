@@ -62,7 +62,7 @@ export const Brain: FC = () => {
       errorCount.current = 0;
       return apiResponse;
     } catch (err) {
-      errorHandler(`API failed to load, try #${errorCount.current} (${err})`);
+      errorHandler(`API failed to load, try #${errorCount.current + 1}: ${err}`);
     }
     return { version: -1 };
   };
