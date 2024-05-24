@@ -9,6 +9,9 @@ import { createGzip } from "node:zlib";
 import { API__LISTS, API__STATUS, API_VERSION } from "./constants";
 import type { APIResponse, APIStatus } from "./global";
 import RSS from "rss";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { ChangeSnippet } from "./client/ChangeSnippet";
 
 /**
  * Creates a new server instance to serve the web client and changes as an RSS feed.
@@ -458,11 +461,14 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
       replaceDescription(change);
       feed.item({
         title: `Model ${change.id} ${change.type}`,
-        description: `<code style="display: block; white-space: pre-wrap; font-family: monospace;">${JSON.stringify(
-          change,
-          null,
-          2
-        )}</code>`,
+        description: renderToStaticMarkup(
+          React.createElement(ChangeSnippet, { change, hideTypes: [] })
+        ),
+        // description: `<code style="display: block; white-space: pre-wrap; font-family: monospace;">${JSON.stringify(
+        //   change,
+        //   null,
+        //   2
+        // )}</code>`,
         url: `${publicURL}model?id=${change.id}&timestamp=${change.timestamp}`,
         date: change.timestamp,
       });
