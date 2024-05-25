@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ChangeSnippet } from "./client/ChangeSnippet";
-import type { ModelDiff } from "./global";
+import { ChangeSnippet } from "../client/ChangeSnippet";
+import type { ModelDiff } from "../global";
 
 const change: ModelDiff = {
   id: "my/model",
