@@ -16,11 +16,21 @@ Web client:
 - minor other refactor
 - implemented soft fetch error backoff
   - every error doubles interval time
-  - hard refresh browser window after doubling 5 times (2!+3!+4!+5!+6! min ~ 15h)
+  - hard refresh browser window after doubling 5 times
+- show percentages for price changes
 
-Misc:
+Server:
+
+- RSS feed now uses the same code to generate changes as the web client
+
+Miscellaneous:
 
 - added eslint
+
+Documentation:
+
+- added installation instructions (INSTALL.md)
+- added rough internal design document (DESIGN.md)
 
 v0.2.1:
 
