@@ -458,12 +458,12 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
     for (const change of changesRSS) {
       // Replace description field with [...] to not upset some RSS readers
-      replaceDescription(change);
+      // replaceDescription(change);
       feed.item({
         title: `Model ${change.id} ${change.type}`,
-        description: renderToStaticMarkup(
+        description: `${renderToStaticMarkup(
           React.createElement(ChangeSnippet, { change, hideTypes: [] })
-        ),
+        )}`,
         // description: `<code style="display: block; white-space: pre-wrap; font-family: monospace;">${JSON.stringify(
         //   change,
         //   null,
