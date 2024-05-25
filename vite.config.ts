@@ -21,6 +21,8 @@ export default defineConfig({
     port: 6500,
     proxy: {
       "/api": "http://localhost:3000",
+      "/rss": "http://localhost:3000",
+      "/orw.db.gz": "http://localhost:3000",
     },
   },
   publicDir: "static",

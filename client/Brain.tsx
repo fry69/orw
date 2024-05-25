@@ -1,17 +1,18 @@
 import { useContext, useEffect, useRef, useState, type FC } from "react";
 import { GlobalContext } from "./GlobalState";
 import type { APIResponse } from "../global";
-import { API__LISTS, API__STATUS, API_VERSION, FETCH_TIMEOUT, VERSION } from "../constants";
+import {
+  API__LISTS,
+  API__STATUS,
+  API_VERSION,
+  FETCH_TIMEOUT,
+  VERSION,
+  INITIAL_INTERVAL,
+  REFRESH_INTERVAL,
+} from "../constants";
 import { durationAgo } from "./utils";
 
-const initialUpdateInterval = 60_000; // One minute in milliseconds
-const refreshInterval = 3600_000 + 60_000; // One hour and one minute in milliseconds
-
-// Values for testing during development
-// const initialUpdateInterval = 5_000; // Five seconds in milliseconds
-// const refreshInterval = 10_000; // Ten seconds in milliseconds
-
-let updateInterval = initialUpdateInterval; // Current update interval, adjustable for soft error backoff
+let updateInterval = INITIAL_INTERVAL; // Current update interval, adjustable for soft error backoff
 
 // Fake fetch function for testing error conditions
 // const fail = async (ignore: any) => {
@@ -58,7 +59,7 @@ export const Brain: FC = () => {
       // If we made it here, everythings seems fine, let's clear any existing error
       setError();
       // Reset updateInterval and error count
-      updateInterval = initialUpdateInterval;
+      updateInterval = INITIAL_INTERVAL;
       errorCount.current = 0;
       return apiResponse;
     } catch (err) {
@@ -126,7 +127,7 @@ export const Brain: FC = () => {
         errorHandler(`Error reloading data from API: ${err}`);
       }
       if (interval) {
-        // After doubling interval 5 times (~ 15h), let's hard refresh the browser window
+        // After doubling interval 5 times (> 1h), let's hard refresh the browser window
         if (errorCount.current > 5) {
           // A clear error message is better than a stale client
           console.log("Giving up retrying after 5 times, refreshing window");
@@ -142,7 +143,7 @@ export const Brain: FC = () => {
       updateDuration();
       // If last API check is longer than an hour ago, check for new data, trigger a refresh if needed
       const now = Date.now();
-      if (now - new Date(localStatus.apiLastCheck).getTime() > refreshInterval) {
+      if (now - new Date(localStatus.apiLastCheck).getTime() > REFRESH_INTERVAL) {
         handleRefresh().catch((err) => {
           errorHandler(`Error trying to reload data from API: ${err}`);
         });

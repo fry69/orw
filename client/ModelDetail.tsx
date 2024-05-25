@@ -49,7 +49,7 @@ export const ModelDetail: FC = () => {
     setModel(foundModel);
     const foundChanges: ModelDiff[] = globalLists.changes.filter((obj) => obj.id === id);
     setChanges(foundChanges);
-  }, [globalLists, globalStatus]);
+  }, [globalLists.models, globalLists.removed, globalStatus.isValid]);
 
   if (!model) {
     return <></>;
