@@ -45,9 +45,9 @@ export const ChangeSnippet = ({ change, hideTypes }: ChangeSnippetProps) => {
             return (
               <div key={key}>
                 Description (old):
-                <pre>{old}</pre>
+                <pre style={{ whiteSpace: "pre-wrap" }}>{old}</pre>
                 Description (new):
-                <pre>{newValue}</pre>
+                <pre style={{ whiteSpace: "pre-wrap" }}>{newValue}</pre>
               </div>
             );
           }
@@ -62,7 +62,7 @@ export const ChangeSnippet = ({ change, hideTypes }: ChangeSnippetProps) => {
   }
   return (
     <>
-      <pre> {JSON.stringify(change.model, null, 4)} </pre>
+      <pre style={{ whiteSpace: "pre-wrap" }}> {JSON.stringify(change.model, null, 4)} </pre>
     </>
   );
 };
