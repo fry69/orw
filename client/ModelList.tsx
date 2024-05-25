@@ -28,7 +28,7 @@ export const ModelList: FC<{ removed?: boolean }> = (props) => {
       ...prevState,
       navBarDynamicElement: <FilterComponent filter={filterModels} />,
     }));
-  }, [models, filterModels]);
+  }, [models]);
 
   const roundKb = (num: number) => {
     if (num < 1024) {

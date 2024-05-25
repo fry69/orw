@@ -22,7 +22,7 @@ export const ChangeList: FC = () => {
       ...prevState,
       navBarDynamicElement: <FilterComponent filter={filterChanges} />,
     }));
-  }, [globalLists.changes, filterChanges]);
+  }, [globalLists.changes]);
 
   return (
     <div className="change-list">
