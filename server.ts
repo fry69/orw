@@ -445,16 +445,16 @@ export const createServer = async (watcher: OpenRouterAPIWatcher): Promise<void>
 
     const changesRSS = watcher.getLists.changes.slice(0, 50); // first 50 entries, sorted newest first
 
-    const replaceDescription = (obj: any) => {
-      for (const key in obj) {
-        if (key === "description") {
-          obj[key] = "[...]";
-        } else if (typeof obj[key] === "object" && obj[key] !== null) {
-          // Recursively traverse nested objects
-          replaceDescription(obj[key]);
-        }
-      }
-    };
+    // const replaceDescription = (obj: any) => {
+    //   for (const key in obj) {
+    //     if (key === "description") {
+    //       obj[key] = "[...]";
+    //     } else if (typeof obj[key] === "object" && obj[key] !== null) {
+    //       // Recursively traverse nested objects
+    //       replaceDescription(obj[key]);
+    //     }
+    //   }
+    // };
 
     for (const change of changesRSS) {
       // Replace description field with [...] to not upset some RSS readers

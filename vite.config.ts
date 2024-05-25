@@ -2,18 +2,19 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { compression } from "vite-plugin-compression2";
 
-const ReactCompilerConfig = {};
+// const ReactCompilerConfig = {};
 
 export default defineConfig({
   build: {
     sourcemap: true, // Enable source maps
   },
   plugins: [
-    react({
-      babel: {
-        plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
-      },
-    }),
+    react(),
+    // react({
+    //   babel: {
+    //     plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
+    //   },
+    // }),
     compression(),
   ],
   server: {
