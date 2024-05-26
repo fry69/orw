@@ -1,7 +1,7 @@
 /**
  * Global version string
  */
-export const VERSION = "0.3.0-dev4";
+export const VERSION = "0.3.0-dev5";
 
 /**
  * API version number, server and client must match to be considered valid
@@ -23,7 +23,6 @@ export const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/models";
  * Fetch timeout
  */
 export const FETCH_TIMEOUT = 4_000; // 4 secdonds
-
 
 /**
  * Initial update interval, this value controls how long the web client hard sleeps.

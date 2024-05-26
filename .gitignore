@@ -195,6 +195,7 @@ bun.lockb
 screenshots/
 cache/
 backup/
+unused/
 *.backup*
 *.snapshot*
 *.png

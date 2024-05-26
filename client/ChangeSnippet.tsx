@@ -53,7 +53,8 @@ export const ChangeSnippet = ({ change, hideTypes }: ChangeSnippetProps) => {
           }
           return (
             <p key={key}>
-              {key}: {old.toLocaleString()} → {newValue.toLocaleString()} {percentage}
+              {key}: {old?.toLocaleString() ?? "[null]"} → {newValue?.toLocaleString() ?? "[null]"}
+              {percentage ? " " + percentage : ""}
             </p>
           );
         })}
