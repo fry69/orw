@@ -1,0 +1,17 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "./server/*",
+    "./server/migrations/*",
+    "./src/*",
+    "./shared/*"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.sql",
+    "./server/dist",
+    "./server/migrations",
+    "./server/dist/**"
+  ],
+  "out": "docs"
+}

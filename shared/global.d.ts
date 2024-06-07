@@ -73,23 +73,3 @@ export interface APIResponse {
   status?: APIStatus;
   lists?: Lists;
 }
-
-/**
- * Represents the private watcher status object
- */
-export interface Status {
-  /**
-   * Timestamp of the last API check
-   */
-  apiLastCheck: Date;
-
-  /**
-   * Status of the last API check
-   */
-  apiLastCheckStatus: string;
-
-  /**
-   * Timestamp of the data in the database
-   */
-  dbLastChange: Date;
-}

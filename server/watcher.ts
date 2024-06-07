@@ -1,130 +1,90 @@
-// orw.ts
-import Bun from "bun";
+// watcher.ts
 import process from "node:process";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createGzip } from "node:zlib";
 import { pipeline } from "node:stream/promises";
-import { Database } from "bun:sqlite";
-import { diff } from "deep-diff";
-import type { Model, ModelDiff, Lists, Status } from "./global";
-import { runMigrations } from "./db-migration";
-import { createServer } from "./server";
-import { FETCH_TIMEOUT, OPENROUTER_API_URL, VERSION } from "./constants";
+import database, { type Database } from "better-sqlite3";
+import diffpkg from "deep-diff";
+const { diff } = diffpkg; // workaround
+import type { Model, ModelDiff, Lists } from "../shared/global";
+import { runMigrations } from "./db-migration.js";
+import { httpServer } from "./httpServer.js";
+import { FETCH_TIMEOUT, OPENROUTER_API_URL, VERSION } from "../shared/constants.js";
 
-export const isDevelopment = import.meta.env.NODE_ENV === "development" || false;
-const fixedModelFilePath = import.meta.env.ORW_FIXED_MODEL_FILE || "./models.json";
-const backupDir = import.meta.env.ORW_BACKUP_PATH || "./backup";
-const logFilePath = import.meta.env.ORW_LOG_PATH ?? "./orw.log";
-const dbFilePath = import.meta.env.ORW_DB_PATH ?? "./orw.db";
+export const isDevelopment = process.env.NODE_ENV === "development" || false;
+const dataDir = process.env.ORW_DATA_PATH || "./data";
 
-let fixedModelList: Model[] = [];
-if (isDevelopment) {
-  // Don't query the acutal API during development, use a fixed model list instead if present
-  if (await Bun.file(fixedModelFilePath).exists()) {
-    fixedModelList = JSON.parse(await Bun.file(fixedModelFilePath).text()).data;
-  } else {
-    console.log("No fixed model list found for development, generate a snapshot with:");
-    console.log("curl https://openrouter.ai/api/v1/models > models.json");
-  }
-  console.log("--- Watcher initializing in development mode ---");
+const defaultConfig = {
+  dataDir,
+  backupDir: process.env.ORW_BACKUP_PATH || path.join(dataDir, "backup"),
+  logFilePath: process.env.ORW_LOG_PATH ?? path.join(dataDir, "orw.log"),
+  dbFilePath: process.env.ORW_DB_PATH ?? path.join(dataDir, "orw.db"),
+  fixedModelList: undefined,
+};
+
+/**
+ * Represents the private watcher status object.
+ */
+export interface WatcherStatus {
+  /** Timestamp of the last API check. */
+  apiLastCheck: Date;
+  /** Status of the last API check. */
+  apiLastCheckStatus: string;
+  /** Timestamp of the data in the database. */
+  dbLastChange: Date;
+}
+
+/**
+ * Represents the watcher configuration object.
+ */
+export interface WatcherConfig {
+  /** The SQLite database used for storing model changes. */
+  db: Database;
+  /** Directory for storing data files. */
+  dataDir?: string;
+  /** Path to the SQLite database file. */
+  dbFilePath?: string;
+  /** Directory for storing backup files. */
+  backupDir?: string;
+  /** Path to the logfile, log only if set. */
+  logFilePath?: string;
+  /** Fixed model list, if set, no API calls are made. */
+  fixedModelList?: Model[];
 }
 
 /**
  * Watches for changes in OpenRouter models and stores the changes in a SQLite database.
  */
 export class OpenRouterAPIWatcher {
-  /**
-   * The SQLite database used for storing model changes.
-   */
-  private db: Database;
-
-  /**
-   * A flag indicating whether the watcher is in the initial setup phase.
-   */
-  private initFlag: boolean = false;
-
-  /**
-   * Path to the logfile, log only if set
-   */
-  private logFilePath?: string;
-
-  /**
-   * Memory cache for lists from database.
-   */
-  private lists: Lists = {
-    models: [],
-    removed: [],
-    changes: [],
-  };
-
-  /**
-   * Get cached database lists
-   * @returns {Lists} - The cached database lists object.
-   */
-  get getLists(): Lists {
-    return this.lists;
-  }
-
-  /**
-   * Status object containing db / runtime stats
-   */
-  private status: Status = {
-    /**
-     * Timestamp of the data in the database
-     */
-    dbLastChange: new Date(0),
-
-    /**
-     * Timestamp of the last API check
-     */
-    apiLastCheck: new Date(0),
-
-    /**
-     * Status of the last API check
-     */
-    apiLastCheckStatus: "unknown",
-  };
-
-  /**
-   * Get last change timestamp recorded in the database
-   * @returns {Date} - Last change timestamp
-   */
-  get getDBLastChange(): Date {
-    return this.status.dbLastChange;
-  }
-  /**
-   * Get timestamp of the last OpenRouter API check
-   * @returns {Date} - Last API check timestamp
-   */
-  get getAPILastCheck(): Date {
-    return this.status.apiLastCheck;
-  }
-  /**
-   * Get status of the last OpenRouter API check result
-   * @returns {string} - Last API check result status
-   */
-  get getAPILastCheckStatus(): string {
-    return this.status.apiLastCheckStatus;
-  }
-
-  /**
-   * Get the path to the current database backup file.
-   * @returns {string} -  The path to the current database backup file.
-   */
-  get getDbBackupPath(): string {
-    return path.join(backupDir, path.basename(dbFilePath) + ".backup");
-  }
+  private config: WatcherConfig;
+  private status: WatcherStatus;
+  private lists: Lists; // Memory cache for lists from database.
 
   /**
    * Creates a new instance of the OpenRouterAPIWatcher class.
-   * @param {Database} db  - The SQLite database to use for storing model changes.
-   * @param {string} [logFilePath]  - Path to the logfile
+   * @param config  - The Watcher configuration.
    */
-  constructor(db: Database, logFilePath?: string) {
-    this.db = db;
-    runMigrations(db);
+  constructor(config: WatcherConfig) {
+    this.config = {
+      ...defaultConfig, // defaults + environment settings
+      ...config, // command line + directly invoked settings (these overwrite defaults)
+    };
 
+    this.lists = {
+      models: [],
+      removed: [],
+      changes: [],
+    };
+
+    this.status = {
+      dbLastChange: new Date(0),
+      apiLastCheck: new Date(0),
+      apiLastCheckStatus: "unknown",
+    };
+
+    runMigrations(this.config.db);
     this.loadLists();
     this.loadAPILastCheck();
     if (this.lists.changes.length > 0) {
@@ -142,7 +102,6 @@ export class OpenRouterAPIWatcher {
     if (this.lists.models.length === 0) {
       // Seed the database with the current model list if it's a fresh database
       this.log("empty model list in database");
-      this.initFlag = true;
 
       this.getAPIModelList().then((newModels) => {
         if (newModels.length > 0) {
@@ -156,24 +115,23 @@ export class OpenRouterAPIWatcher {
       });
     }
 
-    if (logFilePath) {
-      this.logFilePath = logFilePath;
+    if (this.config.logFilePath) {
       // Check if the log file exists, if not, create it
-      if (!fs.existsSync(this.logFilePath)) {
-        fs.writeFileSync(this.logFilePath, "");
+      if (!fs.existsSync(this.config.logFilePath)) {
+        fs.writeFileSync(this.config.logFilePath, "");
       }
       if (isDevelopment) {
         this.log("watcher initialized");
       }
     }
 
-    if (backupDir) {
+    if (this.config.backupDir) {
       // Create the backup directory if it doesn't exist
-      if (!fs.existsSync(backupDir)) {
+      if (!fs.existsSync(this.config.backupDir)) {
         try {
-          fs.mkdirSync(backupDir, { recursive: true });
+          fs.mkdirSync(this.config.backupDir, { recursive: true });
         } catch (err) {
-          const message = `Error creating backup directory at ${backupDir}: ${err}`;
+          const message = `Error creating backup directory at ${this.config.backupDir}: ${err}`;
           this.error(message);
           console.error(message);
           throw err;
@@ -183,8 +141,49 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
+   * Get cached database lists
+   * @returns - The cached database lists object.
+   */
+  get getLists(): Lists {
+    return this.lists;
+  }
+
+  /**
+   * Get last change timestamp recorded in the database
+   * @returns - Last change timestamp
+   */
+  get getDBLastChange(): Date {
+    return this.status.dbLastChange;
+  }
+  /**
+   * Get timestamp of the last OpenRouter API check
+   * @returns - Last API check timestamp
+   */
+  get getAPILastCheck(): Date {
+    return this.status.apiLastCheck;
+  }
+  /**
+   * Get status of the last OpenRouter API check result
+   * @returns - Last API check result status
+   */
+  get getAPILastCheckStatus(): string {
+    return this.status.apiLastCheckStatus;
+  }
+
+  /**
+   * Get the path to the current database backup file.
+   * @returns -  The path to the current database backup file.
+   */
+  get getDbBackupPath(): string | undefined {
+    if (this.config.backupDir && this.config.dbFilePath) {
+      return path.join(this.config.backupDir, path.basename(this.config.dbFilePath) + ".backup");
+    }
+    return undefined;
+  }
+
+  /**
    * Receives error messages and outputs to console and logfile
-   * @param {string} message - Error message
+   * @param message - Error message
    */
   error(message: string) {
     const timestamp = new Date().toISOString();
@@ -194,14 +193,14 @@ export class OpenRouterAPIWatcher {
     console.error(logMessage);
 
     // Log the message to the log file
-    if (this.logFilePath) {
-      fs.appendFileSync(this.logFilePath, `${logMessage}\n`);
+    if (this.config.logFilePath) {
+      fs.appendFileSync(this.config.logFilePath, `${logMessage}\n`);
     }
   }
 
   /**
    * Receives informational messages and outputs to console and logfile
-   * @param {string} [message] - Message text
+   * @param message - Message text
    */
   log(message: string = "") {
     const timestamp = new Date().toISOString();
@@ -214,28 +213,28 @@ export class OpenRouterAPIWatcher {
     console.log(logMessage);
 
     // Log the message to the log file
-    if (this.logFilePath) {
-      fs.appendFileSync(this.logFilePath, `${logMessage}\n`);
+    if (this.config.logFilePath) {
+      fs.appendFileSync(this.config.logFilePath, `${logMessage}\n`);
     }
   }
 
   /**
    * Fetches the current list of OpenRouter models from the API.
-   * @returns {Model[]} - A Promise that resolves to an array of Model objects.
+   * @returns - A Promise that resolves to an array of Model objects.
    */
   async getAPIModelList(): Promise<Model[]> {
     if (isDevelopment) {
       this.log(
         "Warning: using fixed model list, switch to production mode to load live model list from API"
       );
-      return fixedModelList;
+      return this.config.fixedModelList ?? [];
     }
-
+    this.log("API check");
+    this.status.apiLastCheck = new Date();
     try {
       const response = await fetch(OPENROUTER_API_URL, {
         signal: AbortSignal.timeout(FETCH_TIMEOUT),
       });
-      this.status.apiLastCheck = new Date();
       if (response) {
         const { data } = await response.json();
         if (data) {
@@ -256,7 +255,7 @@ export class OpenRouterAPIWatcher {
         errorMessage = `model list fetch failed with unknown error ${err}`;
       }
       this.error(errorMessage);
-      this.status.apiLastCheckStatus = "failed";
+      // fallthrough
     }
     this.status.apiLastCheckStatus = "failed";
     this.updateAPILastCheck();
@@ -292,8 +291,8 @@ export class OpenRouterAPIWatcher {
     LEFT JOIN latest_added_models lam
       ON m.id = lam.id
     `;
-    const models: Model[] = this.db
-      .query(query)
+    const models: Model[] = this.config.db
+      .prepare(query)
       .all()
       .map((row: any) => {
         const parsedData = JSON.parse(row.data);
@@ -307,17 +306,17 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Stores the current list of OpenRouter models in the SQLite database.
-   * @param {Model[]} models - An array of Model objects to store.
-   * @param {Date} [timestamp] - The timestamp to associate with the model list.
+   * @param models - An array of Model objects to store.
+   * @param timestamp - The timestamp to associate with the model list.
    */
   storeModelList(models: Model[], timestamp: Date = new Date()) {
-    this.db.run("DELETE FROM models");
+    const deleteModels = this.config.db.prepare("DELETE FROM models");
+    deleteModels.run();
+    const insertModels = this.config.db.prepare(
+      "INSERT INTO models (id, data, timestamp) VALUES (?, ?, ?)"
+    );
     for (const model of models) {
-      this.db.run("INSERT INTO models (id, data, timestamp) VALUES (?, ?, ?)", [
-        model.id,
-        JSON.stringify(model),
-        timestamp.toISOString(),
-      ]);
+      insertModels.run([model.id, JSON.stringify(model), timestamp.toISOString()]);
     }
   }
 
@@ -326,8 +325,8 @@ export class OpenRouterAPIWatcher {
    * @returns An array of Model objects.
    */
   loadRemovedModelList(): Model[] {
-    const removedModels: Model[] = this.db
-      .query("SELECT timestamp, data FROM removed_models ORDER BY timestamp DESC")
+    const removedModels: Model[] = this.config.db
+      .prepare("SELECT timestamp, data FROM removed_models ORDER BY timestamp DESC")
       .all()
       .map((row: any) => {
         const model: Model = JSON.parse(row.data);
@@ -339,31 +338,30 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Stores a removed model from the OpenRouter models list in the SQLite database.
-   * @param {Model} model - Removed Model object to store.
-   * @param {Date} [timestamp] - The timestamp to associate with the removal.
+   * @param model - Removed Model object to store.
+   * @param timestamp - The timestamp to associate with the removal.
    */
   storeRemovedModel(model: Model, timestamp: Date = new Date()) {
-    this.db.run("INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)", [
-      model.id,
-      JSON.stringify(model),
-      timestamp.toISOString(),
-    ]);
+    const insertModel = this.config.db.prepare(
+      "INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)"
+    );
+    insertModel.run([model.id, JSON.stringify(model), timestamp.toISOString()]);
   }
 
   /**
    * Loads the most recent model changes from the SQLite database.
-   * @param {number} [n] - The maximum number of changes to load.
-   * @returns {ModelDiff[]} - An array of ModelDiff objects.
+   * @param n - The maximum number of changes to load.
+   * @returns - An array of ModelDiff objects.
    */
   loadChanges(n?: number): ModelDiff[] {
     if (n) {
-      return this.db
-        .query("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?")
+      return this.config.db
+        .prepare("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?")
         .all(n)
         .map(this.transformChangesRow);
     } else {
-      return this.db
-        .query("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC")
+      return this.config.db
+        .prepare("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC")
         .all()
         .map(this.transformChangesRow);
     }
@@ -371,8 +369,8 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Transform a row from the changes table to an ModelDiff object
-   * @param {any} row - The row from the database to transform
-   * @returns {ModelDiff}
+   * @param row - The row from the database to transform
+   * @returns
    */
   private transformChangesRow = (row: any): ModelDiff => {
     const changes = JSON.parse(row.changes);
@@ -394,11 +392,14 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Stores a list of model changes in the SQLite database.
-   * @param {ModelDiff[]} changes - An array of ModelDiff objects to store.
+   * @param changes - An array of ModelDiff objects to store.
    */
   storeChanges(changes: ModelDiff[]) {
+    const insertChanges = this.config.db.prepare(
+      "INSERT INTO changes (id, type, changes, timestamp) VALUES (?, ?, ?, ?)"
+    );
     for (const change of changes) {
-      this.db.run("INSERT INTO changes (id, type, changes, timestamp) VALUES (?, ?, ?, ?)", [
+      insertChanges.run([
         change.id,
         change.type,
         change.changes ? JSON.stringify(change.changes) : JSON.stringify(change.model),
@@ -409,23 +410,22 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Stores an added model to the OpenRouter models list in the SQLite database.
-   * @param {Model} model - Added Model object to store.
-   * @param {Date} [timestamp] - The timestamp to associate with the addition.
+   * @param model - Added Model object to store.
+   * @param timestamp - The timestamp to associate with the addition.
    */
   storeAddedModel(model: Model, timestamp: Date = new Date()) {
-    this.db.run("INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)", [
-      model.id,
-      JSON.stringify(model),
-      timestamp.toISOString(),
-    ]);
+    const insertAdded = this.config.db.prepare(
+      "INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)"
+    );
+    insertAdded.run([model.id, JSON.stringify(model), timestamp.toISOString()]);
   }
 
   /**
    * Loads last API check timestamp and result status from database and updates internal status.
    */
   loadAPILastCheck() {
-    const result: any = this.db
-      .query("SELECT last_check, last_status FROM last_api_check WHERE id = 1")
+    const result: any = this.config.db
+      .prepare("SELECT last_check, last_status FROM last_api_check WHERE id = 1")
       .get();
     if (result) {
       if (result.last_check) {
@@ -441,10 +441,10 @@ export class OpenRouterAPIWatcher {
    * Updates the last check API timestamp and result status in the database.
    */
   updateAPILastCheck() {
-    this.db.run(
-      "INSERT OR REPLACE INTO last_api_check (id, last_check, last_status) VALUES (1, ?, ?);",
-      [this.status.apiLastCheck.toISOString(), this.status.apiLastCheckStatus]
+    const replaceLastCheck = this.config.db.prepare(
+      "INSERT OR REPLACE INTO last_api_check (id, last_check, last_status) VALUES (1, ?, ?);"
     );
+    replaceLastCheck.run([this.status.apiLastCheck.toISOString(), this.status.apiLastCheckStatus]);
   }
 
   /**
@@ -535,46 +535,41 @@ export class OpenRouterAPIWatcher {
    * High level check logic
    */
   private async check() {
-    // skip check on initialization
-    if (this.initFlag) {
-      this.initFlag = false;
-    } else {
-      let newModels = await this.getAPIModelList();
-      if (newModels.length === 0) {
-        this.status.apiLastCheckStatus = "unknown";
-        this.updateAPILastCheck();
-        this.error("empty model list from API, retry in one minute");
-        await new Promise((resolve) => setTimeout(resolve, 60_000)); // 1 minute
-        newModels = await this.getAPIModelList();
-      }
-      if (newModels.length === 0) {
-        this.status.apiLastCheckStatus = "failed";
-        this.error("empty model list from API after retry, skipping check");
-      } else {
-        const oldModels = this.lists.models;
-        const changes = this.findChanges(newModels, oldModels);
-        this.status.apiLastCheckStatus = "success";
-        this.updateAPILastCheck();
-        if (changes.length > 0) {
-          const timestamp = new Date();
-          this.storeModelList(newModels, timestamp);
-          this.storeChanges(changes);
-          this.log("Changes detected:");
-          this.log(JSON.stringify(changes, null, 4));
-
-          // re-load lists from db to keep added properties
-          // copying the API model list removes all added properties
-          this.loadLists();
-          this.status.dbLastChange = timestamp;
-
-          // Create a database backup
-          await this.backupDb();
-          // no need to fall through
-          return;
-        }
-      }
+    let newModels = await this.getAPIModelList();
+    if (newModels.length === 0) {
+      this.status.apiLastCheckStatus = "unknown";
       this.updateAPILastCheck();
+      this.error("empty model list from API, retry in one minute");
+      await new Promise((resolve) => setTimeout(resolve, 60_000)); // 1 minute
+      newModels = await this.getAPIModelList();
     }
+    if (newModels.length === 0) {
+      this.status.apiLastCheckStatus = "failed";
+      this.error("empty model list from API after retry, skipping check");
+    } else {
+      const oldModels = this.lists.models;
+      const changes = this.findChanges(newModels, oldModels);
+      this.status.apiLastCheckStatus = "success";
+      this.updateAPILastCheck();
+      if (changes.length > 0) {
+        const timestamp = new Date();
+        this.storeModelList(newModels, timestamp);
+        this.storeChanges(changes);
+        this.log("Changes detected:");
+        this.log(JSON.stringify(changes, null, 4));
+
+        // re-load lists from db to keep added properties
+        // copying the API model list removes all added properties
+        this.loadLists();
+        this.status.dbLastChange = timestamp;
+
+        // Create a database backup
+        await this.backupDb();
+        // no need to fall through
+        return;
+      }
+    }
+    this.updateAPILastCheck();
   }
 
   /**
@@ -585,30 +580,35 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
-   * Backups the database, saving previous backup
-   * @param {boolean} [initial] - If set only create a backup if none exists
+   * Backups the database, saving previous backup.
+   * @param initial - If set only create a backup if none exists.
    */
   private async backupDb(initial: boolean = false) {
-    const dbBackupFile = path.basename(dbFilePath) + ".backup";
-    const dbBackupFilePath = path.join(backupDir, dbBackupFile);
-    if (initial && (await Bun.file(dbBackupFilePath).exists())) {
+    const dbBackupFilePath = this.getDbBackupPath;
+    if (!dbBackupFilePath) {
+      return; // no backup path, no backups
+    }
+
+    // Skip creating a backup during initialisation, but create one if no backup exists.
+    if (initial && fs.existsSync(dbBackupFilePath)) {
       return;
     }
     const dbPrevBackupFilePath = dbBackupFilePath + ".prev";
-    if (await Bun.file(dbBackupFilePath).exists()) {
+    if (fs.existsSync(dbBackupFilePath)) {
       this.log("Moving current database backup");
-      if (await Bun.file(dbPrevBackupFilePath).exists()) {
+      if (fs.existsSync(dbPrevBackupFilePath)) {
         await fs.promises.unlink(dbPrevBackupFilePath);
       }
       await fs.promises.rename(dbBackupFilePath, dbPrevBackupFilePath);
     }
     this.log("Creating new database backup");
-    this.db.run(`VACUUM INTO '${dbBackupFilePath}'`);
+    // this.config.db.run(`VACUUM INTO '${dbBackupFilePath}'`);
     // TODO: VACUUM INTO can fail under extreme circumstances (e.g. concurrent write operation)
+    await this.config.db.backup(dbBackupFilePath); // sub-par solution IMHO, but testing it
 
-    // create compressed backup file to serve for bootstrapping
+    // Create compressed backup file to serve for bootstrapping.
     const dbBackupFilePathGz = dbBackupFilePath + ".gz";
-    if (await Bun.file(dbBackupFilePathGz).exists()) {
+    if (fs.existsSync(dbBackupFilePathGz)) {
       await fs.promises.unlink(dbBackupFilePathGz);
     }
     await pipeline(
@@ -625,7 +625,6 @@ export class OpenRouterAPIWatcher {
    */
   private async runBackgroundLoop() {
     while (true) {
-      this.log("API check");
       await this.check();
       await new Promise((resolve) => setTimeout(resolve, 3_600_000)); // 1 hour
     }
@@ -682,32 +681,47 @@ export class OpenRouterAPIWatcher {
   }
 }
 
-if (import.meta.main) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  if (isDevelopment) {
+    const fixedModelFilePath =
+      process.env.ORW_ORW_FIXED_MODEL_FILE || path.join(dataDir, "models.json");
+    // Don't query the acutal API during development, use a fixed model list instead if present
+    if (fs.existsSync(fixedModelFilePath)) {
+      defaultConfig.fixedModelList = JSON.parse(
+        fs.readFileSync(fixedModelFilePath).toString()
+      ).data;
+    } else {
+      console.log("No fixed model list found for development, generate a snapshot with:");
+      console.log("curl https://openrouter.ai/api/v1/models > models.json");
+    }
+    console.log("--- Watcher initializing in development mode ---");
+  }
+
   // Usage:
-  if (Bun.argv.includes("--version")) {
+  if (process.argv.includes("--version")) {
     console.log(`orw Version ${VERSION}`);
     process.exit(0);
-  } else if (Bun.argv.includes("--query")) {
-    if (!fs.existsSync(dbFilePath)) {
-      console.error(`Error: database ${dbFilePath} not found`);
+  } else if (process.argv.includes("--query")) {
+    if (!fs.existsSync(defaultConfig.dbFilePath)) {
+      console.error(`Error: database ${defaultConfig.dbFilePath} not found`);
       process.exit(1);
     }
-    const n = parseInt(Bun.argv[Bun.argv.indexOf("--query") + 1] || "10", 10);
-    const db = new Database(dbFilePath);
-    const watcher = new OpenRouterAPIWatcher(db);
+    const n = parseInt(process.argv[process.argv.indexOf("--query") + 1] || "10", 10);
+    const db = new database(defaultConfig.dbFilePath);
+    const watcher = new OpenRouterAPIWatcher({ db });
     watcher.runQueryMode(n);
     db.close();
     process.exit(0);
-  } else if (Bun.argv.includes("--once")) {
-    const db = new Database(dbFilePath);
-    const watcher = new OpenRouterAPIWatcher(db, logFilePath);
+  } else if (process.argv.includes("--once")) {
+    const db = new database(defaultConfig.dbFilePath);
+    const watcher = new OpenRouterAPIWatcher({ db });
     watcher.runOnce();
     db.close();
     process.exit(0);
   } else {
-    const db = new Database(dbFilePath);
-    const watcher = new OpenRouterAPIWatcher(db, logFilePath);
-    createServer(watcher);
+    const db = new database(defaultConfig.dbFilePath);
+    const watcher = new OpenRouterAPIWatcher({ db });
+    new httpServer({ watcher });
     watcher.enterBackgroundMode();
     // db.close(); // Don't close the database here, as the background mode runs indefinitely
   }

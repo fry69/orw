@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, FC, ReactNode } from "react";
 import styled from "styled-components";
 
+/**
+ * Styled input component for text filtering
+ */
 const TextField = styled.input`
   height: 32px;
   width: 130px;
@@ -18,6 +21,9 @@ const TextField = styled.input`
   }
 `;
 
+/**
+ * Styled button component for clearing the filter
+ */
 const ClearButton = styled.button`
   background-color: #2979ff;
   border: none;
@@ -42,11 +48,22 @@ const ClearButton = styled.button`
   justify-content: center;
 `;
 
-interface FilterComponentProps {
+/**
+ * Props for the FilterComponent.
+ */
+export interface FilterComponentProps {
+  /** Function to filter data based on the filter text. */
   filter: (filterText: string) => void;
 }
 
-export const FilterComponent = ({ filter }: FilterComponentProps) => {
+/**
+ * Component for filtering data based on a text input
+ * @param props - Props for the FilterComponent
+ * @returns - The FilterComponent
+ */
+export const FilterComponent: FC<FilterComponentProps> = ({
+  filter,
+}: FilterComponentProps): ReactNode => {
   const [filterText, setFilterText] = useState("");
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -58,11 +75,18 @@ export const FilterComponent = ({ filter }: FilterComponentProps) => {
     filter(filterText);
   }, [filter, filterText]);
 
+  /**
+   * Handles clearing the filter text
+   */
   const handleClear = () => {
     setFilterText("");
     filter("");
   };
 
+  /**
+   * Handles changing the filter text
+   * @param event - The change event
+   */
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const filterText = event.target.value;
     setFilterText(filterText);

@@ -1,13 +1,23 @@
-import { useContext, type FC } from "react";
+import { ReactNode, useContext, type FC } from "react";
 import { NavLink } from "react-router-dom";
 import { GlobalContext } from "./GlobalState";
 import { DateTime } from "luxon";
-import { VERSION } from "../constants";
+import { VERSION } from "../shared/constants";
 
-export const NavBar: FC = () => {
+/**
+ * NavBar component displays the navigation bar of the application.
+ * It includes links to the GitHub repository, models, changes, and RSS feed.
+ * It also displays information about the last database change, active models,
+ * removed models, recorded changes, and the version of the application.
+ * @returns The NavBar component.
+ */
+export const NavBar: FC = (): ReactNode => {
   const { globalStatus, globalLists, globalClient } = useContext(GlobalContext);
 
-  let dbfirstChangeTimestamp: string = globalLists.changes.at(-1)?.timestamp ?? "";
+  /**
+   * The timestamp of the last change in the database.
+   */
+  const dbfirstChangeTimestamp: string = globalLists.state.changes.at(-1)?.timestamp ?? "";
 
   return (
     <nav>
@@ -41,24 +51,24 @@ export const NavBar: FC = () => {
             <img className="image-link" src="/rss.svg" alt="RSS Feeed" width="16" height="16" />
           </a>
         </li>
-        <li className="dynamic-element">{globalClient.navBarDynamicElement}</li>
+        <li className="dynamic-element">{globalClient.state.navBarDynamicElement}</li>
         <li className="info-container">
           Last DB change:
-          <b className="timestamp dynamic">{globalClient.navBarDurations.dbLastChange}</b>
+          <b className="timestamp dynamic">{globalClient.state.navBarDurations.dbLastChange}</b>
           Next API check:
-          <b className={globalStatus.apiLastCheckStatus + " timestamp dynamic"}>
-            {globalClient.navBarDurations.apiLastCheck}
+          <b className={globalStatus.state.apiLastCheckStatus + " timestamp dynamic"}>
+            {globalClient.state.navBarDurations.apiLastCheck}
           </b>
         </li>
         <li className="info-container">
           Active models:
-          <b className="timestamp">{globalLists.models.length}</b>
+          <b className="timestamp">{globalLists.state.models.length}</b>
           Removed models:
-          <b className="timestamp">{globalLists.removed.length}</b>
+          <b className="timestamp">{globalLists.state.removed.length}</b>
         </li>
         <li className="info-container gridgap">
           Recorded changes:
-          <b className="timestamp rowspan">{globalLists.changes.length}</b>
+          <b className="timestamp rowspan">{globalLists.state.changes.length}</b>
           <span>(since {DateTime.fromISO(dbfirstChangeTimestamp ?? "").toISODate()})</span>
         </li>
         <li className="info-container single-column">

@@ -1,22 +1,14 @@
+/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { compression } from "vite-plugin-compression2";
 
-// const ReactCompilerConfig = {};
-
+// https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [react(), compression()],
   build: {
-    sourcemap: true, // Enable source maps
+    outDir: "dist",
   },
-  plugins: [
-    react(),
-    // react({
-    //   babel: {
-    //     plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
-    //   },
-    // }),
-    compression(),
-  ],
   server: {
     port: 6500,
     proxy: {
@@ -25,5 +17,10 @@ export default defineConfig({
       "/orw.db.gz": "http://localhost:3000",
     },
   },
-  publicDir: "static",
+  test: {
+    coverage: {
+      exclude: [".attic/**", "backup/**", "docs/**"],
+    },
+    environment: "jsdom",
+  },
 });

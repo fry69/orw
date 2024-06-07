@@ -1,12 +1,17 @@
-// orw.test.ts
-import { describe, beforeEach, afterEach, test, expect, jest } from "bun:test";
-import { OpenRouterAPIWatcher } from "./orw";
-import { Database } from "bun:sqlite";
-import type { Model, ModelDiff } from "./global";
+// watcher.test.ts
+import os from "node:os";
+import fs from "node:fs";
+import path from "node:path";
+import database, { type Database } from "better-sqlite3";
+import { describe, beforeEach, afterEach, test, expect, vi } from "vitest";
+import { OpenRouterAPIWatcher } from "./watcher.js";
+import type { Model, ModelDiff } from "../shared/global";
 
 describe("OpenRouterAPIWatcher", () => {
   let watcher: OpenRouterAPIWatcher;
   let db: Database;
+  let dataDir: string;
+  let backupDir: string;
 
   const dummyModel = {
     id: "1",
@@ -55,15 +60,19 @@ describe("OpenRouterAPIWatcher", () => {
   };
 
   beforeEach(() => {
+    dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "vitest-watcher"));
+    backupDir = path.join(dataDir, "backup");
+
     // Silence console output
-    console.log = jest.fn();
-    console.error = jest.fn();
-    db = new Database(":memory:");
-    watcher = new OpenRouterAPIWatcher(db);
+    console.log = vi.fn();
+    console.error = vi.fn();
+    db = new database(":memory:");
+    watcher = new OpenRouterAPIWatcher({ db, dataDir, backupDir, logFilePath: "", dbFilePath: "" });
   });
 
   afterEach(() => {
     db.close();
+    fs.rmSync(dataDir, { recursive: true });
   });
 
   test("should store and load model list", () => {

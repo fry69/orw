@@ -2,7 +2,7 @@
 
 The OpenRouter API Watcher broadly consists of three parts:
 
-### `orw.ts`
+### `watcher.ts`
 
 - It contains the core watcher logic, it polls the OpenRouter API for the current model list, compares it to the stored version, calculates the differences and stores all data into a SQLite database (`orw.db` by default).
 - It holds in-memory copies of all data, but stores everything immediately, so it can be restarted at any time.
@@ -10,7 +10,7 @@ The OpenRouter API Watcher broadly consists of three parts:
 - It re-tries one time after one minute after a request to the OpenRouter API failed, then it waits another hour for the next try.
 - Upon detecting changes, it creates a fresh database backup in the `backup` directory after storing all data.
 
-### `server.ts`
+### `httpServer.ts`
 
 - It serves the API, the web client and the RSS feed.
 - It relies on `vite` copying and creating gzipped files for everything that is in the `static` directory.

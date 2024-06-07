@@ -1,3 +1,8 @@
+v0.4.0-dev:
+
+- port from Bun to native NodeJS
+- restructure file layout
+
 v0.3.0-dev:
 
 New API Version 3:
