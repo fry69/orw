@@ -1,6 +1,6 @@
-import { useContext, useEffect, useRef, useState, type FC } from "react";
+import { ReactNode, useContext, useEffect, useRef, useState, type FC } from "react";
 import { GlobalContext } from "./GlobalState";
-import type { APIResponse } from "../global";
+import type { APIResponse } from "../shared/global";
 import {
   API__LISTS,
   API__STATUS,
@@ -9,7 +9,7 @@ import {
   VERSION,
   INITIAL_INTERVAL,
   REFRESH_INTERVAL,
-} from "../constants";
+} from "../shared/constants";
 import { durationAgo } from "./utils";
 
 let updateInterval = INITIAL_INTERVAL; // Current update interval, adjustable for soft error backoff
@@ -20,14 +20,17 @@ let updateInterval = INITIAL_INTERVAL; // Current update interval, adjustable fo
 //   return new Response(null, { status: 200 });
 // };
 
-export const Brain: FC = () => {
-  const { globalStatus, setGlobalStatus, setGlobalLists, setGlobalClient, setError } =
-    useContext(GlobalContext);
+/**
+ * Main brain of the app, handles all API calls and state management.
+ * @returns - Empty component.
+ */
+export const Brain: FC = (): ReactNode => {
+  const { globalStatus, globalClient, globalLists, globalError } = useContext(GlobalContext);
   const [startIntervalTrigger, setStartIntervalTrigger] = useState(false);
   const errorCount = useRef(0);
 
   const errorHandler = (message: string) => {
-    setError(message, true);
+    globalError.setState(message, true);
     console.error(message);
     errorCount.current++;
     updateInterval *= 2; // Double interval with every error
@@ -57,7 +60,7 @@ export const Brain: FC = () => {
         throw "Version mismatch: Please try reloading, clear caches, etc.";
       }
       // If we made it here, everythings seems fine, let's clear any existing error
-      setError();
+      globalError.setState();
       // Reset updateInterval and error count
       updateInterval = INITIAL_INTERVAL;
       errorCount.current = 0;
@@ -73,11 +76,11 @@ export const Brain: FC = () => {
     const loadAPI = async () => {
       const { lists } = await fetchAPI(API__LISTS);
       if (lists) {
-        setGlobalLists(() => lists);
+        globalLists.setState(() => lists);
       }
       const { status } = await fetchAPI(API__STATUS);
       if (status) {
-        setGlobalStatus(() => status);
+        globalStatus.setState(() => status);
       }
     };
 
@@ -90,11 +93,11 @@ export const Brain: FC = () => {
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
-    let localStatus = globalStatus;
+    let localStatus = globalStatus.state;
 
     const updateDuration = () => {
       // Update duration strings
-      setGlobalClient((prevState) => ({
+      globalClient.setState((prevState) => ({
         ...prevState,
         navBarDurations: {
           dbLastChange: durationAgo(localStatus.dbLastChange),
@@ -111,7 +114,7 @@ export const Brain: FC = () => {
         let apiResponse: APIResponse = await fetchAPI(API__STATUS);
         const status = apiResponse.status;
         if (status) {
-          setGlobalStatus(() => status);
+          globalStatus.setState(() => status);
           localStatus = status;
           const newDbTimestamp = new Date(status.dbLastChange).getTime();
           // Only load data from the API when database has changed
@@ -119,7 +122,7 @@ export const Brain: FC = () => {
             apiResponse = await fetchAPI(API__LISTS);
             const lists = apiResponse.lists;
             if (lists) {
-              setGlobalLists(() => lists);
+              globalLists.setState(() => lists);
             }
           }
         }

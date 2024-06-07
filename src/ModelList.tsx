@@ -1,19 +1,31 @@
-import { useContext, useEffect, useState, useCallback, type FC } from "react";
+import { useContext, useEffect, useState, useCallback, type FC, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable, { type Selector, type TableColumn } from "react-data-table-component";
-import type { Model } from "../global";
+import type { Model } from "../shared/global";
 import { GlobalContext } from "./GlobalState";
-import { calcCostPerMillion, durationAgo } from "./utils";
+import { showPricePerMillion, durationAgo } from "./utils";
 import { FilterComponent } from "./FilterComponent";
 
-const roundKb = (num: number) => {
+/**
+ * Rounds a number to the nearest kilobyte (kB) if it's greater than or equal to 1024.
+ * @param num - The number to round.
+ * @returns - The rounded number as a string with 'k' suffix if it's greater than or equal to 1024, otherwise the original number.
+ */
+const roundKb = (num: number): string => {
   if (num < 1024) {
-    return num;
+    return num.toString();
   }
   return `${Math.ceil(num / 1024)}k`;
 };
 
-const customSort = (rows: Model[], selector: Selector<Model>, direction: string) => {
+/**
+ * Custom sort function for the DataTable component.
+ * @param rows - The array of rows to sort.
+ * @param selector - The selector function to resolve the field names.
+ * @param direction - The sort direction ('asc' or 'desc').
+ * @returns - The sorted array of rows.
+ */
+const customSort = (rows: Model[], selector: Selector<Model>, direction: string): Model[] => {
   return rows.sort((a, b) => {
     let comparison = 0;
 
@@ -54,6 +66,9 @@ const customSort = (rows: Model[], selector: Selector<Model>, direction: string)
   });
 };
 
+/**
+ * Defines the columns for the DataTable component.
+ */
 const columns: TableColumn<Model>[] = [
   {
     name: "ID",
@@ -100,7 +115,7 @@ const columns: TableColumn<Model>[] = [
     name: "Price/MT",
     selector: (row) => row.pricing.completion,
     format: (row) => {
-      return row.id === "openrouter/auto" ? "[N/A]" : calcCostPerMillion(row.pricing.completion);
+      return row.id === "openrouter/auto" ? "[N/A]" : showPricePerMillion(row.pricing.completion);
     },
     sortable: true,
     right: true,
@@ -136,27 +151,48 @@ const columns: TableColumn<Model>[] = [
   },
 ];
 
-export const ModelList: FC<{ removed?: boolean }> = (props) => {
+/**
+ * Propertiess for the ModelList component.
+ */
+export interface ModelListProps {
+  /** A flag to indicate whether to display removed models instead. */
+  removed?: boolean;
+}
+
+/**
+ * A functional component that displays a list of models in a DataTable.
+ * @param props - The properties passed to the component.
+ * @returns - The ReactNode representing the ModelList component.
+ */
+export const ModelList: FC<ModelListProps> = ({ removed }: ModelListProps): ReactNode => {
   const navigate = useNavigate();
-  const { globalLists, setGlobalClient } = useContext(GlobalContext);
+  const { globalLists, globalClient } = useContext(GlobalContext);
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
 
+  /**
+   * A callback function that filters the models based on the provided filter text.
+   * @param filterText - The text to filter the models by.
+   */
   const filterModels = useCallback(
     (filterText: string) =>
       setFilteredModels(
-        props.removed
-          ? globalLists.removed.filter(
+        removed
+          ? globalLists.state.removed.filter(
               (item) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase())
             )
-          : globalLists.models.filter(
+          : globalLists.state.models.filter(
               (item) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase())
             )
       ),
-    [props, globalLists.models, globalLists.removed]
+    [removed, globalLists.state.models, globalLists.state.removed]
   );
 
+  /**
+   * A useEffect hook that updates the navBarDynamicElement in the globalClient state.
+   * It sets the FilterComponent as the dynamic element, passing the filterModels function as a prop.
+   */
   useEffect(() => {
-    setGlobalClient((prevState) => ({
+    globalClient.setState((prevState) => ({
       ...prevState,
       navBarDynamicElement: <FilterComponent filter={filterModels} />,
     }));
@@ -164,7 +200,7 @@ export const ModelList: FC<{ removed?: boolean }> = (props) => {
 
   return (
     <>
-      {props.removed && (
+      {removed && (
         <h2 style={{ textAlign: "center" }}>
           Models no longer available on OpenRouter or renamed:
         </h2>

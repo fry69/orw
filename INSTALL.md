@@ -35,6 +35,7 @@ vim .env.production
 ```shell
 curl -o orw.db.gz https://orw.karleo.net/orw.db.gz
 gzip -d orw.db.gz
+mv orw.db data/orw.db
 ```
 
 6. Install the systemd service

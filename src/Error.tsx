@@ -1,11 +1,22 @@
-import { useEffect, type FC } from "react";
+import { ReactNode, useEffect, type FC } from "react";
 
-interface ErrorProps {
+/**
+ * Props for the Error component.
+ */
+export interface ErrorProps {
+  /** The error message to display. */
   message: string;
+  /** The type of error, either "error" or "info". */
   type?: "error" | "info";
 }
 
-const Error: FC<ErrorProps> = ({ message, type = "error" }) => {
+/**
+ * A React component that displays an error message.
+ * If the error type is "error", it adds a "noindex" meta tag to the document's head.
+ * @param props - The props for the Error component.
+ * @returns The Error component.
+ */
+const Error: FC<ErrorProps> = ({ message, type = "error" }: ErrorProps): ReactNode => {
   useEffect(() => {
     // Add the "noindex" meta tag to the document's head if it's an error
     if (type === "error") {

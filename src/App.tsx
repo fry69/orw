@@ -1,5 +1,5 @@
 // client/App.tsx
-import type { FC } from "react";
+import type { FC, ReactNode } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { NavBar } from "./NavBar";
 import { ModelDetail } from "./ModelDetail";
@@ -9,7 +9,11 @@ import { GlobalProvider } from "./GlobalState";
 import { ErrorContainer } from "./ErrorContainer";
 import { Brain } from "./Brain";
 
-const App: FC = () => {
+/**
+ * The main application component.
+ * @returns - The main application component.
+ */
+const App: FC = (): ReactNode => {
   return (
     <GlobalProvider>
       <Brain />

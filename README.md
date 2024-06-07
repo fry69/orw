@@ -4,45 +4,16 @@ The OpenRouter API Watcher is a tool that monitors changes in OpenRouter models 
 
 ## Installation
 
-To run the OpenRouter API Watcher, you'll need the [Bun](https://bun.sh) runtime. Install the dependencies with the following command:
+For details how to run the OpenRouter API Watcher as user systemd service, see the [INSTALL](INSTALL.md).
 
-```bash
-bun install
-```
+Quick overview: To run the OpenRouter API Watcher, you'll need a recent Node.js (v22). The `tools/start.sh` script includes the necessary installtion steps (assuming you are running on Mac or Linux):
 
-Build the web client with the following command:
+- install a recent Node.js version via [fnm](https://github.com/Schniz/fnm)
+- install the necessary dependencies via npm
+- generate the webclient and server code via tsc
+- start the watcher
 
-```bash
-bun run build
-```
-
-## Usage
-
-The tool can be run in three different modes:
-
-1. **Background Mode**: To run the watcher in the background, use the following command:
-
-   ```bash
-   bun run orw.ts
-   ```
-
-   The watcher will continuously monitor the OpenRouter API and store any changes in the database.
-
-2. **Query Mode**: To view the most recent changes, use the following command:
-
-   ```bash
-   bun run orw.ts --query [number]
-   ```
-
-   Replace `[number]` with the maximum number of changes you want to display (default is 10).
-
-3. **One-Time Mode**: To run the watcher just once, use the following command:
-
-   ```bash
-   bun run orw.ts --once
-   ```
-
-   This will perform a single check and update the database if any changes are detected.
+Note that `tools/start.sh` will not work if you have not setup a local production environment (see [INSTALL](INSTALL.md)).
 
 ## Web Interface
 
@@ -57,7 +28,7 @@ The OpenRouter API Watcher also includes a RSS feed generator, available at the 
 You can run a set of simple test cases with the following command:
 
 ```bash
-bun test
+npm run test
 ```
 
 ## License

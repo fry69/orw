@@ -1,9 +1,10 @@
-import { Database } from "bun:sqlite";
-import migrations from "./migrations/migrations";
+import { type Database } from "better-sqlite3";
+import migrations from "./migrations/migrations.js";
 
-const databaseFile = import.meta.env.ORW_DB_PATH ?? "orw.db";
-// const databaseFile = "orw.db";
-
+/**
+ * Runs the migrations on the database.
+ * @param db - The database to run migrations on.
+ */
 export function runMigrations(db: Database) {
   let currentVersion = getCurrentVersion(db);
   // console.log(`Current database version: ${currentVersion}`);
@@ -28,22 +29,28 @@ export function runMigrations(db: Database) {
   }
 }
 
+/**
+ * Gets the current version of the database.
+ * @param db - The database to get the current version of.
+ * @returns - The current version of the database.
+ */
 function getCurrentVersion(db: Database): number {
   try {
-    const row: any = db.query("SELECT MAX(version) AS version FROM migrations").get();
+    const row: any = db.prepare("SELECT MAX(version) AS version FROM migrations").get();
     return row?.version || 0;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (err) {
     // If the migrations table doesn't exist, return -1
     return -1;
   }
 }
 
+/**
+ * Sets the current version of the database.
+ * @param db - The database to set the current version of.
+ * @param version - The version to set.
+ */
 function setCurrentVersion(db: Database, version: number) {
-  db.run("INSERT INTO migrations (version) VALUES (?)", [version]);
-}
-
-export function main() {
-  const db = new Database(databaseFile);
-  runMigrations(db);
-  db.close();
+  const insertVersion = db.prepare("INSERT INTO migrations (version) VALUES (?)");
+  insertVersion.run([version]);
 }
