@@ -77,9 +77,10 @@ async function bundleApp(options: BuildOptions) {
 
   const entryPoint = join(SRC_DIR, "main.tsx");
   const outputPath = join(BUILD_DIR, "bundle.js");
+  // const importMap = 'import_map.json';
 
   try {
-    // Build command arguments
+    // Build command arguments - using improved Deno 2.4 bundle with esbuild
     const args = [
       "bundle",
       entryPoint,
@@ -87,28 +88,43 @@ async function bundleApp(options: BuildOptions) {
       outputPath,
       "--platform",
       "browser",
-      "--format",
-      "esm",
+      // "--import-map",
+      // importMap,
+      "--reload",
+      "--check=all",
     ];
 
     if (options.minify) {
       args.push("--minify");
     }
 
-    // Run deno bundle
+    // Add sourcemap for development
+    if (options.dev) {
+      args.push("--sourcemap");
+    }
+
+    console.log("deno bundle args: ", args);
+    // Run deno bundle (now with esbuild backend in Deno 2.4!)
     const command = new Deno.Command(Deno.execPath(), {
       args,
       cwd: Deno.cwd(),
     });
 
-    const { code, stderr } = await command.output();
+    const { code, stderr, stdout } = await command.output();
 
     if (code !== 0) {
       const errorText = new TextDecoder().decode(stderr);
+      const outputText = new TextDecoder().decode(stdout);
+      console.error("Stderr:", errorText);
+      console.error("Stdout:", outputText);
       throw new Error(`Bundle failed: ${errorText}`);
     }
 
     console.log(`📝 Bundle written to ${outputPath}`);
+    // Report bundle size
+    const stats = await Deno.stat(outputPath);
+    const sizeInKB = (stats.size / 1024).toFixed(2);
+    console.log(`📊 Bundle size: ${sizeInKB} KB (${stats.size} bytes)`);
   } catch (error) {
     console.error("❌ Bundling failed:", error);
     throw error;

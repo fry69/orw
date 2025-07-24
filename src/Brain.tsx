@@ -1,6 +1,6 @@
 import { ReactNode, useContext, useEffect, useRef, useState, type FC } from "react";
-import { GlobalContext } from "./GlobalState";
-import type { APIResponse } from "../shared/global";
+import { GlobalContext } from "./GlobalState.tsx";
+import type { APIResponse } from "../shared/global.ts";
 import {
   API__LISTS,
   API__STATUS,
@@ -9,8 +9,8 @@ import {
   VERSION,
   INITIAL_INTERVAL,
   REFRESH_INTERVAL,
-} from "../shared/constants";
-import { durationAgo } from "./utils";
+} from "../shared/constants.ts";
+import { durationAgo } from "./utils.tsx";
 
 let updateInterval = INITIAL_INTERVAL; // Current update interval, adjustable for soft error backoff
 
@@ -97,7 +97,7 @@ export const Brain: FC = (): ReactNode => {
 
     const updateDuration = () => {
       // Update duration strings
-      globalClient.setState((prevState) => ({
+      globalClient.setState((prevState: any) => ({
         ...prevState,
         navBarDurations: {
           dbLastChange: durationAgo(localStatus.dbLastChange),

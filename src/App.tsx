@@ -1,13 +1,13 @@
 // client/App.tsx
 import type { FC, ReactNode } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
-import { NavBar } from "./NavBar";
-import { ModelDetail } from "./ModelDetail";
-import { ChangeList } from "./ChangeList";
-import { ModelList } from "./ModelList";
-import { GlobalProvider } from "./GlobalState";
-import { ErrorContainer } from "./ErrorContainer";
-import { Brain } from "./Brain";
+import { NavBar } from "./NavBar.tsx";
+import { ModelDetail } from "./ModelDetail.tsx";
+import { ChangeList } from "./ChangeList.tsx";
+import { ModelList } from "./ModelList.tsx";
+import { GlobalProvider } from "./GlobalState.tsx";
+import { ErrorContainer } from "./ErrorContainer.tsx";
+import { Brain } from "./Brain.tsx";
 
 /**
  * The main application component.

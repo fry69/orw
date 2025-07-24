@@ -1,8 +1,8 @@
 // GlobalState.tsx
 import { createContext, useState } from "react";
 import type { FC, ReactNode, Dispatch, SetStateAction } from "react";
-import type { GlobalClient, GlobalError } from "./client";
-import type { APIStatus, Lists } from "../shared/global";
+import type { GlobalClient, GlobalError } from "./client.d.ts";
+import type { APIStatus, Lists } from "../shared/global.ts";
 
 /**
  * Interface defining the default values for the global context.

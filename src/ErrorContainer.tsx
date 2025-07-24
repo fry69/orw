@@ -1,7 +1,7 @@
 import { useContext, useEffect, type FC, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
-import { GlobalContext } from "./GlobalState";
-import Error from "./Error";
+import { GlobalContext } from "./GlobalState.tsx";
+import Error from "./Error.tsx";
 
 /**
  * ErrorContainerProps interface.

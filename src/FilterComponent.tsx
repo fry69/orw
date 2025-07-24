@@ -1,52 +1,52 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FC, ReactNode } from "react";
-import styled from "styled-components";
+// import styled from "styled-components";
 
 /**
  * Styled input component for text filtering
  */
-const TextField = styled.input`
-  height: 32px;
-  width: 130px;
-  border-radius: 3px;
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  border: 1px solid #e5e5e5;
-  padding: 0 32px 0 16px;
+// const TextField = styled.input`
+//   height: 32px;
+//   width: 130px;
+//   border-radius: 3px;
+//   border-top-left-radius: 5px;
+//   border-bottom-left-radius: 5px;
+//   border-top-right-radius: 0;
+//   border-bottom-right-radius: 0;
+//   border: 1px solid #e5e5e5;
+//   padding: 0 32px 0 16px;
 
-  &:hover {
-    cursor: pointer;
-  }
-`;
+//   &:hover {
+//     cursor: pointer;
+//   }
+// `;
 
 /**
  * Styled button component for clearing the filter
  */
-const ClearButton = styled.button`
-  background-color: #2979ff;
-  border: none;
-  color: white;
-  padding: 8px 32px 8px 32px;
-  text-decoration: none;
-  font-size: 16px;
+// const ClearButton = styled.button`
+//   background-color: #2979ff;
+//   border: none;
+//   color: white;
+//   padding: 8px 32px 8px 32px;
+//   text-decoration: none;
+//   font-size: 16px;
 
-  &:hover {
-    cursor: pointer;
-  }
+//   &:hover {
+//     cursor: pointer;
+//   }
 
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
-  height: 34px;
-  width: 32px;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
+//   border-top-left-radius: 0;
+//   border-bottom-left-radius: 0;
+//   border-top-right-radius: 5px;
+//   border-bottom-right-radius: 5px;
+//   height: 34px;
+//   width: 32px;
+//   text-align: center;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+// `;
 
 /**
  * Props for the FilterComponent.
@@ -95,7 +95,7 @@ export const FilterComponent: FC<FilterComponentProps> = ({
   return (
     <>
       <span style={{ display: "flex" }}>
-        <TextField
+        {/* <TextField
           id="search"
           type="text"
           placeholder="Filter By Name"
@@ -112,7 +112,7 @@ export const FilterComponent: FC<FilterComponentProps> = ({
         />
         <ClearButton type="button" onClick={handleClear}>
           X
-        </ClearButton>
+        </ClearButton> */}
       </span>
     </>
   );

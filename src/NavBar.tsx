@@ -1,8 +1,8 @@
 import { ReactNode, useContext, type FC } from "react";
 import { NavLink } from "react-router-dom";
-import { GlobalContext } from "./GlobalState";
+import { GlobalContext } from "./GlobalState.tsx";
 import { DateTime } from "luxon";
-import { VERSION } from "../shared/constants";
+import { VERSION } from "../shared/constants.ts";
 
 /**
  * NavBar component displays the navigation bar of the application.

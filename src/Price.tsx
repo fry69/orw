@@ -1,6 +1,6 @@
 import { FC, ReactNode } from "react";
-import { showPricePerMillion, showPricePerThousand } from "./utils";
-import { Model } from "../shared/global";
+import { showPricePerMillion, showPricePerThousand } from "./utils.tsx";
+import { Model } from "../shared/global.ts";
 
 /**
  * Properties for PriceElement component.

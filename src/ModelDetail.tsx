@@ -1,11 +1,11 @@
 import { useContext, useEffect, useState } from "react";
 import type { FC, ReactNode } from "react";
-import type { Model, ModelDiff } from "../shared/global";
-import { GlobalContext } from "./GlobalState";
-import { Changes } from "./Changes";
-import { Price } from "./Price";
-import { ModelName } from "./ModelName";
-import { DelContainer } from "./DelContainer";
+import type { Model, ModelDiff } from "../shared/global.ts";
+import { GlobalContext } from "./GlobalState.tsx";
+import { Changes } from "./Changes.tsx";
+import { Price } from "./Price.tsx";
+import { ModelName } from "./ModelName.tsx";
+import { DelContainer } from "./DelContainer.tsx";
 
 /**
  * ModelDetail component displays the details of a specific model.

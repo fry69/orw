@@ -1,7 +1,7 @@
 import { FC, ReactNode } from "react";
-import type { ModelDiff } from "../shared/global";
-import { dateStringDuration } from "./utils";
-import { ChangeSnippet } from "./ChangeSnippet";
+import type { ModelDiff } from "../shared/global.ts";
+import { dateStringDuration } from "./utils.tsx";
+import { ChangeSnippet } from "./ChangeSnippet.tsx";
 
 /**
  * Props for the Changes component.

@@ -1,6 +1,6 @@
 // import React from "react";
-import type { ModelChangeType, ModelDiff } from "../shared/global";
-import { showPricePerMillion, showPricePerThousand } from "./utils.js";
+import type { ModelChangeType, ModelDiff } from "../shared/global.ts";
+import { showPricePerMillion, showPricePerThousand } from "./utils.tsx";
 import type { ReactNode } from "react";
 
 /**

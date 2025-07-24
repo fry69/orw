@@ -1,10 +1,10 @@
 import { useContext, useEffect, useCallback, useState, type FC, ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { FilterComponent } from "./FilterComponent";
-import { GlobalContext } from "./GlobalState";
-import { dateStringDuration } from "./utils";
-import { ChangeSnippet } from "./ChangeSnippet";
-import type { ModelDiff } from "../shared/global";
+import { FilterComponent } from "./FilterComponent.tsx";
+import { GlobalContext } from "./GlobalState.tsx";
+import { dateStringDuration } from "./utils.tsx";
+import { ChangeSnippet } from "./ChangeSnippet.tsx";
+import type { ModelDiff } from "../shared/global.ts";
 
 /**
  * A component that displays a list of recorded changes.
@@ -25,7 +25,7 @@ export const ChangeList: FC = (): ReactNode => {
   );
 
   useEffect(() => {
-    globalClient.setState((prevState) => ({
+    globalClient.setState((prevState: any) => ({
       ...prevState,
       navBarDynamicElement: <FilterComponent filter={filterChanges} />,
     }));
