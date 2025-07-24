@@ -33,6 +33,7 @@ robots*
 .env*
 !.env.example
 pnpm-lock.yaml
+pnpm-workspace.yaml
 docs
 coverage
 unused
