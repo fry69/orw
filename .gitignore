@@ -44,3 +44,6 @@ bun.lockb
 models.json
 public/*.gz
 archive/
+
+# binary
+orw

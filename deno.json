@@ -1,12 +1,19 @@
 {
   "name": "orw-deno",
-  "version": "0.5.0",
+  "exports": {
+    ".": "./server/main.ts"
+  },
+  "version": "0.6.0",
   "tasks": {
     "dev": "deno run --allow-all server/main.ts --port 3100",
     "start": "deno run --allow-all server/main.ts --background --port 3100",
     "check": "deno run --allow-all server/main.ts --run-once",
     "query": "deno run --allow-all server/main.ts --query 10",
     "build": "deno compile --allow-all --output orw server/main.ts",
+    "build:frontend": "deno run --allow-all scripts/build.ts",
+    "build:frontend:dev": "deno run --allow-all scripts/build.ts --dev",
+    "build:frontend:watch": "deno run --allow-all scripts/build.ts --watch",
+    "build:all": "deno task build:frontend && deno task build",
     "test": "deno test --allow-all",
     "lint": "deno lint",
     "fmt": "deno fmt"
@@ -22,12 +29,15 @@
     "@std/streams": "jsr:@std/streams@1",
     "@std/cli": "jsr:@std/cli@1",
     "react": "npm:react@19.1.0",
+    "react/jsx-runtime": "npm:react@19.1.0/jsx-runtime",
     "react-dom": "npm:react-dom@19.1.0",
+    "react-dom/client": "npm:react-dom@19.1.0/client",
     "react-router-dom": "npm:react-router-dom@7.7.0",
     "styled-components": "npm:styled-components@6.1.19",
     "react-data-table-component": "npm:react-data-table-component@7.7.0",
     "deep-diff": "npm:deep-diff@1.0.2",
     "luxon": "npm:luxon@3.7.1",
+    "@kitsuyui/luxon-ext": "npm:@kitsuyui/luxon-ext@0.2.1",
     "rss": "npm:rss@1.2.2",
     "sqlite": "jsr:@db/sqlite@0.12"
   },
