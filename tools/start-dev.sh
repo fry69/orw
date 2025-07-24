@@ -2,4 +2,4 @@
 
 export NODE_ENV=development
 
-npm run build:dev && npm run start:server:dev
+pnpm run build:dev && pnpm run start:server:dev

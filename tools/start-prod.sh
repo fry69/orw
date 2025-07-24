@@ -2,4 +2,4 @@
 
 export NODE_ENV=production
 
-npm run build:prod && npm run start:server:prod
+pnpm run build:prod && pnpm run start:server:prod

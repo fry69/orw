@@ -8,10 +8,6 @@ if [ -n "$ORW_HOME" ]; then
     cd "$ORW_HOME" || (echo "cd $ORW_HOME failed" && exit 1)
 fi
 
-if [ ! -f "$watcher_script" ]; then
-    echo "Watcher script not found, make sure $PWD is the correct working directory" && exit 1
-fi
-
 if [ ! -f "$dotenv_file" ]; then
     echo "Environment file not found" && exit 1
 fi
@@ -38,9 +34,21 @@ fi
 ## Use the required Node.js version
 fnm use "$required_node_version"
 
+## Make sure pnpm is installed via corepack
+if ! command -v pnpm &>/dev/null; then
+    echo "pnpm could not be found, installing it via corepack..."
+    npm install --global corepack@latest && corepack enable pnpm
+fi
+
 set -o allexport
 # shellcheck disable=SC1090
 source "$dotenv_file"
 set +o allexport
 
-npm install --include dev && npm run build:prod && node "$watcher_script"
+pnpm install --include dev && pnpm run build:prod
+
+if [ ! -f "$watcher_script" ]; then
+    echo "Watcher script not found" && exit 1
+fi
+
+node "$watcher_script"
