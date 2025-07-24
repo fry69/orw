@@ -5,7 +5,7 @@ import crypto from "node:crypto";
 import process from "node:process";
 import http, { type IncomingMessage, type ServerResponse } from "http";
 import { pipeline } from "node:stream/promises";
-import { createGzip } from "node:zlib";
+// import { createGzip } from "node:zlib";
 
 import mime from "mime-types";
 import RSS from "rss";
@@ -38,7 +38,7 @@ export interface cacheAndCompressFileOptions {
   /** he path to the cached file. */
   cacheFilePath: string;
   /** The path to the gzipped file. */
-  gzipFilePath: string;
+  // gzipFilePath: string;
   /** The content to be cached and compressed. */
   content: Promise<string>;
 }
@@ -259,21 +259,21 @@ export class httpServer {
    */
   async cacheAndCompressFile({
     cacheFilePath,
-    gzipFilePath,
+    // gzipFilePath,
     content,
   }: cacheAndCompressFileOptions): Promise<string> {
     // This async function runs in the background, so it can be raced.
     // Work around this problem by creating temporary files and check for their existence.
 
-    const cacheFilePathTmp = cacheFilePath + ".tmp";
-    const gzipFilePathTmp = gzipFilePath + ".tmp";
-    const etagFilePath = cacheFilePath + ".etag";
-    const etagFilePathTmp = etagFilePath + ".tmp";
+    const cacheFilePathTmp = `${cacheFilePath}.tmp`;
+    // const gzipFilePathTmp = `${gzipFilePath}.tmp`;
+    const etagFilePath = `${cacheFilePath}.etag`;
+    const etagFilePathTmp = `${etagFilePath}.tmp`;
 
     // Don't race me!
     if (
       fs.existsSync(cacheFilePathTmp) ||
-      fs.existsSync(gzipFilePathTmp) ||
+      // fs.existsSync(gzipFilePathTmp) ||
       fs.existsSync(etagFilePathTmp)
     ) {
       // Another process called this function while a different
@@ -283,18 +283,18 @@ export class httpServer {
     }
 
     const cacheFileHandle = fs.createWriteStream(cacheFilePathTmp);
-    const gzipFileHandle = fs.createWriteStream(gzipFilePathTmp);
+    // const gzipFileHandle = fs.createWriteStream(gzipFilePathTmp);
     const realContent = await content;
 
     await pipeline(realContent, cacheFileHandle);
-    await pipeline(realContent, createGzip(), gzipFileHandle);
+    // await pipeline(realContent, createGzip(), gzipFileHandle);
     const etag = await this.calculateEtag(cacheFilePathTmp);
     await fs.promises.writeFile(etagFilePathTmp, etag);
 
     // Rename the temporary files to their final destinations,
     // this should be almost atomic.
     await fs.promises.rename(cacheFilePathTmp, cacheFilePath);
-    await fs.promises.rename(gzipFilePathTmp, gzipFilePath);
+    // await fs.promises.rename(gzipFilePathTmp, gzipFilePath);
     await fs.promises.rename(etagFilePathTmp, etagFilePath);
 
     return etag;
@@ -329,7 +329,7 @@ export class httpServer {
    * @returns - The value for Cache-Control based on time left until next API check.
    */
   defaultCacheControl(): string {
-    return "public, max-age=" + this.secondsUntilAPIcheck();
+    return `public, max-age=${this.secondsUntilAPIcheck()}`;
   }
 
   /**
@@ -373,7 +373,7 @@ export class httpServer {
     if (expires) {
       expiresDate = expires;
     } else {
-      expiresDate = new Date(new Date().getTime() + this.secondsUntilAPIcheck() * 1_000);
+      expiresDate = new Date(Date.now() + this.secondsUntilAPIcheck() * 1_000);
     }
     response.setHeader("Expires", expiresDate.toUTCString());
 
@@ -419,7 +419,7 @@ export class httpServer {
     }
 
     const cacheFilePath = path.join(this.config.cacheDir, fileName);
-    const gzipFilePath = `${cacheFilePath}.gz`;
+    // const gzipFilePath = `${cacheFilePath}.gz`;
     const etagFilePath = `${cacheFilePath}.etag`;
 
     const lastModified = dbOnlyCheck
@@ -428,13 +428,13 @@ export class httpServer {
 
     if (
       !(await this.checkFileFreshness(cacheFilePath, lastModified)) ||
-      !(await this.checkFileFreshness(gzipFilePath, lastModified)) ||
+      // !(await this.checkFileFreshness(gzipFilePath, lastModified)) ||
       !fs.existsSync(etagFilePath)
     ) {
       const content = contentGenerator();
       // create cache files in background while serving content direcly
-      await this.cacheAndCompressFile({ cacheFilePath, content, gzipFilePath });
-      // return this.responseWrapper({ content, contentType, cacheControl, request, response });
+      await this.cacheAndCompressFile({ cacheFilePath, content });
+      return this.responseWrapper({ content, contentType, cacheControl, request, response });
     }
 
     // Serve the cached file
@@ -461,7 +461,7 @@ export class httpServer {
     response,
   }: serveStaticFileOptions): Promise<void> {
     const lastModified = await this.getLastModifiedTimestamp(filePath);
-    const gzipFilePath = filePath.endsWith(".gz") ? filePath : `${filePath}.gz`;
+    // const gzipFilePath = filePath.endsWith(".gz") ? filePath : `${filePath}.gz`;
     const etagFilePath = `${filePath}.etag`;
     let etag = "";
 
@@ -492,30 +492,30 @@ export class httpServer {
     }
 
     // Check if the client accepts gzip compression
-    const acceptsGzip = request.headers["accept-encoding"]?.includes("gzip");
+    // const acceptsGzip = request.headers["accept-encoding"]?.includes("gzip");
 
     if (fs.existsSync(filePath)) {
       // only check for compressed files if the original uncompressed file exists
-      if (acceptsGzip && fs.existsSync(gzipFilePath)) {
-        const uncompressedModTime = (await this.getLastModifiedTimestamp(filePath)).getTime();
-        const compressedModTime = (await this.getLastModifiedTimestamp(gzipFilePath)).getTime();
+      // if (acceptsGzip && fs.existsSync(gzipFilePath)) {
+      //   const uncompressedModTime = (await this.getLastModifiedTimestamp(filePath)).getTime();
+      //   const compressedModTime = (await this.getLastModifiedTimestamp(gzipFilePath)).getTime();
 
-        // only serve compressed files that are at least as new as the original
-        if (compressedModTime >= uncompressedModTime) {
-          return this.responseWrapper({
-            content: await fs.promises.readFile(gzipFilePath),
-            contentType,
-            contentDisposistion,
-            cacheControl,
-            contentEncoding: "gzip",
-            etag,
-            lastModified,
-            request,
-            response,
-          });
-        }
-        // fall through to serve uncompressed (or compressed by default) file
-      }
+      //   // only serve compressed files that are at least as new as the original
+      //   if (compressedModTime >= uncompressedModTime) {
+      //     return this.responseWrapper({
+      //       content: await fs.promises.readFile(gzipFilePath),
+      //       contentType,
+      //       contentDisposistion,
+      //       cacheControl,
+      //       contentEncoding: "gzip",
+      //       etag,
+      //       lastModified,
+      //       request,
+      //       response,
+      //     });
+      //   }
+      //   // fall through to serve uncompressed (or compressed by default) file
+      // }
       return this.responseWrapper({
         content: await fs.promises.readFile(filePath),
         contentType,
@@ -539,9 +539,9 @@ export class httpServer {
     const feed: RSS = new RSS({
       title: "OpenRouter Model Changes",
       description: "Feed for detected changes in the OpenRouter model list",
-      feed_url: this.config.publicURL + "rss",
+      feed_url: `${this.config.publicURL}rss`,
       site_url: this.config.publicURL,
-      image_url: this.config.publicURL + "favicon.svg",
+      image_url: `${this.config.publicURL}favicon.svg`,
       docs: "https://github.com/fry69/orw",
       language: "en",
       ttl: 60,

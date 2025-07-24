@@ -98,7 +98,7 @@ describe("httpServer", () => {
   describe("cacheAndCompressFile", () => {
     it("should cache and compress a file", async () => {
       const cacheFilePath = path.join(dataDir, "cache", "test.txt");
-      const gzipFilePath = `${cacheFilePath}.gz`;
+      // const gzipFilePath = `${cacheFilePath}.gz`;
       const etagFilePath = `${cacheFilePath}.etag`;
 
       vi.spyOn(fs, "existsSync").mockReturnValue(false);
@@ -107,15 +107,15 @@ describe("httpServer", () => {
 
       const etag = await server.cacheAndCompressFile({
         cacheFilePath,
-        gzipFilePath,
+        // gzipFilePath,
         content: Promise.resolve("test content"),
       });
 
       expect(etag).toBe('"test-etag"');
       expect(fs.existsSync).toHaveBeenCalledWith(`${cacheFilePath}.tmp`);
-      expect(fs.existsSync).toHaveBeenCalledWith(`${gzipFilePath}.tmp`);
+      // expect(fs.existsSync).toHaveBeenCalledWith(`${gzipFilePath}.tmp`);
       expect(fs.existsSync).toHaveBeenCalledWith(`${etagFilePath}.tmp`);
-      expect(fs.promises.rename).toHaveBeenCalledTimes(3);
+      expect(fs.promises.rename).toHaveBeenCalledTimes(2);
 
       // fs.rmSync(`${cacheFilePath}.tmp`);
       // fs.rmSync(`${gzipFilePath}.tmp`);
@@ -326,7 +326,7 @@ describe("httpServer", () => {
 
       expect(server.cacheAndCompressFile).toHaveBeenCalledWith({
         cacheFilePath: path.join(dataDir, "cache", "test.txt"),
-        gzipFilePath: path.join(dataDir, "cache", "test.txt.gz"),
+        // gzipFilePath: path.join(dataDir, "cache", "test.txt.gz"),
         content: expect.any(Promise),
       });
 

@@ -45,7 +45,7 @@ set -o allexport
 source "$dotenv_file"
 set +o allexport
 
-pnpm install --include dev && pnpm run build:prod
+pnpm install && pnpm run build:prod
 
 if [ ! -f "$watcher_script" ]; then
     echo "Watcher script not found" && exit 1

@@ -3,8 +3,8 @@ import process from "node:process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createGzip } from "node:zlib";
-import { pipeline } from "node:stream/promises";
+// import { createGzip } from "node:zlib";
+// import { pipeline } from "node:stream/promises";
 import { DatabaseSync } from "node:sqlite";
 import diffpkg from "deep-diff";
 const { diff } = diffpkg; // workaround
@@ -564,7 +564,7 @@ export class OpenRouterAPIWatcher {
         this.status.dbLastChange = timestamp;
 
         // Create a database backup
-        await this.backupDb();
+        // await this.backupDb();
         // no need to fall through
         return;
       }
@@ -583,42 +583,42 @@ export class OpenRouterAPIWatcher {
    * Backups the database, saving previous backup.
    * @param initial - If set only create a backup if none exists.
    */
-  private async backupDb(initial: boolean = false) {
-    const dbBackupFilePath = this.getDbBackupPath;
-    if (!dbBackupFilePath) {
-      return; // no backup path, no backups
-    }
+  // private async backupDb(initial: boolean = false) {
+  //   const dbBackupFilePath = this.getDbBackupPath;
+  //   if (!dbBackupFilePath) {
+  //     return; // no backup path, no backups
+  //   }
 
-    // Skip creating a backup during initialisation, but create one if no backup exists.
-    if (initial && fs.existsSync(dbBackupFilePath)) {
-      return;
-    }
-    const dbPrevBackupFilePath = `${dbBackupFilePath}.prev`;
-    if (fs.existsSync(dbBackupFilePath)) {
-      this.log("Moving current database backup");
-      if (fs.existsSync(dbPrevBackupFilePath)) {
-        await fs.promises.unlink(dbPrevBackupFilePath);
-      }
-      await fs.promises.rename(dbBackupFilePath, dbPrevBackupFilePath);
-    }
-    this.log("Creating new database backup");
-    // this.config.db.run(`VACUUM INTO '${dbBackupFilePath}'`);
-    // TODO: VACUUM INTO can fail under extreme circumstances (e.g. concurrent write operation)
-    // await this.config.db.backup(dbBackupFilePath); // sub-par solution IMHO, but testing it
+  //   // Skip creating a backup during initialisation, but create one if no backup exists.
+  //   if (initial && fs.existsSync(dbBackupFilePath)) {
+  //     return;
+  //   }
+  //   const dbPrevBackupFilePath = `${dbBackupFilePath}.prev`;
+  //   if (fs.existsSync(dbBackupFilePath)) {
+  //     this.log("Moving current database backup");
+  //     if (fs.existsSync(dbPrevBackupFilePath)) {
+  //       await fs.promises.unlink(dbPrevBackupFilePath);
+  //     }
+  //     await fs.promises.rename(dbBackupFilePath, dbPrevBackupFilePath);
+  //   }
+  //   this.log("Creating new database backup");
+  //   // this.config.db.run(`VACUUM INTO '${dbBackupFilePath}'`);
+  //   // TODO: VACUUM INTO can fail under extreme circumstances (e.g. concurrent write operation)
+  //   // await this.config.db.backup(dbBackupFilePath); // sub-par solution IMHO, but testing it
 
-    // Create compressed backup file to serve for bootstrapping.
-    const dbBackupFilePathGz = `${dbBackupFilePath}.gz`;
-    if (fs.existsSync(dbBackupFilePathGz)) {
-      await fs.promises.unlink(dbBackupFilePathGz);
-    }
-    await pipeline(
-      fs.createReadStream(dbBackupFilePath),
-      createGzip(),
-      fs.createWriteStream(dbBackupFilePathGz)
-    );
+  //   // Create compressed backup file to serve for bootstrapping.
+  //   const dbBackupFilePathGz = `${dbBackupFilePath}.gz`;
+  //   if (fs.existsSync(dbBackupFilePathGz)) {
+  //     await fs.promises.unlink(dbBackupFilePathGz);
+  //   }
+  //   await pipeline(
+  //     fs.createReadStream(dbBackupFilePath),
+  //     createGzip(),
+  //     fs.createWriteStream(dbBackupFilePathGz)
+  //   );
 
-    this.log("Database backup finished");
-  }
+  //   this.log("Database backup finished");
+  // }
 
   /**
    * Runs the main check loop, continuously checking for model changes every hour.
@@ -634,7 +634,7 @@ export class OpenRouterAPIWatcher {
    * Prepares the OpenRouterAPIWatcher for background mode.
    */
   public async enterBackgroundMode() {
-    this.backupDb(true);
+    // this.backupDb(true);
     this.log("Watcher running in background mode");
     // Check the last API timestamp and check if it is older than one hour
     const timeDiff = Date.now() - this.status.apiLastCheck.getTime();
