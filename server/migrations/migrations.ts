@@ -1,4 +1,4 @@
-import { type Database } from "better-sqlite3";
+import type { DatabaseSync } from "node:sqlite";
 
 /**
  * Represents an array of database migrations.
@@ -7,7 +7,7 @@ export interface Migration {
   /** Migration version number. */
   version: number;
   /** Function to apply the migration. */
-  up: (db: Database) => void;
+  up: (db: DatabaseSync) => void;
 }
 
 /**
@@ -16,7 +16,7 @@ export interface Migration {
 const migrations: Migration[] = [
   {
     version: 1,
-    up: (db: Database) => {
+    up: (db: DatabaseSync) => {
       db.exec(
         `
         CREATE TABLE IF NOT EXISTS models (
@@ -46,7 +46,7 @@ const migrations: Migration[] = [
   },
   {
     version: 2,
-    up: (db: Database) => {
+    up: (db: DatabaseSync) => {
       // Create a new table with the primary key constraint
       db.exec(
         `
@@ -76,7 +76,7 @@ const migrations: Migration[] = [
   },
   {
     version: 3,
-    up: (db: Database) => {
+    up: (db: DatabaseSync) => {
       // Fix changes entries without data
       db.exec(
         `
@@ -125,7 +125,7 @@ const migrations: Migration[] = [
   },
   {
     version: 4,
-    up: (db: Database) => {
+    up: (db: DatabaseSync) => {
       // Create table to store last API check timestamp
       db.exec(
         `
@@ -139,7 +139,7 @@ const migrations: Migration[] = [
   },
   {
     version: 5,
-    up: (db: Database) => {
+    up: (db: DatabaseSync) => {
       // Create column to store last API check result status
       db.exec(
         `

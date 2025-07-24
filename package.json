@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "@kitsuyui/luxon-ext": "^0.2.1",
-    "better-sqlite3": "^12.2.0",
     "deep-diff": "^1.0.2",
     "globals": "^16.3.0",
     "luxon": "^3.7.1",

@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createGzip } from "node:zlib";
 import { pipeline } from "node:stream/promises";
-import database, { type Database } from "better-sqlite3";
+import { DatabaseSync } from "node:sqlite";
 import diffpkg from "deep-diff";
 const { diff } = diffpkg; // workaround
 import type { Model, ModelDiff, Lists } from "../shared/global";
@@ -41,7 +41,7 @@ export interface WatcherStatus {
  */
 export interface WatcherConfig {
   /** The SQLite database used for storing model changes. */
-  db: Database;
+  db: DatabaseSync;
   /** Directory for storing data files. */
   dataDir?: string;
   /** Path to the SQLite database file. */
@@ -316,7 +316,7 @@ export class OpenRouterAPIWatcher {
       "INSERT INTO models (id, data, timestamp) VALUES (?, ?, ?)"
     );
     for (const model of models) {
-      insertModels.run([model.id, JSON.stringify(model), timestamp.toISOString()]);
+      insertModels.run(model.id, JSON.stringify(model), timestamp.toISOString());
     }
   }
 
@@ -330,7 +330,7 @@ export class OpenRouterAPIWatcher {
       .all()
       .map((row: any) => {
         const model: Model = JSON.parse(row.data);
-        model["removed_at"] = row.timestamp;
+        model.removed_at = row.timestamp;
         return model;
       });
     return removedModels;
@@ -345,7 +345,7 @@ export class OpenRouterAPIWatcher {
     const insertModel = this.config.db.prepare(
       "INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)"
     );
-    insertModel.run([model.id, JSON.stringify(model), timestamp.toISOString()]);
+    insertModel.run(model.id, JSON.stringify(model), timestamp.toISOString());
   }
 
   /**
@@ -399,12 +399,12 @@ export class OpenRouterAPIWatcher {
       "INSERT INTO changes (id, type, changes, timestamp) VALUES (?, ?, ?, ?)"
     );
     for (const change of changes) {
-      insertChanges.run([
+      insertChanges.run(
         change.id,
         change.type,
         change.changes ? JSON.stringify(change.changes) : JSON.stringify(change.model),
         change.timestamp,
-      ]);
+      );
     }
   }
 
@@ -417,7 +417,7 @@ export class OpenRouterAPIWatcher {
     const insertAdded = this.config.db.prepare(
       "INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)"
     );
-    insertAdded.run([model.id, JSON.stringify(model), timestamp.toISOString()]);
+    insertAdded.run(model.id, JSON.stringify(model), timestamp.toISOString());
   }
 
   /**
@@ -444,7 +444,7 @@ export class OpenRouterAPIWatcher {
     const replaceLastCheck = this.config.db.prepare(
       "INSERT OR REPLACE INTO last_api_check (id, last_check, last_status) VALUES (1, ?, ?);"
     );
-    replaceLastCheck.run([this.status.apiLastCheck.toISOString(), this.status.apiLastCheckStatus]);
+    replaceLastCheck.run(this.status.apiLastCheck.toISOString(), this.status.apiLastCheckStatus);
   }
 
   /**
@@ -593,7 +593,7 @@ export class OpenRouterAPIWatcher {
     if (initial && fs.existsSync(dbBackupFilePath)) {
       return;
     }
-    const dbPrevBackupFilePath = dbBackupFilePath + ".prev";
+    const dbPrevBackupFilePath = `${dbBackupFilePath}.prev`;
     if (fs.existsSync(dbBackupFilePath)) {
       this.log("Moving current database backup");
       if (fs.existsSync(dbPrevBackupFilePath)) {
@@ -604,10 +604,10 @@ export class OpenRouterAPIWatcher {
     this.log("Creating new database backup");
     // this.config.db.run(`VACUUM INTO '${dbBackupFilePath}'`);
     // TODO: VACUUM INTO can fail under extreme circumstances (e.g. concurrent write operation)
-    await this.config.db.backup(dbBackupFilePath); // sub-par solution IMHO, but testing it
+    // await this.config.db.backup(dbBackupFilePath); // sub-par solution IMHO, but testing it
 
     // Create compressed backup file to serve for bootstrapping.
-    const dbBackupFilePathGz = dbBackupFilePath + ".gz";
+    const dbBackupFilePathGz = `${dbBackupFilePath}.gz`;
     if (fs.existsSync(dbBackupFilePathGz)) {
       await fs.promises.unlink(dbBackupFilePathGz);
     }
@@ -707,19 +707,19 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       process.exit(1);
     }
     const n = parseInt(process.argv[process.argv.indexOf("--query") + 1] || "10", 10);
-    const db = new database(defaultConfig.dbFilePath);
+    const db = new DatabaseSync(defaultConfig.dbFilePath);
     const watcher = new OpenRouterAPIWatcher({ db });
     watcher.runQueryMode(n);
     db.close();
     process.exit(0);
   } else if (process.argv.includes("--once")) {
-    const db = new database(defaultConfig.dbFilePath);
+    const db = new DatabaseSync(defaultConfig.dbFilePath);
     const watcher = new OpenRouterAPIWatcher({ db });
     watcher.runOnce();
     db.close();
     process.exit(0);
   } else {
-    const db = new database(defaultConfig.dbFilePath);
+    const db = new DatabaseSync(defaultConfig.dbFilePath);
     const watcher = new OpenRouterAPIWatcher({ db });
     new httpServer({ watcher });
     watcher.enterBackgroundMode();

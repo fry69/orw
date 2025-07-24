@@ -2,14 +2,14 @@
 import os from "node:os";
 import fs from "node:fs";
 import path from "node:path";
-import database, { type Database } from "better-sqlite3";
+import { DatabaseSync } from "node:sqlite";
 import { describe, beforeEach, afterEach, test, expect, vi } from "vitest";
 import { OpenRouterAPIWatcher } from "./watcher.js";
 import type { Model, ModelDiff } from "../shared/global";
 
 describe("OpenRouterAPIWatcher", () => {
   let watcher: OpenRouterAPIWatcher;
-  let db: Database;
+  let db: DatabaseSync;
   let dataDir: string;
   let backupDir: string;
 
@@ -66,7 +66,7 @@ describe("OpenRouterAPIWatcher", () => {
     // Silence console output
     console.log = vi.fn();
     console.error = vi.fn();
-    db = new database(":memory:");
+    db = new DatabaseSync(":memory:");
     watcher = new OpenRouterAPIWatcher({ db, dataDir, backupDir, logFilePath: "", dbFilePath: "" });
   });
 

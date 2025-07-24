@@ -1,11 +1,11 @@
-import { type Database } from "better-sqlite3";
+import type { DatabaseSync } from "node:sqlite";
 import migrations from "./migrations/migrations.js";
 
 /**
  * Runs the migrations on the database.
  * @param db - The database to run migrations on.
  */
-export function runMigrations(db: Database) {
+export function runMigrations(db: DatabaseSync) {
   let currentVersion = getCurrentVersion(db);
   // console.log(`Current database version: ${currentVersion}`);
 
@@ -34,12 +34,12 @@ export function runMigrations(db: Database) {
  * @param db - The database to get the current version of.
  * @returns - The current version of the database.
  */
-function getCurrentVersion(db: Database): number {
+function getCurrentVersion(db: DatabaseSync): number {
   try {
     const row: any = db.prepare("SELECT MAX(version) AS version FROM migrations").get();
     return row?.version || 0;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (err) {
+  } catch (_err) {
     // If the migrations table doesn't exist, return -1
     return -1;
   }
@@ -50,7 +50,7 @@ function getCurrentVersion(db: Database): number {
  * @param db - The database to set the current version of.
  * @param version - The version to set.
  */
-function setCurrentVersion(db: Database, version: number) {
+function setCurrentVersion(db: DatabaseSync, version: number) {
   const insertVersion = db.prepare("INSERT INTO migrations (version) VALUES (?)");
-  insertVersion.run([version]);
+  insertVersion.run(version);
 }
