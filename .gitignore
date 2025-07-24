@@ -43,3 +43,4 @@ orw.db
 bun.lockb
 models.json
 public/*.gz
+archive/
