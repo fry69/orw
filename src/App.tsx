@@ -1,6 +1,6 @@
 // client/App.tsx
 import type { FC, ReactNode } from "react";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { NavBar } from "./NavBar.tsx";
 import { ModelDetail } from "./ModelDetail.tsx";
 import { ChangeList } from "./ChangeList.tsx";

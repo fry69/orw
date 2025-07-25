@@ -54,7 +54,7 @@ const migrations: Migration[] = [
           PRIMARY KEY (id, timestamp)
         )
       `);
-      
+
       // Copy data from the old table to the new table
       db.exec(`
         INSERT INTO changes_new (id, changes, timestamp, type)
@@ -80,7 +80,7 @@ const migrations: Migration[] = [
         )
         WHERE changes = '{}';
       `);
-      
+
       // Create tables for removed and added models
       db.exec(`
         CREATE TABLE IF NOT EXISTS removed_models (
@@ -90,7 +90,7 @@ const migrations: Migration[] = [
           PRIMARY KEY (id, timestamp)
         );
       `);
-      
+
       db.exec(`
         CREATE TABLE IF NOT EXISTS added_models (
           id TEXT,
@@ -99,7 +99,7 @@ const migrations: Migration[] = [
           PRIMARY KEY (id, timestamp)
         );
       `);
-      
+
       // Add already known added models from the changes table
       db.exec(`
         INSERT INTO added_models (id, data, timestamp)
@@ -137,7 +137,9 @@ const migrations: Migration[] = [
  */
 function getCurrentVersion(db: Database): number {
   try {
-    const result = db.prepare("SELECT MAX(version) AS version FROM migrations").get() as { version: number | null };
+    const result = db.prepare("SELECT MAX(version) AS version FROM migrations").get() as {
+      version: number | null;
+    };
     return result?.version || 0;
   } catch (_err) {
     // If the migrations table doesn't exist, return -1
@@ -185,7 +187,7 @@ export function runMigrations(db: Database) {
 export async function createDatabase(dbPath: string): Promise<Database> {
   // Ensure the database directory exists
   await ensureDir(dirname(dbPath));
-  
+
   // Create and return the database instance
   const db = new Database(dbPath);
   return db;

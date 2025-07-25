@@ -43,11 +43,11 @@ export const ModelDetail: FC = (): ReactNode => {
       return;
     }
     let foundModel: Model | undefined = globalLists.state.models.find(
-      (obj: Model) => obj.id === id
+      (obj: Model) => obj.id === id,
     );
     if (!foundModel) {
       const removedModel: Model | undefined = globalLists.state.removed.find(
-        (obj: Model) => obj.id === id
+        (obj: Model) => obj.id === id,
       );
       if (removedModel) {
         setRemoved(true);

@@ -24,7 +24,7 @@ const migrations: Migration[] = [
           data TEXT,
           timestamp TEXT
         )
-      `
+      `,
       );
       db.exec(
         `
@@ -33,14 +33,14 @@ const migrations: Migration[] = [
           changes TEXT,
           timestamp TEXT
         )
-      `
+      `,
       );
       db.exec(
         `
         CREATE TABLE IF NOT EXISTS migrations (
           version INTEGER PRIMARY KEY
         )
-      `
+      `,
       );
     },
   },
@@ -57,7 +57,7 @@ const migrations: Migration[] = [
           type TEXT,
           PRIMARY KEY (id, timestamp)
         )
-      `
+      `,
       );
 
       // Copy data from the old table to the new table
@@ -66,7 +66,7 @@ const migrations: Migration[] = [
         INSERT INTO changes_new (id, changes, timestamp, type)
           SELECT id, changes, timestamp, 'changed'
           FROM changes
-      `
+      `,
       );
 
       // Drop the old table and rename the new table
@@ -87,7 +87,7 @@ const migrations: Migration[] = [
 	        WHERE changes.id = models.id
         )
         WHERE changes = '{}';
-      `
+      `,
       );
       // Create a new table for storing removed models
       // account for multiple removals of the same model id (could get re-added)
@@ -99,7 +99,7 @@ const migrations: Migration[] = [
           timestamp TEXT,
           PRIMARY KEY (id, timestamp)
         );
-      `
+      `,
       );
       // Create a new table for storing added models
       // account for multiple additions of the same model id (could get re-added)
@@ -111,7 +111,7 @@ const migrations: Migration[] = [
           timestamp TEXT,
           PRIMARY KEY (id, timestamp)
         );
-      `
+      `,
       );
       // Add already known added model from the changes table to the added_models table
       db.exec(
@@ -119,7 +119,7 @@ const migrations: Migration[] = [
         INSERT INTO added_models (id, data, timestamp)
         SELECT id, changes, timestamp
         FROM changes WHERE type = 'added'
-      `
+      `,
       );
     },
   },
@@ -133,7 +133,7 @@ const migrations: Migration[] = [
           id INTEGER PRIMARY KEY,
           last_check TEXT NOT NULL
         );
-      `
+      `,
       );
     },
   },
@@ -145,11 +145,10 @@ const migrations: Migration[] = [
         `
         ALTER TABLE last_api_check
           ADD last_status TEXT
-      `
+      `,
       );
     },
   },
-
   // Add more migrations here
 ];
 

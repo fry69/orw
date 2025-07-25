@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, type FC } from "react";
+import { type FC, ReactNode, useEffect } from "react";
 
 /**
  * Props for the Error component.

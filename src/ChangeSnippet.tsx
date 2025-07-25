@@ -32,7 +32,7 @@ const showPrice = (
   oldValue: string,
   newValue: string,
   showFn: typeof showPricePerMillion,
-  unit: string
+  unit: string,
 ): [oldPrice: string, newPrice: string, percentage: string] => {
   const oldPrice = showFn(oldValue, unit);
   const newPrice = showFn(newValue, unit);

@@ -38,11 +38,13 @@ export class HTTPServer {
     // console.log(`${request.method} ${pathname}`);
 
     // Add CORS headers if enabled
-    const corsHeaders: Record<string, string> = this.config.enableCors ? {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    } : {};
+    const corsHeaders: Record<string, string> = this.config.enableCors
+      ? {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      }
+      : {};
 
     // Handle preflight requests
     if (request.method === "OPTIONS") {
@@ -81,7 +83,8 @@ export class HTTPServer {
         }
 
         // Unknown HTML route - return proper 404 page
-        return new Response(`
+        return new Response(
+          `
 <!DOCTYPE html>
 <html>
 <head>
@@ -99,13 +102,15 @@ export class HTTPServer {
   <p>The page <code>${this.escapeXml(pathname)}</code> could not be found.</p>
   <p><a href="/" class="back-link">← Back to Home</a></p>
 </body>
-</html>`, {
-          status: 404,
-          headers: {
-            "Content-Type": "text/html; charset=utf-8",
-            ...corsHeaders,
+</html>`,
+          {
+            status: 404,
+            headers: {
+              "Content-Type": "text/html; charset=utf-8",
+              ...corsHeaders,
+            },
           },
-        });
+        );
       }
 
       // Return 404 for non-HTML requests to non-existent files
@@ -158,9 +163,11 @@ export class HTTPServer {
           "Cache-Control": "no-cache, no-store, must-revalidate",
           "Pragma": "no-cache",
           "Expires": "0",
-          ...this.config.enableCors ? {
-            "Access-Control-Allow-Origin": "*",
-          } : {},
+          ...this.config.enableCors
+            ? {
+              "Access-Control-Allow-Origin": "*",
+            }
+            : {},
         },
       });
     } catch (error) {
@@ -174,7 +181,7 @@ export class HTTPServer {
    */
   private handleAPIRequest(
     pathname: string,
-    _request: Request
+    _request: Request,
   ): { body: string; status: number; headers?: Record<string, string> } {
     switch (pathname) {
       case "/api/lists": {
@@ -197,7 +204,6 @@ export class HTTPServer {
             apiLastCheckStatus: this.config.watcher.getAPILastCheckStatus,
             isDevelopment,
             isValid: true,
-
           },
           version: API_VERSION,
         };
@@ -244,8 +250,8 @@ export class HTTPServer {
       const description = change.type === "changed"
         ? `Changes: ${Object.keys(change.changes || {}).join(", ")}`
         : change.type === "added"
-          ? `New model: ${change.model?.name || change.id}`
-          : `Removed model: ${change.id}`;
+        ? `New model: ${change.model?.name || change.id}`
+        : `Removed model: ${change.id}`;
 
       const pubDate = new Date(change.timestamp).toUTCString();
 

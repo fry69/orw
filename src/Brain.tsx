@@ -1,4 +1,4 @@
-import { ReactNode, useContext, useEffect, useRef, useState, type FC } from "react";
+import { type FC, ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { GlobalContext } from "./GlobalState.tsx";
 import type { APIResponse } from "../shared/global.ts";
 import {
@@ -6,9 +6,9 @@ import {
   API__STATUS,
   API_VERSION,
   FETCH_TIMEOUT,
-  VERSION,
   INITIAL_INTERVAL,
   REFRESH_INTERVAL,
+  VERSION,
 } from "../shared/constants.ts";
 import { durationAgo } from "./utils.tsx";
 

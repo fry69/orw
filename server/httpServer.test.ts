@@ -1,5 +1,5 @@
 // server.test.ts
-import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IncomingMessage, ServerResponse } from "node:http";
 import os from "node:os";
 import fs from "node:fs";
@@ -126,12 +126,12 @@ describe("httpServer", () => {
   describe("checkFileFreshness", () => {
     it("should return true if the file is fresh", async () => {
       vi.spyOn(server, "getLastModifiedTimestamp").mockResolvedValue(
-        new Date("2023-04-01T00:00:00.000Z")
+        new Date("2023-04-01T00:00:00.000Z"),
       );
 
       const isFresh = await server.checkFileFreshness(
         "/some/file.txt",
-        new Date("2023-03-01T00:00:00.000Z")
+        new Date("2023-03-01T00:00:00.000Z"),
       );
 
       expect(isFresh).toBe(true);
@@ -139,12 +139,12 @@ describe("httpServer", () => {
 
     it("should return false if the file is not fresh", async () => {
       vi.spyOn(server, "getLastModifiedTimestamp").mockResolvedValue(
-        new Date("2023-03-01T00:00:00.000Z")
+        new Date("2023-03-01T00:00:00.000Z"),
       );
 
       const isFresh = await server.checkFileFreshness(
         "/some/file.txt",
-        new Date("2023-04-01T00:00:00.000Z")
+        new Date("2023-04-01T00:00:00.000Z"),
       );
 
       expect(isFresh).toBe(false);
@@ -214,14 +214,14 @@ describe("httpServer", () => {
       expect(response.setHeader).toHaveBeenCalledWith("Content-Type", "text/plain");
       expect(response.setHeader).toHaveBeenCalledWith(
         "Content-Disposistion",
-        'attachment; filename="test.txt"'
+        'attachment; filename="test.txt"',
       );
       expect(response.setHeader).toHaveBeenCalledWith("Content-Encoding", "gzip");
       expect(response.setHeader).toHaveBeenCalledWith("Cache-Control", "max-age=3600");
       expect(response.setHeader).toHaveBeenCalledWith("Etag", '"test-etag"');
       expect(response.setHeader).toHaveBeenCalledWith(
         "Last-Modified",
-        "Sat, 01 Apr 2023 00:00:00 GMT"
+        "Sat, 01 Apr 2023 00:00:00 GMT",
       );
       expect(response.setHeader).toHaveBeenCalledWith("Expires", "Sat, 01 Apr 2023 01:00:00 GMT");
       expect(response.setHeader).toHaveBeenCalledWith("Content-Length", 12);
@@ -364,7 +364,7 @@ describe("httpServer", () => {
 
       // vi.spyOn(fs.promises, "readFile").mockResolvedValue(Buffer.from("test content"));
       vi.spyOn(server, "getLastModifiedTimestamp").mockResolvedValue(
-        new Date("2023-04-01T00:00:00.000Z")
+        new Date("2023-04-01T00:00:00.000Z"),
       );
       // vi.spyOn(fs.promises, "readFile").mockResolvedValue('"test-etag"');
 
@@ -394,7 +394,7 @@ describe("httpServer", () => {
 
       vi.spyOn(fs.promises, "readFile").mockResolvedValue(Buffer.from("test content"));
       vi.spyOn(server, "getLastModifiedTimestamp").mockResolvedValue(
-        new Date("2023-04-01T00:00:00.000Z")
+        new Date("2023-04-01T00:00:00.000Z"),
       );
 
       await server.serveStaticFile({
@@ -430,7 +430,7 @@ describe("httpServer", () => {
 
       expect(server.error404).toHaveBeenCalledWith(
         path.join(dataDir, "non-existent.txt"),
-        response
+        response,
       );
     });
   });

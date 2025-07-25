@@ -23,16 +23,16 @@ export const ROUTE_MANIFEST: RouteDefinition[] = [
  * Helper to check if a pathname matches any defined route
  */
 export function isValidRoute(pathname: string): boolean {
-  return ROUTE_MANIFEST.some(route => {
+  return ROUTE_MANIFEST.some((route) => {
     if (route.exact) {
       return route.path === pathname;
     }
-    
+
     // Convert React Router path to regex (basic implementation)
     const routeRegex = route.path
-      .replace(/:[^/]+/g, '[^/]+') // Replace :param with regex
-      .replace(/\*/g, '.*');       // Replace * with regex
-    
+      .replace(/:[^/]+/g, "[^/]+") // Replace :param with regex
+      .replace(/\*/g, ".*"); // Replace * with regex
+
     return new RegExp(`^${routeRegex}/?$`).test(pathname);
   });
 }
@@ -42,6 +42,6 @@ export function isValidRoute(pathname: string): boolean {
  */
 export function getStaticRoutes(): string[] {
   return ROUTE_MANIFEST
-    .filter(route => !route.path.includes(':') && !route.path.includes('*'))
-    .map(route => route.path);
+    .filter((route) => !route.path.includes(":") && !route.path.includes("*"))
+    .map((route) => route.path);
 }

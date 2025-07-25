@@ -111,7 +111,7 @@ async function main() {
 
     // Server mode (default): start HTTP server
     const staticDir = Deno.env.get("ORW_STATIC_DIR") || "./dist";
-    
+
     const server = new HTTPServer({
       port,
       hostname,
@@ -142,7 +142,6 @@ async function main() {
       console.log("Server running. Use --background flag to enable automatic API monitoring.");
       console.log("Press Ctrl+C to stop.");
     }
-
   } catch (error) {
     console.error("Failed to start ORW:", error);
     Deno.exit(1);

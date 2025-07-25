@@ -1,9 +1,9 @@
 // watcher.ts - Simplified OpenRouter API watcher for Deno
 import { Database } from "sqlite";
-import { join, dirname } from "@std/path";
+import { dirname, join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import deepDiff from "deep-diff";
-import type { Model, ModelDiff, Lists, ModelChangeType } from "../shared/global.ts";
+import type { Lists, Model, ModelChangeType, ModelDiff } from "../shared/global.ts";
 import { runMigrations } from "./database.ts";
 import { FETCH_TIMEOUT, OPENROUTER_API_URL } from "../shared/constants.ts";
 
@@ -80,7 +80,7 @@ export class OpenRouterAPIWatcher {
     runMigrations(this.config.db);
     this.loadLists();
     this.loadAPILastCheck();
-    
+
     if (this.lists.changes.length > 0) {
       const lastChangeTimestamp = this.lists.changes.at(0)?.timestamp;
       if (lastChangeTimestamp) {
@@ -217,19 +217,19 @@ export class OpenRouterAPIWatcher {
   async getAPIModelList(): Promise<Model[]> {
     if (isDevelopment) {
       this.log(
-        "Warning: using fixed model list, switch to production mode to load live model list from API"
+        "Warning: using fixed model list, switch to production mode to load live model list from API",
       );
       return this.config.fixedModelList ?? [];
     }
-    
+
     this.log("API check");
     this.status.apiLastCheck = new Date();
-    
+
     try {
       const response = await fetch(OPENROUTER_API_URL, {
         signal: AbortSignal.timeout(FETCH_TIMEOUT),
       });
-      
+
       if (response.ok) {
         const { data } = await response.json();
         if (data) {
@@ -251,7 +251,7 @@ export class OpenRouterAPIWatcher {
       }
       this.error(errorMessage);
     }
-    
+
     this.status.apiLastCheckStatus = "failed";
     this.updateAPILastCheck();
     return [];
@@ -285,7 +285,7 @@ export class OpenRouterAPIWatcher {
       LEFT JOIN latest_added_models lam
         ON m.id = lam.id
     `;
-    
+
     const models: Model[] = this.config.db
       .prepare(query)
       .all()
@@ -305,11 +305,11 @@ export class OpenRouterAPIWatcher {
   storeModelList(models: Model[], timestamp: Date = new Date()) {
     const deleteModels = this.config.db.prepare("DELETE FROM models");
     deleteModels.run();
-    
+
     const insertModels = this.config.db.prepare(
-      "INSERT INTO models (id, data, timestamp) VALUES (?, ?, ?)"
+      "INSERT INTO models (id, data, timestamp) VALUES (?, ?, ?)",
     );
-    
+
     for (const model of models) {
       insertModels.run(model.id, JSON.stringify(model), timestamp.toISOString());
     }
@@ -335,7 +335,7 @@ export class OpenRouterAPIWatcher {
    */
   storeRemovedModel(model: Model, timestamp: Date = new Date()) {
     const insertModel = this.config.db.prepare(
-      "INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)"
+      "INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)",
     );
     insertModel.run(model.id, JSON.stringify(model), timestamp.toISOString());
   }
@@ -383,9 +383,9 @@ export class OpenRouterAPIWatcher {
    */
   storeChanges(changes: ModelDiff[]) {
     const insertChanges = this.config.db.prepare(
-      "INSERT INTO changes (id, type, changes, timestamp) VALUES (?, ?, ?, ?)"
+      "INSERT INTO changes (id, type, changes, timestamp) VALUES (?, ?, ?, ?)",
     );
-    
+
     for (const change of changes) {
       insertChanges.run(
         change.id,
@@ -401,7 +401,7 @@ export class OpenRouterAPIWatcher {
    */
   storeAddedModel(model: Model, timestamp: Date = new Date()) {
     const insertAdded = this.config.db.prepare(
-      "INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)"
+      "INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)",
     );
     insertAdded.run(model.id, JSON.stringify(model), timestamp.toISOString());
   }
@@ -413,7 +413,7 @@ export class OpenRouterAPIWatcher {
     const result: Record<string, unknown> | undefined = this.config.db
       .prepare("SELECT last_check, last_status FROM last_api_check WHERE id = 1")
       .get();
-    
+
     if (result) {
       if (result.last_check) {
         this.status.apiLastCheck = new Date(result.last_check as string);
@@ -429,7 +429,7 @@ export class OpenRouterAPIWatcher {
    */
   updateAPILastCheck() {
     const replaceLastCheck = this.config.db.prepare(
-      "INSERT OR REPLACE INTO last_api_check (id, last_check, last_status) VALUES (1, ?, ?);"
+      "INSERT OR REPLACE INTO last_api_check (id, last_check, last_status) VALUES (1, ?, ?);",
     );
     replaceLastCheck.run(this.status.apiLastCheck.toISOString(), this.status.apiLastCheckStatus);
   }
@@ -494,7 +494,7 @@ export class OpenRouterAPIWatcher {
    */
   private diffModels(
     newModel: Model,
-    oldModel: Model
+    oldModel: Model,
   ): { changes: { [key: string]: { old: unknown; new: unknown } } } {
     const changes: { [key: string]: { old: unknown; new: unknown } } = {};
     const diffs = deepDiff.diff(oldModel, newModel);
@@ -524,7 +524,7 @@ export class OpenRouterAPIWatcher {
       await new Promise((resolve) => setTimeout(resolve, 60_000)); // 1 minute
       newModels = await this.getAPIModelList();
     }
-    
+
     if (newModels.length === 0) {
       this.status.apiLastCheckStatus = "failed";
       this.error("empty model list from API after retry, skipping check");
@@ -533,7 +533,7 @@ export class OpenRouterAPIWatcher {
       const changes = this.findChanges(newModels, oldModels);
       this.status.apiLastCheckStatus = "success";
       this.updateAPILastCheck();
-      
+
       if (changes.length > 0) {
         const timestamp = new Date();
         this.storeModelList(newModels, timestamp);
@@ -572,14 +572,14 @@ export class OpenRouterAPIWatcher {
    */
   public async enterBackgroundMode() {
     this.log("Watcher running in background mode");
-    
+
     // Check the last API timestamp and check if it is older than one hour
     const timeDiff = Date.now() - this.status.apiLastCheck.getTime();
     if (timeDiff > 3_600_000) {
       await this.runBackgroundLoop();
       // this never returns...
     }
-    
+
     // schedule the next API check after the remaining wait time has elapsed
     const sleeptime = 3_600_000 - timeDiff;
     if (sleeptime > 0) {

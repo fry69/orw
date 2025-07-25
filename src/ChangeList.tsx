@@ -1,4 +1,4 @@
-import { useContext, useEffect, useCallback, useState, type FC, ReactNode } from "react";
+import { type FC, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FilterComponent } from "./FilterComponent.tsx";
 import { GlobalContext } from "./GlobalState.tsx";
@@ -18,10 +18,10 @@ export const ChangeList: FC = (): ReactNode => {
     (filterText: string) =>
       setFilteredChanges(
         globalLists.state.changes.filter(
-          (item: ModelDiff) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase())
-        )
+          (item: ModelDiff) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase()),
+        ),
       ),
-    [globalLists.state.changes]
+    [globalLists.state.changes],
   );
 
   useEffect(() => {

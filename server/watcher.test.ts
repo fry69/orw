@@ -3,7 +3,7 @@ import os from "node:os";
 import fs from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { describe, beforeEach, afterEach, test, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { OpenRouterAPIWatcher } from "./watcher.js";
 import type { Model, ModelDiff } from "../shared/global";
 
