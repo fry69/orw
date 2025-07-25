@@ -1,9 +1,8 @@
-import { useContext, useEffect, useState, useCallback, type FC, ReactNode } from "react";
+import { type FC, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import DataTable, { type Selector, type TableColumn } from "react-data-table-component";
 import type { Model } from "../shared/global.ts";
 import { GlobalContext } from "./GlobalState.tsx";
-import { showPricePerMillion, durationAgo } from "./utils.tsx";
+import { durationAgo, showPricePerMillion } from "./utils.tsx";
 import { FilterComponent } from "./FilterComponent.tsx";
 
 /**
@@ -19,137 +18,75 @@ const roundKb = (num: number): string => {
 };
 
 /**
- * Custom sort function for the DataTable component.
- * @param rows - The array of rows to sort.
- * @param selector - The selector function to resolve the field names.
- * @param direction - The sort direction ('asc' or 'desc').
- * @returns - The sorted array of rows.
+ * Sort models by a specific field
  */
-// const customSort = (rows: Model[], selector: Selector<Model>, direction: string): Model[] => {
-//   return rows.sort((a, b) => {
-//     let comparison = 0;
+const sortModels = (models: Model[], field: string, direction: "asc" | "desc"): Model[] => {
+  return [...models].sort((a, b) => {
+    let aValue: string | number | undefined;
+    let bValue: string | number | undefined;
 
-//     // use the selector to resolve your field names by passing the sort comparators
-//     const aField = selector(a);
-//     const bField = selector(b);
+    switch (field) {
+      case "id":
+        aValue = a.id;
+        bValue = b.id;
+        break;
+      case "name":
+        aValue = a.name;
+        bValue = b.name;
+        break;
+      case "added_at":
+        aValue = a.removed_at || a.added_at || "1970-01-01T00:00:00Z";
+        bValue = b.removed_at || b.added_at || "1970-01-01T00:00:00Z";
+        break;
+      case "context_length":
+        aValue = a.context_length;
+        bValue = b.context_length;
+        break;
+      case "pricing":
+        aValue = a.pricing.completion;
+        bValue = b.pricing.completion;
+        break;
+      case "max_completion_tokens":
+        aValue = a.top_provider.max_completion_tokens ?? 0;
+        bValue = b.top_provider.max_completion_tokens ?? 0;
+        break;
+      case "modality":
+        aValue = a.architecture.modality;
+        bValue = b.architecture.modality;
+        break;
+      case "tokenizer":
+        aValue = a.architecture.tokenizer;
+        bValue = b.architecture.tokenizer;
+        break;
+      case "instruct_type":
+        aValue = a.architecture.instruct_type ?? "";
+        bValue = b.architecture.instruct_type ?? "";
+        break;
+      default:
+        return 0;
+    }
 
-//     if (typeof aField === "string" && typeof bField === "string") {
-//       // String comparison
-//       // empty string should stay at bottom to not clutter reverse sort (e.g. Instruct)
-//       if (aField === "" && bField === "") {
-//         return 0;
-//       } else if (aField === "" || !aField) {
-//         return 1;
-//       } else if (bField === "" || !bField) {
-//         return -1;
-//       } else if (aField.toLowerCase() > bField.toLowerCase()) {
-//         comparison = 1;
-//       } else if (aField.toLowerCase() < bField.toLowerCase()) {
-//         comparison = -1;
-//       }
-//     } else if (typeof aField === "number" && typeof bField === "number") {
-//       // Number comparison
-//       // 0 should stay at bottom to not clutter reverse sort (e.g. maxOut)
-//       // pricing gets sorted via string sort and obeys 0 at top
-//       if (aField === 0 && bField === 0) {
-//         return 0;
-//       } else if (aField === 0 || !aField) {
-//         return 1;
-//       } else if (bField === 0 || !bField) {
-//         return -1;
-//       } else {
-//         comparison = aField - bField;
-//       }
-//     }
+    // Handle empty values
+    if ((aValue === "" || aValue === 0 || !aValue) && (bValue === "" || bValue === 0 || !bValue)) {
+      return 0;
+    }
+    if (aValue === "" || aValue === 0 || !aValue) {
+      return 1;
+    }
+    if (bValue === "" || bValue === 0 || !bValue) {
+      return -1;
+    }
 
-//     return direction === "desc" ? comparison * -1 : comparison;
-//   });
-// };
+    let comparison = 0;
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      comparison = aValue.toLowerCase().localeCompare(bValue.toLowerCase());
+    } else if (typeof aValue === "number" && typeof bValue === "number") {
+      comparison = aValue - bValue;
+    }
 
-/**
- * Defines the columns for the DataTable component.
- */
-// const columns: TableColumn<Model>[] = [
-//   {
-//     name: "ID",
-//     selector: (row) => row.id,
-//     sortable: true,
-//     grow: 3,
-//   },
-//   {
-//     name: "Name",
-//     selector: (row) => row.name,
-//     sortable: true,
-//     grow: 3,
-//   },
-//   {
-//     // name: props.removed ? "Removed" : "Added",
-//     name: "Added",
-//     selector: (row) => {
-//       if (row.removed_at) {
-//         return row.removed_at;
-//       } else if (row.added_at) {
-//         return row.added_at;
-//       }
-//       return row.added_at ?? "1970-01-01T00:00:00Z";
-//     },
-//     format: (row) => {
-//       if (row.removed_at) {
-//         return durationAgo(row.removed_at);
-//       } else if (row.added_at) {
-//         return durationAgo(row.added_at);
-//       }
-//       return "";
-//     },
-//     sortable: true,
-//     hide: 959,
-//   },
-//   {
-//     name: "Context",
-//     selector: (row) => row.context_length,
-//     format: (row) => roundKb(row.context_length),
-//     sortable: true,
-//     right: true,
-//   },
-//   {
-//     name: "Price/MT",
-//     selector: (row) => row.pricing.completion,
-//     format: (row) => {
-//       return row.id === "openrouter/auto" ? "[N/A]" : showPricePerMillion(row.pricing.completion);
-//     },
-//     sortable: true,
-//     right: true,
-//   },
-//   {
-//     name: "maxOut",
-//     selector: (row) => row.top_provider.max_completion_tokens ?? 0,
-//     format: (row) => {
-//       const maxOut = row.top_provider.max_completion_tokens ?? 0;
-//       return maxOut > 0 ? roundKb(maxOut) : "";
-//     },
-//     sortable: true,
-//     hide: 599,
-//     right: true,
-//   },
-//   {
-//     name: "Modality",
-//     selector: (row) => row.architecture.modality,
-//     sortable: true,
-//     hide: 959,
-//   },
-//   {
-//     name: "Tokenizer",
-//     selector: (row) => row.architecture.tokenizer,
-//     sortable: true,
-//     hide: 959,
-//   },
-//   {
-//     name: "Instruct",
-//     selector: (row) => row.architecture.instruct_type ?? "",
-//     sortable: true,
-//     hide: 959,
-//   },
-// ];
+    return direction === "desc" ? comparison * -1 : comparison;
+  });
+};
 
 /**
  * Propertiess for the ModelList component.
@@ -168,24 +105,46 @@ export const ModelList: FC<ModelListProps> = ({ removed }: ModelListProps): Reac
   const navigate = useNavigate();
   const { globalLists, globalClient } = useContext(GlobalContext);
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
+  const [sortField, setSortField] = useState<string>("added_at");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   /**
    * A callback function that filters the models based on the provided filter text.
    * @param filterText - The text to filter the models by.
    */
   const filterModels = useCallback(
-    (filterText: string) =>
-      setFilteredModels(
-        removed
-          ? globalLists.state.removed.filter(
-              (item) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase())
-            )
-          : globalLists.state.models.filter(
-              (item) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase())
-            )
-      ),
-    [removed, globalLists.state.models, globalLists.state.removed]
+    (filterText: string) => {
+      const models = removed
+        ? globalLists.state.removed.filter(
+          (item) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase()),
+        )
+        : globalLists.state.models.filter(
+          (item) => item.id && item.id.toLowerCase().includes(filterText.toLowerCase()),
+        );
+
+      setFilteredModels(sortModels(models, sortField, sortDirection));
+    },
+    [removed, globalLists.state.models, globalLists.state.removed, sortField, sortDirection],
   );
+
+  /**
+   * Handle column header click for sorting
+   */
+  const handleSort = (field: string) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  };
+
+  /**
+   * Update sorted models when sort parameters change
+   */
+  useEffect(() => {
+    setFilteredModels((prev) => sortModels(prev, sortField, sortDirection));
+  }, [sortField, sortDirection]);
 
   /**
    * A useEffect hook that updates the navBarDynamicElement in the globalClient state.
@@ -198,27 +157,145 @@ export const ModelList: FC<ModelListProps> = ({ removed }: ModelListProps): Reac
     }));
   }, [filterModels]);
 
+  const tableStyle: React.CSSProperties = {
+    width: "100%",
+    borderCollapse: "collapse",
+    backgroundColor: "#1a1a1a",
+    color: "white",
+    fontSize: "14px",
+  };
+
+  const thStyle: React.CSSProperties = {
+    padding: "12px 8px",
+    borderBottom: "2px solid #333",
+    backgroundColor: "#2a2a2a",
+    textAlign: "left",
+    cursor: "pointer",
+    userSelect: "none",
+    position: "sticky",
+    top: 0,
+    zIndex: 1,
+  };
+
+  const tdStyle: React.CSSProperties = {
+    padding: "8px",
+    borderBottom: "1px solid #333",
+  };
+
+  const rowStyle: React.CSSProperties = {
+    cursor: "pointer",
+  };
+
+  const rightAlignStyle: React.CSSProperties = {
+    textAlign: "right",
+  };
+
+  const getSortIcon = (field: string) => {
+    if (sortField !== field) return " ⇅";
+    return sortDirection === "asc" ? " ↑" : " ↓";
+  };
+
   return (
     <>
       {removed && (
-        <h2 style={{ textAlign: "center" }}>
+        <h2 style={{ textAlign: "center", color: "white", marginBottom: "20px" }}>
           Models no longer available on OpenRouter or renamed:
         </h2>
       )}
-      {/* <DataTable
-        columns={columns}
-        data={filteredModels}
-        onRowClicked={(row: any) => {
-          return navigate(`/model?id=${row.id}`);
-        }}
-        dense
-        highlightOnHover
-        defaultSortFieldId={3}
-        theme="dark"
-        sortFunction={customSort}
-        defaultSortAsc={false}
-        noDataComponent=""
-      /> */}
+
+      <div style={{ overflowX: "auto", maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}>
+        <table style={tableStyle}>
+          <thead>
+            <tr>
+              <th style={thStyle} onClick={() => handleSort("id")}>
+                ID{getSortIcon("id")}
+              </th>
+              <th style={thStyle} onClick={() => handleSort("name")}>
+                Name{getSortIcon("name")}
+              </th>
+              <th style={thStyle} onClick={() => handleSort("added_at")}>
+                {removed ? "Removed" : "Added"}
+                {getSortIcon("added_at")}
+              </th>
+              <th
+                style={{ ...thStyle, ...rightAlignStyle }}
+                onClick={() => handleSort("context_length")}
+              >
+                Context{getSortIcon("context_length")}
+              </th>
+              <th style={{ ...thStyle, ...rightAlignStyle }} onClick={() => handleSort("pricing")}>
+                Price/MT{getSortIcon("pricing")}
+              </th>
+              <th
+                style={{ ...thStyle, ...rightAlignStyle }}
+                onClick={() => handleSort("max_completion_tokens")}
+              >
+                maxOut{getSortIcon("max_completion_tokens")}
+              </th>
+              <th style={thStyle} onClick={() => handleSort("modality")}>
+                Modality{getSortIcon("modality")}
+              </th>
+              <th style={thStyle} onClick={() => handleSort("tokenizer")}>
+                Tokenizer{getSortIcon("tokenizer")}
+              </th>
+              <th style={thStyle} onClick={() => handleSort("instruct_type")}>
+                Instruct{getSortIcon("instruct_type")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredModels.map((model) => (
+              <tr
+                key={model.id}
+                style={rowStyle}
+                onClick={() => navigate(`/model?id=${model.id}`)}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#333"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+              >
+                <td style={tdStyle}>{model.id}</td>
+                <td style={tdStyle}>{model.name}</td>
+                <td style={tdStyle}>
+                  {model.removed_at
+                    ? durationAgo(model.removed_at)
+                    : model.added_at
+                    ? durationAgo(model.added_at)
+                    : ""}
+                </td>
+                <td style={{ ...tdStyle, ...rightAlignStyle }}>
+                  {roundKb(model.context_length)}
+                </td>
+                <td style={{ ...tdStyle, ...rightAlignStyle }}>
+                  {model.id === "openrouter/auto"
+                    ? "[N/A]"
+                    : showPricePerMillion(model.pricing.completion)}
+                </td>
+                <td style={{ ...tdStyle, ...rightAlignStyle }}>
+                  {(() => {
+                    const maxOut = model.top_provider.max_completion_tokens ?? 0;
+                    return maxOut > 0 ? roundKb(maxOut) : "";
+                  })()}
+                </td>
+                <td style={tdStyle}>{model.architecture.modality}</td>
+                <td style={tdStyle}>{model.architecture.tokenizer}</td>
+                <td style={tdStyle}>{model.architecture.instruct_type ?? ""}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {filteredModels.length === 0 && (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "20px",
+              color: "#666",
+              fontSize: "16px",
+            }}
+          >
+            No models found
+          </div>
+        )}
+      </div>
     </>
   );
 };

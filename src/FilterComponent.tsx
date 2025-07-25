@@ -1,52 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FC, ReactNode } from "react";
-// import styled from "styled-components";
-
-/**
- * Styled input component for text filtering
- */
-// const TextField = styled.input`
-//   height: 32px;
-//   width: 130px;
-//   border-radius: 3px;
-//   border-top-left-radius: 5px;
-//   border-bottom-left-radius: 5px;
-//   border-top-right-radius: 0;
-//   border-bottom-right-radius: 0;
-//   border: 1px solid #e5e5e5;
-//   padding: 0 32px 0 16px;
-
-//   &:hover {
-//     cursor: pointer;
-//   }
-// `;
-
-/**
- * Styled button component for clearing the filter
- */
-// const ClearButton = styled.button`
-//   background-color: #2979ff;
-//   border: none;
-//   color: white;
-//   padding: 8px 32px 8px 32px;
-//   text-decoration: none;
-//   font-size: 16px;
-
-//   &:hover {
-//     cursor: pointer;
-//   }
-
-//   border-top-left-radius: 0;
-//   border-bottom-left-radius: 0;
-//   border-top-right-radius: 5px;
-//   border-bottom-right-radius: 5px;
-//   height: 34px;
-//   width: 32px;
-//   text-align: center;
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-// `;
 
 /**
  * Props for the FilterComponent.
@@ -92,10 +45,45 @@ export const FilterComponent: FC<FilterComponentProps> = ({
     setFilterText(filterText);
   };
 
+  const inputStyle: React.CSSProperties = {
+    height: "32px",
+    width: "130px",
+    borderRadius: "3px",
+    borderTopLeftRadius: "5px",
+    borderBottomLeftRadius: "5px",
+    borderTopRightRadius: "0",
+    borderBottomRightRadius: "0",
+    border: "1px solid #666",
+    padding: "0 32px 0 16px",
+    backgroundColor: "#2a2a2a",
+    color: "white",
+    fontSize: "14px",
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    backgroundColor: "#2979ff",
+    border: "none",
+    color: "white",
+    padding: "8px 32px 8px 32px",
+    textDecoration: "none",
+    fontSize: "16px",
+    borderTopLeftRadius: "0",
+    borderBottomLeftRadius: "0",
+    borderTopRightRadius: "5px",
+    borderBottomRightRadius: "5px",
+    height: "34px",
+    width: "32px",
+    textAlign: "center" as const,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+  };
+
   return (
     <>
       <span style={{ display: "flex" }}>
-        {/* <TextField
+        <input
           id="search"
           type="text"
           placeholder="Filter By Name"
@@ -103,16 +91,25 @@ export const FilterComponent: FC<FilterComponentProps> = ({
           value={filterText}
           onChange={handleChange}
           ref={inputRef}
+          style={inputStyle}
           onKeyDown={(e) => {
             if (e.key === "Escape") {
               e.currentTarget.blur();
               handleClear();
             }
           }}
+          onFocus={(e) => e.target.style.borderColor = "#0066cc"}
+          onBlur={(e) => e.target.style.borderColor = "#666"}
         />
-        <ClearButton type="button" onClick={handleClear}>
+        <button
+          type="button"
+          onClick={handleClear}
+          style={buttonStyle}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#1976d2"}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#2979ff"}
+        >
           X
-        </ClearButton> */}
+        </button>
       </span>
     </>
   );
