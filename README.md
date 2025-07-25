@@ -1,52 +1,93 @@
 # orw: OpenRouter API Watcher
 
-The OpenRouter API Watcher is a tool that monitors changes in OpenRouter models and stores those changes in a SQLite database. It queries the model list via the API every hour and includes a simple web interface for viewing the changes.
+The OpenRouter API Watcher is a tool that monitors changes in OpenRouter models and stores those changes in a SQLite database. It queries the model list via the API every hour and includes a modern web interface for viewing the changes.
 
 ## Installation
 
-To run the OpenRouter API Watcher, you'll need the [Bun](https://bun.sh) runtime. Install the dependencies with the following command:
+To run the OpenRouter API Watcher, you'll need [Deno](https://deno.land) runtime (version 1.40+).
 
-```bash
-bun install
-```
-
-Build the web client with the following command:
-
-```bash
-bun run build
-```
+No package installation is required - Deno will automatically download dependencies on first run.
 
 ## Usage
 
-The tool can be run in three different modes:
+### Recommended: Start Both Server and Watcher
 
-1. **Background Mode**: To run the watcher in the background, use the following command:
+Start both the HTTP server and background watcher (recommended for most users):
 
-   ```bash
-   bun run watcher.ts
-   ```
+```bash
+# Using the CLI
+deno run --allow-all cli.ts --serve
 
-   The watcher will continuously monitor the OpenRouter API and store any changes in the database.
+# Or using the convenience script
+deno run --allow-all start.ts
 
-2. **Query Mode**: To view the most recent changes, use the following command:
+# Or directly via main.ts
+deno run --allow-all main.ts
+```
 
-   ```bash
-   bun run watcher.ts --query [number]
-   ```
+This will start:
 
-   Replace `[number]` with the maximum number of changes you want to display (default is 10).
+- HTTP server on http://localhost:3100 (configurable)
+- Background watcher that checks for API changes every hour
 
-3. **One-Time Mode**: To run the watcher just once, use the following command:
+### Advanced Usage
 
-   ```bash
-   bun run watcher.ts --once
-   ```
+The tool supports several modes via the CLI:
 
-   This will perform a single check and update the database if any changes are detected.
+#### 1. Background Mode Only (no HTTP server)
+
+```bash
+deno run --allow-all cli.ts --background
+```
+
+#### 2. HTTP Server Only (no background watcher)
+
+```bash
+deno run --allow-all cli.ts --serve --no-watcher
+```
+
+#### 3. Query Mode (view recent changes)
+
+```bash
+deno run --allow-all cli.ts --query 20
+```
+
+#### 4. One-Time Check
+
+```bash
+deno run --allow-all cli.ts --run-once
+```
+
+### Configuration Options
+
+```bash
+# Custom port and hostname
+deno run --allow-all cli.ts --serve --port 8080 --hostname 0.0.0.0
+
+# Custom data directory
+deno run --allow-all cli.ts --serve --data-dir /path/to/data
+
+# Environment variables
+ORW_PORT=8080 ORW_HOSTNAME=0.0.0.0 ORW_DATA_PATH=/data deno run --allow-all cli.ts --serve
+```
+
+### Development
+
+For development with hot-reloading:
+
+```bash
+deno run -A --watch=components/,islands/,lib,/routes/,server/,shared/,static/ dev.ts
+```
 
 ## Web Interface
 
-The OpenRouter API Watcher includes a simple web interface that allows you to view the list of models and the changes that have been detected. By default, the web interface starts on a random, available port. Check the console output for the URL.
+The OpenRouter API Watcher includes a modern web interface built with Fresh framework that allows you to:
+
+- View the complete list of OpenRouter models
+- Browse change history and see what models were added/removed/modified
+- Real-time updates when changes are detected
+
+By default, the web interface is available at http://localhost:3100.
 
 ## RSS feed
 

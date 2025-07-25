@@ -303,7 +303,11 @@ Deno.test("OpenRouterAPIWatcher should not detect changes when arrays have the s
     const changes = watcher.findChanges(newModels, oldModels);
 
     // Should detect no changes since the arrays contain the same elements
-    assertEquals(changes.length, 0, "Should not detect changes when arrays have same elements in different order");
+    assertEquals(
+      changes.length,
+      0,
+      "Should not detect changes when arrays have same elements in different order",
+    );
   } finally {
     cleanup();
   }
