@@ -7,7 +7,7 @@
   "nodeModulesDir": "auto",
   "tasks": {
     "dev": "deno run --allow-all --watch=components/,islands/,lib/,routes/,server/,shared/,static/,main.ts dev.ts",
-    "start": "deno serve -A _fresh/server.js",
+    "start": "deno task build && deno serve -A _fresh/server.js",
     "once": "deno run --allow-all server/main.ts --run-once",
     "query": "deno run --allow-all server/main.ts --query 10",
     "build": "deno run --allow-all dev.ts build",

@@ -70,7 +70,7 @@ if (import.meta.main) {
       const watcher = new OpenRouterAPIWatcher({ db });
       const limit = typeof args.query === "number" ? args.query : 10;
       console.log(`\nShowing ${limit} most recent changes:`);
-      await watcher.runQueryMode(limit);
+      watcher.runQueryMode(limit);
       Deno.exit(0);
     } else {
       // Initialize watcher service for API routes
