@@ -1,6 +1,6 @@
 // islands/NavBar.tsx - Navigation bar with real-time updates
 import { useEffect } from "preact/hooks";
-import { globalStatus, globalLists, navBarDurations } from "../lib/state.ts";
+import { globalLists, globalStatus, navBarDurations } from "../lib/state.ts";
 import { DateTime } from "luxon";
 import { VERSION } from "../shared/constants.ts";
 

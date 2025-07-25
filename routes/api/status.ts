@@ -24,7 +24,7 @@ export const handler = {
       console.error("API status error:", error);
       return Response.json(
         { error: "Failed to get status", version: API_VERSION },
-        { status: 500 }
+        { status: 500 },
       );
     }
   },

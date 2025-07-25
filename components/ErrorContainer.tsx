@@ -18,7 +18,8 @@ export default function ErrorContainer({ children }: ErrorContainerProps) {
           {!error.preventClearing && (
             <button
               type="button"
-              onClick={() => globalError.value = { isError: false, message: "", preventClearing: false }}
+              onClick={() =>
+                globalError.value = { isError: false, message: "", preventClearing: false }}
               class="error-dismiss"
             >
               Dismiss

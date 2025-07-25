@@ -1,12 +1,12 @@
 // islands/DataUpdater.tsx - Background data polling (replaces Brain.tsx logic)
 import { useEffect, useRef } from "preact/hooks";
-import { globalStatus, globalLists, setGlobalError } from "../lib/state.ts";
+import { globalLists, globalStatus, setGlobalError } from "../lib/state.ts";
 import {
+  API_VERSION,
   FETCH_TIMEOUT,
   INITIAL_INTERVAL,
   REFRESH_INTERVAL,
   VERSION,
-  API_VERSION
 } from "../shared/constants.ts";
 import type { APIResponse } from "../shared/global.ts";
 
@@ -66,8 +66,8 @@ export default function DataUpdater() {
   const loadInitialData = async () => {
     try {
       const [listsResponse, statusResponse] = await Promise.all([
-        fetchAPI('/api/lists'),
-        fetchAPI('/api/status')
+        fetchAPI("/api/lists"),
+        fetchAPI("/api/status"),
       ]);
 
       if (listsResponse.lists) {
@@ -84,7 +84,7 @@ export default function DataUpdater() {
   const handleRefresh = async () => {
     try {
       const prevDbTimestamp = new Date(globalStatus.value.dbLastChange).getTime();
-      const statusResponse = await fetchAPI('/api/status');
+      const statusResponse = await fetchAPI("/api/status");
 
       if (statusResponse.status) {
         globalStatus.value = statusResponse.status;
@@ -92,7 +92,7 @@ export default function DataUpdater() {
 
         // Only load data when database has changed
         if (newDbTimestamp > prevDbTimestamp) {
-          const listsResponse = await fetchAPI('/api/lists');
+          const listsResponse = await fetchAPI("/api/lists");
           if (listsResponse.lists) {
             globalLists.value = listsResponse.lists;
           }

@@ -17,7 +17,7 @@ export const handler = {
       console.error("API lists error:", error);
       return Response.json(
         { error: "Failed to get lists", version: API_VERSION },
-        { status: 500 }
+        { status: 500 },
       );
     }
   },
