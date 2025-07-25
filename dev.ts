@@ -1,9 +1,11 @@
+#!/usr/bin/env -S deno run -A --watch=components/,islands/,lib,/routes/,server/,shared/,static/
 // dev.ts - Fresh 2 development server
-import { Builder } from "fresh/dev";
 
-const builder = new Builder({
-  target: "safari12",
-});
+import { Builder } from "fresh/dev";
+import { tailwind } from "@fresh/plugin-tailwind";
+
+const builder = new Builder();
+tailwind(builder);
 
 // Create optimized assets for the browser when running `deno run -A dev.ts build`
 if (Deno.args.includes("build")) {

@@ -1,5 +1,6 @@
 // main.ts - Fresh 2 app entry point
 import { App, staticFiles } from "fresh";
+import type { State } from "./utils.ts";
 import { OpenRouterAPIWatcher } from "./server/watcher.ts";
 import { createDatabase } from "./server/database.ts";
 import { initializeWatcher } from "./lib/watcher-service.ts";
@@ -20,9 +21,10 @@ interface CLIArgs {
 
 const VERSION = "4.0.0-fresh2";
 
-export const app = new App()
-  .use(staticFiles())
-  .fsRoutes();
+export const app = new App<State>();
+
+app.use(staticFiles());
+app.fsRoutes();
 
 // Only start background services if running in production mode
 if (import.meta.main) {
