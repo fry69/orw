@@ -42,7 +42,8 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
-    "jsxImportSourceTypes": "npm:@types/react"
+    "jsxImportSourceTypes": "npm:@types/react",
+    "lib": ["dom"]
   },
   "fmt": {
     "useTabs": false,

@@ -5,7 +5,7 @@ import type { ReactElement } from "react";
  */
 export interface GlobalClient {
   /**  The dynamic element to be displayed in the navbar. */
-  navBarDynamicElement: ReactElement;
+  navBarDynamicElement: ReactElement | null;
   /** The durations related to the navbar. */
   navBarDurations: {
     /** The last change timestamp of the database. */
