@@ -2,8 +2,8 @@
 // cli.ts - Dedicated CLI entry point
 import { parseArgs } from "@std/cli/parse-args";
 import { join } from "@std/path";
-import { OpenRouterAPIWatcher } from "./server/watcher.ts";
 import { createDatabase } from "./server/database.ts";
+import { createProductionWatcher } from "./server/watcher-factory.ts";
 import { serve } from "./main.ts";
 
 interface CLIArgs {
@@ -17,6 +17,7 @@ interface CLIArgs {
   "data-dir"?: string;
   serve?: boolean;
   "no-watcher"?: boolean;
+  init?: boolean;
 }
 
 const VERSION = "4.0.0-fresh2";
@@ -32,6 +33,7 @@ Options:
   -v, --version           Show version information
   -p, --port <number>     Port to run the HTTP server on (default: 3100)
   --hostname <string>     Hostname to bind to (default: localhost)
+  --init                  Initialize fresh database with API data and exit
   -s, --serve             Start HTTP server with background watcher (recommended)
   --no-watcher            Disable background watcher when using --serve
   -b, --background        Run in background mode only (no HTTP server)
@@ -40,6 +42,7 @@ Options:
   --data-dir <path>       Data directory path (default: ./data)
 
 Examples:
+  deno run --allow-all cli.ts --init                     # Initialize database
   deno run --allow-all cli.ts --serve                    # Start both server and watcher
   deno run --allow-all cli.ts --serve --no-watcher       # Start server only
   deno run --allow-all cli.ts --background               # Start watcher only
@@ -50,7 +53,7 @@ Examples:
 
 async function main() {
   const args = parseArgs(Deno.args, {
-    boolean: ["help", "version", "background", "run-once", "serve", "no-watcher"],
+    boolean: ["help", "version", "background", "run-once", "serve", "no-watcher", "init"],
     string: ["hostname", "data-dir"],
     alias: {
       h: "help",
@@ -84,11 +87,19 @@ async function main() {
   console.log(`Database: ${dbPath}`);
 
   try {
-    // Initialize database
-    const db = await createDatabase(dbPath);
+    // Initialize database (but not needed for all commands)
+    const _db = await createDatabase(dbPath);
     console.log("Database initialized");
 
-    if (args.serve) {
+    if (args.init) {
+      console.log("Initializing database with fresh API data...");
+      const _watcher = await createProductionWatcher({
+        dataDir,
+        skipInitialization: false, // Force seeding
+      });
+      console.log("Database initialized successfully!");
+      Deno.exit(0);
+    } else if (args.serve) {
       console.log("Starting HTTP server with background watcher...");
       console.log("Note: Make sure to run 'deno task build' first for production deployment");
       const enableWatcher = !args["no-watcher"];
@@ -98,16 +109,25 @@ async function main() {
         enableWatcher,
       });
     } else if (args.background) {
-      const watcher = new OpenRouterAPIWatcher({ db });
+      const watcher = await createProductionWatcher({
+        dataDir,
+        skipInitialization: true, // Don't auto-seed in background mode
+      });
       console.log("Starting background watcher...");
       await watcher.enterBackgroundMode();
     } else if (args["run-once"]) {
-      const watcher = new OpenRouterAPIWatcher({ db });
+      const watcher = await createProductionWatcher({
+        dataDir,
+        skipInitialization: true,
+      });
       console.log("Running once...");
       await watcher.runOnce();
       Deno.exit(0);
     } else if (args.query !== undefined) {
-      const watcher = new OpenRouterAPIWatcher({ db });
+      const watcher = await createProductionWatcher({
+        dataDir,
+        skipInitialization: true,
+      });
       const limit = typeof args.query === "number" ? args.query : 10;
       console.log(`\nShowing ${limit} most recent changes:`);
       await watcher.runQueryMode(limit);

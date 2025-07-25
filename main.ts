@@ -1,29 +1,30 @@
 // main.ts - Fresh 2 app entry point
-import { App, staticFiles } from "fresh";
-import { join } from "@std/path";
-import type { State } from "./utils.ts";
+import { App } from "fresh";
 import { OpenRouterAPIWatcher } from "./server/watcher.ts";
-import { createDatabase } from "./server/database.ts";
+import { createProductionWatcher } from "./server/watcher-factory.ts";
+
+type State = { watcher?: OpenRouterAPIWatcher };
 
 const VERSION = "0.6.0";
 
 // Initialize watcher once at startup
 const dataDir = Deno.env.get("ORW_DATA_PATH") || "./data";
-const dbPath = join(dataDir, "orw.db");
 
 let globalWatcher: OpenRouterAPIWatcher | null = null;
 
 export async function getGlobalWatcher(): Promise<OpenRouterAPIWatcher> {
   if (!globalWatcher) {
-    const db = await createDatabase(dbPath);
-    globalWatcher = new OpenRouterAPIWatcher({ db });
+    globalWatcher = await createProductionWatcher({
+      dataDir,
+      skipInitialization: false, // Will auto-seed if needed
+    });
     console.log("Global watcher initialized");
   }
   return globalWatcher;
 }
 
 export const app = new App<State>();
-app.use(staticFiles());
+// app.use(staticFiles()); // TODO: Fix static files middleware import
 app.fsRoutes();
 
 // For production deployment
@@ -44,7 +45,7 @@ export async function serve(options: {
 
   console.log(`ORW v${VERSION} (Fresh 2) starting...`);
   console.log(`Data directory: ${dataDir}`);
-  console.log(`Database: ${dbPath}`);
+  console.log(`Database: ${dataDir}/orw.db`);
   console.log(`Mode: ${isDev ? "Development" : "Production"}`);
 
   // Start background watcher if enabled
@@ -60,24 +61,10 @@ export async function serve(options: {
 
   console.log(`Server starting on http://${hostname}:${port}`);
 
-  // In production mode, use the built server
-  if (!isDev) {
-    try {
-      const { default: prodServer } = await import("./_fresh/server.js");
-      const server = Deno.serve({ port, hostname }, prodServer.fetch);
-      console.log(`Production server listening on http://${hostname}:${port}`);
-      await server.finished;
-    } catch (error) {
-      console.error("Failed to start production server:", error);
-      console.log("Falling back to development mode...");
-      await app.listen({ port, hostname });
-    }
-  } else {
-    await app.listen({ port, hostname });
-  }
+  // For now, always use app.listen - production optimization can come later
+  await app.listen({ hostname, port });
 }
 
-// Allow main.ts to be run directly for backwards compatibility
 if (import.meta.main) {
-  await serve({ enableWatcher: true }); // Explicitly enable when run directly
+  await serve();
 }
