@@ -2,6 +2,7 @@
 import { App, staticFiles } from "fresh";
 import { OpenRouterAPIWatcher } from "./server/watcher.ts";
 import { createDatabase } from "./server/database.ts";
+import { initializeWatcher } from "./lib/watcher-service.ts";
 import { parseArgs } from "@std/cli/parse-args";
 import { join } from "@std/path";
 
@@ -70,6 +71,9 @@ if (import.meta.main) {
       await watcher.runQueryMode(limit);
       Deno.exit(0);
     } else {
+      // Initialize watcher service for API routes
+      await initializeWatcher();
+
       // Start HTTP server
       console.log(`Fresh 2 server starting on http://${hostname}:${port}`);
       await app.listen({ port, hostname });
