@@ -1,13 +1,13 @@
 // routes/api/status.ts - API status endpoint (Fresh 2)
 import type { Context } from "fresh";
 import type { State } from "../../utils.ts";
-import { getWatcher } from "../../lib/watcher-service.ts";
+import { getGlobalWatcher } from "../../main.ts";
 import { API_VERSION } from "../../shared/constants.ts";
 
 export const handler = {
   GET: async (_ctx: Context<State>) => {
     try {
-      const watcher = await getWatcher();
+      const watcher = await getGlobalWatcher();
 
       const response_status = {
         status: {
