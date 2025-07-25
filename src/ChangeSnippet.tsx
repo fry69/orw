@@ -61,27 +61,47 @@ export const ChangeSnippet: ChangeSnippetType = ({
   if (typeof change.changes === "object") {
     return Object.entries(change.changes).map(([key, { old, new: newValue }]) => {
       let percentage = "";
+
+      // Type guard to ensure old and newValue are strings for price calculations
+      const isString = (value: unknown): value is string => typeof value === "string";
+
       if (key === "pricing.prompt" || key === "pricing.completion") {
-        [old, newValue, percentage] = showPrice(old, newValue, showPricePerMillion, "tokens");
+        if (isString(old) && isString(newValue)) {
+          [old, newValue, percentage] = showPrice(old, newValue, showPricePerMillion, "tokens");
+        }
       } else if (key === "pricing.request") {
-        [old, newValue, percentage] = showPrice(old, newValue, showPricePerThousand, "requests");
+        if (isString(old) && isString(newValue)) {
+          [old, newValue, percentage] = showPrice(old, newValue, showPricePerThousand, "requests");
+        }
       } else if (key === "pricing.image") {
-        [old, newValue, percentage] = showPrice(old, newValue, showPricePerThousand, "images");
+        if (isString(old) && isString(newValue)) {
+          [old, newValue, percentage] = showPrice(old, newValue, showPricePerThousand, "images");
+        }
       }
 
       if (key.includes("description")) {
         return (
           <div key={key}>
             Description (old):
-            <pre style={{ whiteSpace: "pre-wrap" }}>{old}</pre>
+            <pre style={{ whiteSpace: "pre-wrap" }}>{isString(old) ? old : JSON.stringify(old)}</pre>
             Description (new):
-            <pre style={{ whiteSpace: "pre-wrap" }}>{newValue}</pre>
+            <pre style={{ whiteSpace: "pre-wrap" }}>{isString(newValue) ? newValue : JSON.stringify(newValue)}</pre>
           </div>
         );
       }
+
+      // Safe rendering with proper type handling
+      const renderValue = (value: unknown): string => {
+        if (value === null || value === undefined) return "[null]";
+        if (typeof value === "string" || typeof value === "number") {
+          return value.toLocaleString();
+        }
+        return JSON.stringify(value);
+      };
+
       return (
         <p key={key}>
-          {key}: {old?.toLocaleString() ?? "[null]"} → {newValue?.toLocaleString() ?? "[null]"}
+          {key}: {renderValue(old)} → {renderValue(newValue)}
           {percentage && " " + percentage}
         </p>
       );

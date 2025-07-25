@@ -97,7 +97,7 @@ export const Brain: FC = (): ReactNode => {
 
     const updateDuration = () => {
       // Update duration strings
-      globalClient.setState((prevState: any) => ({
+      globalClient.setState((prevState) => ({
         ...prevState,
         navBarDurations: {
           dbLastChange: durationAgo(localStatus.dbLastChange),
@@ -134,7 +134,7 @@ export const Brain: FC = (): ReactNode => {
         if (errorCount.current > 5) {
           // A clear error message is better than a stale client
           console.log("Giving up retrying after 5 times, refreshing window");
-          window.location.reload();
+          globalThis.location.reload();
         }
         clearInterval(interval); // Kill existing interval
         updateDuration(); // Show new duration immediately because interval starts with delay
@@ -167,5 +167,5 @@ export const Brain: FC = (): ReactNode => {
     };
   }, [startIntervalTrigger]);
 
-  return <></>;
+  return;
 };

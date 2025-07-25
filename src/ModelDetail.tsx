@@ -36,7 +36,7 @@ export const ModelDetail: FC = (): ReactNode => {
       // No point in doing anything, if the data is not valid.
       return;
     }
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(globalThis.location.search);
     const id = urlParams.get("id");
     if (!id) {
       globalError.setState("No model ID provided.");
@@ -63,7 +63,7 @@ export const ModelDetail: FC = (): ReactNode => {
   }, [globalLists.state.models, globalLists.state.removed, globalStatus.state.isValid]);
 
   if (!model) {
-    return <></>;
+    return;
   }
 
   // Create a new object that hides the already shown 'description' property

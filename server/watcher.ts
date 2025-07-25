@@ -594,7 +594,7 @@ export class OpenRouterAPIWatcher {
   /**
    * Runs the OpenRouterAPIWatcher in query mode, displaying the most recent model changes.
    */
-  public async runQueryMode(n: number = 10) {
+  public runQueryMode(n: number = 10) {
     const changes = this.loadChanges(n);
 
     changes.forEach((change) => {

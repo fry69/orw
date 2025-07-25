@@ -1,5 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
-import migrations from "./migrations/migrations.js";
+import migrations from "./migrations/migrations.ts";
 
 /**
  * Runs the migrations on the database.
@@ -36,8 +36,8 @@ export function runMigrations(db: DatabaseSync) {
  */
 function getCurrentVersion(db: DatabaseSync): number {
   try {
-    const row: any = db.prepare("SELECT MAX(version) AS version FROM migrations").get();
-    return row?.version || 0;
+    const row = db.prepare("SELECT MAX(version) AS version FROM migrations").get();
+    return Number(row?.version) || 0;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_err) {
     // If the migrations table doesn't exist, return -1

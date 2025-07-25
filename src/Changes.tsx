@@ -33,6 +33,6 @@ export const Changes: FC<ChangesProps> = ({ changes }: ChangesProps): ReactNode 
       </>
     );
   } else {
-    return <></>;
+    return;
   }
 };

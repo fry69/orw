@@ -25,7 +25,7 @@ export const ChangeList: FC = (): ReactNode => {
   );
 
   useEffect(() => {
-    globalClient.setState((prevState: any) => ({
+    globalClient.setState((prevState) => ({
       ...prevState,
       navBarDynamicElement: <FilterComponent filter={filterChanges} />,
     }));
