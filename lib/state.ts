@@ -1,7 +1,7 @@
 // lib/state.ts - Fresh 2 global state management using signals
 import { computed, signal } from "@preact/signals";
-import type { APIStatus, Lists } from "../shared/global.ts";
-import type { GlobalClient, GlobalError } from "./client.ts";
+import type { APIStatus, Lists } from "../types/global.ts";
+import type { GlobalClient, GlobalError } from "../types/client.ts";
 import { durationAgo } from "./utils.ts";
 
 /**

@@ -3,8 +3,8 @@ import { Database } from "sqlite";
 import { dirname, join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import deepDiff from "deep-diff";
-import type { Lists, Model, ModelChangeType, ModelDiff } from "../shared/global.ts";
-import { FETCH_TIMEOUT, OPENROUTER_API_URL } from "../shared/constants.ts";
+import type { Lists, Model, ModelChangeType, ModelDiff } from "../types/global.ts";
+import { FETCH_TIMEOUT, OPENROUTER_API_URL } from "../lib/constants.ts";
 
 export const isDevelopment = Deno.env.get("NODE_ENV") === "development" ||
   Deno.env.get("NODE_ENV") === "test" || false;

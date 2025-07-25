@@ -1,4 +1,4 @@
-// lib/client.ts - Client types and utilities (migrated from src/client.ts)
+// types/client.ts - Client types and interfaces (migrated from lib/client.ts)
 import type { ComponentChildren } from "preact";
 
 /**

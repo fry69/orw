@@ -1,5 +1,5 @@
-// test/fixtures/models.ts - Test fixtures for models
-import type { Model } from "../../shared/global.ts";
+// test/fixtures/models.ts - Test fixtures for OpenRouter models
+import type { Model } from "../../types/global.ts";
 
 export const testModels: Model[] = [
   {

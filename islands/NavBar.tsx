@@ -2,7 +2,7 @@
 import { useEffect } from "preact/hooks";
 import { globalLists, globalStatus, navBarDurations } from "../lib/state.ts";
 import { DateTime } from "luxon";
-import { VERSION } from "../shared/constants.ts";
+import { VERSION } from "../lib/constants.ts";
 
 export default function NavBar() {
   // Update durations every minute

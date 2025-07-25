@@ -7,8 +7,8 @@ import {
   INITIAL_INTERVAL,
   REFRESH_INTERVAL,
   VERSION,
-} from "../shared/constants.ts";
-import type { APIResponse } from "../shared/global.ts";
+} from "../lib/constants.ts";
+import type { APIResponse } from "../types/global.ts";
 
 let updateInterval = INITIAL_INTERVAL;
 
