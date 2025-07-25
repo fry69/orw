@@ -1,6 +1,6 @@
 // routes/api/lists.ts - API lists endpoint (Fresh 2)
 import { getGlobalWatcher } from "../../main.ts";
-import { API_VERSION } from "../../shared/constants.ts";
+import { API_VERSION } from "../../lib/constants.ts";
 
 export async function handler(_req: Request): Promise<Response> {
   try {

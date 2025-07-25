@@ -1,0 +1,111 @@
+// main.ts - Fresh 2 app entry point
+import { App, staticFiles } from "fresh";
+import { OpenRouterAPIWatcher } from "./server/watcher.ts";
+import { createProductionWatcher } from "./server/watcher-factory.ts";
+import { VERSION } from "./lib/constants.ts";
+import { State } from "./lib/app-utils.ts";
+
+// type State = { watcher?: OpenRouterAPIWatcher };
+
+// Initialize watcher once at startup
+const dataDir = Deno.env.get("ORW_DATA_PATH") || "./data";
+
+let globalWatcher: OpenRouterAPIWatcher | null = null;
+
+export async function getGlobalWatcher(): Promise<OpenRouterAPIWatcher> {
+  if (!globalWatcher) {
+    globalWatcher = await createProductionWatcher({
+      dataDir,
+      skipInitialization: false, // Will auto-seed if needed
+    });
+    console.log("Global watcher initialized");
+  }
+  return globalWatcher;
+}
+
+// Create and configure Fresh app
+export function createApp() {
+  const app = new App<State>();
+  app.use(staticFiles());
+
+  // Load file-system routes (Fresh 2 alpha has issues with this in production)
+  console.log("Loading file-system routes...");
+  app.fsRoutes();
+
+  // Manual route registration as workaround for Fresh 2 alpha fsRoutes issues
+  // console.log("Adding manual route registration for production reliability...");
+
+  // try {
+  //   // Import and register essential routes manually to ensure they work
+  //   const indexModule = await import("./routes/index.tsx");
+  //   const changesModule = await import("./routes/changes.tsx");
+  //   const listModule = await import("./routes/list.tsx");
+  //   const removedModule = await import("./routes/removed.tsx");
+  //   const statusModule = await import("./routes/api/status.ts");
+  //   const listsModule = await import("./routes/api/lists.ts");
+
+  //   // Register routes - these will override fsRoutes if needed
+  //   app.get("/", indexModule.handler);
+  //   app.get("/changes", (ctx) => ctx.render(changesModule.default({})));
+  //   app.get("/list", (ctx) => ctx.render(listModule.default({})));
+  //   app.get("/removed", (ctx) => ctx.render(removedModule.default({})));
+  //   app.get("/api/status", statusModule.handler);
+  //   app.get("/api/lists", listsModule.handler);
+
+  //   console.log("Manual routes registered successfully.");
+  // } catch (error) {
+  //   console.error("Error registering manual routes:", error);
+  //   throw error;
+  // }
+
+  // // Health check route for monitoring
+  // app.get("/health", () => new Response("OK", { status: 200 }));
+
+  return app;
+}
+
+// For production deployment
+export async function serve(options: {
+  port?: number;
+  hostname?: string;
+  enableWatcher?: boolean;
+} = {}) {
+  const port = options.port || parseInt(Deno.env.get("ORW_PORT") || "8000");
+  const hostname = options.hostname || Deno.env.get("ORW_HOSTNAME") || "localhost";
+  // In development mode, disable watcher by default to avoid conflicts with hot-reloading
+  const isDev = Deno.env.get("ORW_DEV_MODE") === "true";
+  const defaultEnableWatcher = !isDev;
+  const enableWatcher = options.enableWatcher ?? defaultEnableWatcher;
+
+  // Initialize watcher
+  const watcher = await getGlobalWatcher();
+
+  // Create Fresh app
+  console.log("Creating Fresh app...");
+  const app = createApp();
+  console.log("Fresh app created.");
+
+  console.log(`ORW v${VERSION} (Fresh 2) starting...`);
+  console.log(`Data directory: ${dataDir}`);
+  console.log(`Database: ${dataDir}/orw.db`);
+  console.log(`Mode: ${isDev ? "Development" : "Production"}`);
+
+  // Start background watcher if enabled
+  if (enableWatcher) {
+    console.log("Starting background watcher...");
+    // Don't await - let it run in the background
+    watcher.enterBackgroundMode().catch((error) => {
+      console.error("Background watcher error:", error);
+    });
+  } else {
+    console.log("Background watcher disabled");
+  }
+
+  console.log(`Server starting on http://${hostname}:${port}`);
+
+  await app.listen({ hostname, port });
+}
+
+// if (import.meta.main) {
+//   await serve();
+// }
