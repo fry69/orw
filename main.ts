@@ -59,7 +59,22 @@ export async function serve(options: {
   }
 
   console.log(`Server starting on http://${hostname}:${port}`);
-  await app.listen({ port, hostname });
+
+  // In production mode, use the built server
+  if (!isDev) {
+    try {
+      const { default: prodServer } = await import("./_fresh/server.js");
+      const server = Deno.serve({ port, hostname }, prodServer.fetch);
+      console.log(`Production server listening on http://${hostname}:${port}`);
+      await server.finished;
+    } catch (error) {
+      console.error("Failed to start production server:", error);
+      console.log("Falling back to development mode...");
+      await app.listen({ port, hostname });
+    }
+  } else {
+    await app.listen({ port, hostname });
+  }
 }
 
 // Allow main.ts to be run directly for backwards compatibility

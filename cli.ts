@@ -90,6 +90,7 @@ async function main() {
 
     if (args.serve) {
       console.log("Starting HTTP server with background watcher...");
+      console.log("Note: Make sure to run 'deno task build' first for production deployment");
       const enableWatcher = !args["no-watcher"];
       await serve({
         port,
