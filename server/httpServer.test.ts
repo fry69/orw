@@ -1,9 +1,9 @@
-// httpServer.test.ts
-import { join } from "@std/path";
+// httpServer.test.ts - Deno test suite for HTTPServer
 import { assertEquals, assertExists, assert } from "@std/assert";
 import { Database } from "sqlite";
 import { HTTPServer } from "./httpServer.ts";
 import { OpenRouterAPIWatcher } from "./watcher.ts";
+import { runMigrations } from "./database.ts";
 import type { Model } from "../shared/global.ts";
 
 const testModel: Model = {
@@ -29,72 +29,84 @@ const testModel: Model = {
   per_request_limits: null,
 };
 
-function createTestSetup(): {
+async function createTestSetup(): Promise<{
   server: HTTPServer;
   watcher: OpenRouterAPIWatcher;
-  dataDir: string;
   port: number;
   cleanup: () => void;
-} {
-  const dataDir = Deno.makeTempDirSync({ prefix: "deno-httpserver-test" });
-  const backupDir = join(dataDir, "backup");
-  const staticDir = join(dataDir, "static");
-
-  // Create static directory
-  Deno.mkdirSync(staticDir, { recursive: true });
-
-  // Store original console methods and environment
-  const originalLog = console.log;
-  const originalError = console.error;
+}> {
+  // Set development mode to prevent API calls
   const originalEnv = Deno.env.get("NODE_ENV");
-
-  // Set development mode to use fixed model list and prevent API calls
   Deno.env.set("NODE_ENV", "development");
 
-  // Silence console output
-  console.log = () => {};
-  console.error = () => {};
+  // Create temp directory for static files
+  const dataDir = Deno.makeTempDirSync({ prefix: "deno-httpserver-test" });
+  const staticDir = `${dataDir}/static`;
 
+  // Create static directory and a minimal index.html
+  Deno.mkdirSync(staticDir, { recursive: true });
+  await Deno.writeTextFile(`${staticDir}/index.html`, `
+<!DOCTYPE html>
+<html>
+<head><title>Test App</title></head>
+<body><h1>Test App</h1></body>
+</html>
+  `);
+
+  // Create in-memory database with test data
   const db = new Database(":memory:");
+  runMigrations(db);
+
+  // Pre-populate with test data to prevent seeding
+  db.exec(`
+    INSERT INTO models (id, data, timestamp)
+    VALUES (?, ?, datetime('now'))
+  `, [testModel.id, JSON.stringify(testModel)]);
+
   const watcher = new OpenRouterAPIWatcher({
     db,
-    dataDir,
-    backupDir,
-    logFilePath: "",
+    dataDir: "",
     dbFilePath: "",
+    logFilePath: "",
+    backupDir: "",
     fixedModelList: [testModel]
   });
 
-  // Use a specific port for testing (hopefully available)
+  // Find an available port
   const port = 8765;
   const server = new HTTPServer({
     port,
+    hostname: "localhost",
     watcher,
     staticDir,
+    enableCors: true,
   });
 
   const cleanup = () => {
-    db.close();
-    console.log = originalLog;
-    console.error = originalError;
-    // Restore original environment
-    if (originalEnv) {
+    try {
+      db.close();
+    } catch {
+      // Ignore close errors
+    }
+
+    if (originalEnv !== undefined) {
       Deno.env.set("NODE_ENV", originalEnv);
     } else {
       Deno.env.delete("NODE_ENV");
     }
+
     try {
       Deno.removeSync(dataDir, { recursive: true });
     } catch {
-      // Ignore errors if directory doesn't exist
+      // Ignore cleanup errors
     }
   };
 
-  return { server, watcher, dataDir, port, cleanup };
+  return { server, watcher, port, cleanup };
 }
 
 Deno.test("HTTPServer should handle API lists endpoint", async () => {
-  const { server, port, cleanup } = createTestSetup();
+  const { server, port, cleanup } = await createTestSetup();
 
   try {
     // Start the server
@@ -107,10 +119,14 @@ Deno.test("HTTPServer should handle API lists endpoint", async () => {
     assertEquals(response.status, 200);
 
     const responseData = await response.json();
-    assertExists(responseData.models);
-    assertEquals(Array.isArray(responseData.models), true);
-    assertEquals(responseData.models.length, 1);
-    assertEquals(responseData.models[0].id, "test-model");
+
+    // Check the actual response format based on HTTPServer implementation
+    assertExists(responseData.lists);
+    assertExists(responseData.version);
+    assertExists(responseData.lists.models);
+    assertEquals(Array.isArray(responseData.lists.models), true);
+    assertEquals(responseData.lists.models.length, 1);
+    assertEquals(responseData.lists.models[0].id, "test-model");
   } finally {
     await server.stop();
     cleanup();
@@ -118,7 +134,7 @@ Deno.test("HTTPServer should handle API lists endpoint", async () => {
 });
 
 Deno.test("HTTPServer should handle API status endpoint", async () => {
-  const { server, port, cleanup } = createTestSetup();
+  const { server, port, cleanup } = await createTestSetup();
 
   try {
     server.start();
@@ -128,9 +144,16 @@ Deno.test("HTTPServer should handle API status endpoint", async () => {
     assertEquals(response.status, 200);
 
     const responseData = await response.json();
-    assertExists(responseData.apiLastCheck);
-    assertExists(responseData.apiLastCheckStatus);
-    assertExists(responseData.dbLastChange);
+
+    // Check the actual response format
+    assertExists(responseData.status);
+    assertExists(responseData.version);
+    assertExists(responseData.status.apiLastCheck);
+    assertExists(responseData.status.apiLastCheckStatus);
+    assertExists(responseData.status.dbLastChange);
+    // Note: isDevelopment might be false because it's checked at module load time
+    // assertEquals(responseData.status.isDevelopment, true);
+    assertEquals(responseData.status.isValid, true);
   } finally {
     await server.stop();
     cleanup();
@@ -138,7 +161,7 @@ Deno.test("HTTPServer should handle API status endpoint", async () => {
 });
 
 Deno.test("HTTPServer should handle API RSS endpoint", async () => {
-  const { server, port, cleanup } = createTestSetup();
+  const { server, port, cleanup } = await createTestSetup();
 
   try {
     server.start();
@@ -148,11 +171,12 @@ Deno.test("HTTPServer should handle API RSS endpoint", async () => {
     assertEquals(response.status, 200);
 
     const contentType = response.headers.get("content-type");
-    assert(contentType?.includes("application/rss+xml") || contentType?.includes("application/xml"));
+    assertEquals(contentType, "application/rss+xml");
 
     const rssContent = await response.text();
     assert(rssContent.includes("<?xml"));
     assert(rssContent.includes("<rss"));
+    assert(rssContent.includes("OpenRouter Watcher"));
   } finally {
     await server.stop();
     cleanup();
@@ -160,7 +184,7 @@ Deno.test("HTTPServer should handle API RSS endpoint", async () => {
 });
 
 Deno.test("HTTPServer should handle 404 for unknown API endpoints", async () => {
-  const { server, port, cleanup } = createTestSetup();
+  const { server, port, cleanup } = await createTestSetup();
 
   try {
     server.start();
@@ -169,8 +193,8 @@ Deno.test("HTTPServer should handle 404 for unknown API endpoints", async () => 
     const response = await fetch(`http://localhost:${port}/api/unknown`);
     assertEquals(response.status, 404);
 
-    const responseText = await response.text();
-    assert(responseText.includes("not found") || responseText.includes("Not Found"));
+    const responseData = await response.json();
+    assertEquals(responseData.error, "Not found");
   } finally {
     await server.stop();
     cleanup();
@@ -178,7 +202,7 @@ Deno.test("HTTPServer should handle 404 for unknown API endpoints", async () => 
 });
 
 Deno.test("HTTPServer should set CORS headers", async () => {
-  const { server, port, cleanup } = createTestSetup();
+  const { server, port, cleanup } = await createTestSetup();
 
   try {
     server.start();
@@ -187,8 +211,12 @@ Deno.test("HTTPServer should set CORS headers", async () => {
     const response = await fetch(`http://localhost:${port}/api/status`);
     assertEquals(response.status, 200);
 
+    // Consume the response body to prevent leaks
+    await response.json();
+
     assertEquals(response.headers.get("Access-Control-Allow-Origin"), "*");
     assertExists(response.headers.get("Access-Control-Allow-Methods"));
+    assertExists(response.headers.get("Access-Control-Allow-Headers"));
   } finally {
     await server.stop();
     cleanup();
@@ -196,7 +224,7 @@ Deno.test("HTTPServer should set CORS headers", async () => {
 });
 
 Deno.test("HTTPServer should handle OPTIONS preflight requests", async () => {
-  const { server, port, cleanup } = createTestSetup();
+  const { server, port, cleanup } = await createTestSetup();
 
   try {
     server.start();
@@ -205,7 +233,7 @@ Deno.test("HTTPServer should handle OPTIONS preflight requests", async () => {
     const response = await fetch(`http://localhost:${port}/api/status`, {
       method: "OPTIONS",
     });
-    assertEquals(response.status, 200);
+    assertEquals(response.status, 204); // OPTIONS returns 204, not 200
     assertEquals(response.headers.get("Access-Control-Allow-Origin"), "*");
   } finally {
     await server.stop();
