@@ -1,5 +1,5 @@
 // watcher.test.ts - Deno test suite for OpenRouterAPIWatcher
-import { assertEquals, assertExists, assert } from "@std/assert";
+import { assert, assertEquals, assertExists } from "@std/assert";
 import { Database } from "sqlite";
 import { OpenRouterAPIWatcher } from "./watcher.ts";
 import { runMigrations } from "./database.ts";
@@ -55,7 +55,9 @@ const testModel2: Model = {
 /**
  * Creates a test watcher instance with proper configuration to avoid leaks
  */
-async function createTestWatcher(): Promise<{ watcher: OpenRouterAPIWatcher; cleanup: () => void }> {
+async function createTestWatcher(): Promise<
+  { watcher: OpenRouterAPIWatcher; cleanup: () => void }
+> {
   // Set development mode to prevent API calls
   const originalEnv = Deno.env.get("NODE_ENV");
   Deno.env.set("NODE_ENV", "development");
@@ -69,10 +71,13 @@ async function createTestWatcher(): Promise<{ watcher: OpenRouterAPIWatcher; cle
   // Pre-populate with test data to prevent seeding logic from triggering
   const fixedModels = [testModel1, testModel2];
   for (const model of fixedModels) {
-    db.exec(`
+    db.exec(
+      `
       INSERT INTO models (id, data, timestamp)
       VALUES (?, ?, datetime('now'))
-    `, [model.id, JSON.stringify(model)]);
+    `,
+      [model.id, JSON.stringify(model)],
+    );
   }
 
   // Create watcher with minimal config to avoid async operations
@@ -82,13 +87,13 @@ async function createTestWatcher(): Promise<{ watcher: OpenRouterAPIWatcher; cle
     dbFilePath: "",
     logFilePath: "", // Empty to prevent file operations
     backupDir: "",
-    fixedModelList: fixedModels
+    fixedModelList: fixedModels,
   };
 
   const watcher = new OpenRouterAPIWatcher(config);
 
   // Wait for any async initialization to complete
-  await new Promise(resolve => setTimeout(resolve, 10));
+  await new Promise((resolve) => setTimeout(resolve, 10));
 
   return {
     watcher,
@@ -105,7 +110,7 @@ async function createTestWatcher(): Promise<{ watcher: OpenRouterAPIWatcher; cle
       } else {
         Deno.env.delete("NODE_ENV");
       }
-    }
+    },
   };
 }
 
@@ -167,8 +172,8 @@ Deno.test("OpenRouterAPIWatcher should find changes between model lists", async 
       context_length: 16384,
       top_provider: {
         ...testModel1.top_provider,
-        is_moderated: true
-      }
+        is_moderated: true,
+      },
     };
 
     const newModels: Model[] = [modifiedModel];
@@ -259,7 +264,7 @@ Deno.test("OpenRouterAPIWatcher should load the most recent model list from the 
     assertEquals(loadedModels.length, 2);
 
     // Check that both models are present
-    const ids = loadedModels.map(m => m.id);
+    const ids = loadedModels.map((m) => m.id);
     assert(ids.includes(testModel1.id));
     assert(ids.includes(testModel2.id));
   } finally {

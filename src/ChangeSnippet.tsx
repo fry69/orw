@@ -83,9 +83,13 @@ export const ChangeSnippet: ChangeSnippetType = ({
         return (
           <div key={key}>
             Description (old):
-            <pre style={{ whiteSpace: "pre-wrap" }}>{isString(old) ? old : JSON.stringify(old)}</pre>
+            <pre
+              style={{ whiteSpace: "pre-wrap" }}
+            >{isString(old) ? old : JSON.stringify(old)}</pre>
             Description (new):
-            <pre style={{ whiteSpace: "pre-wrap" }}>{isString(newValue) ? newValue : JSON.stringify(newValue)}</pre>
+            <pre
+              style={{ whiteSpace: "pre-wrap" }}
+            >{isString(newValue) ? newValue : JSON.stringify(newValue)}</pre>
           </div>
         );
       }

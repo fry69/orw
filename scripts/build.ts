@@ -90,8 +90,8 @@ async function bundleApp(options: BuildOptions) {
       "browser",
       // "--import-map",
       // importMap,
-      "--reload",
-      "--check=all",
+      // "--reload",
+      // "--check=all",
     ];
 
     if (options.minify) {

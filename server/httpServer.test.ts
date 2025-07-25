@@ -1,5 +1,5 @@
 // httpServer.test.ts - Deno test suite for HTTPServer
-import { assertEquals, assertExists, assert } from "@std/assert";
+import { assert, assertEquals, assertExists } from "@std/assert";
 import { Database } from "sqlite";
 import { HTTPServer } from "./httpServer.ts";
 import { OpenRouterAPIWatcher } from "./watcher.ts";
@@ -45,23 +45,29 @@ async function createTestSetup(): Promise<{
 
   // Create static directory and a minimal index.html
   Deno.mkdirSync(staticDir, { recursive: true });
-  await Deno.writeTextFile(`${staticDir}/index.html`, `
+  await Deno.writeTextFile(
+    `${staticDir}/index.html`,
+    `
 <!DOCTYPE html>
 <html>
 <head><title>Test App</title></head>
 <body><h1>Test App</h1></body>
 </html>
-  `);
+  `,
+  );
 
   // Create in-memory database with test data
   const db = new Database(":memory:");
   runMigrations(db);
 
   // Pre-populate with test data to prevent seeding
-  db.exec(`
+  db.exec(
+    `
     INSERT INTO models (id, data, timestamp)
     VALUES (?, ?, datetime('now'))
-  `, [testModel.id, JSON.stringify(testModel)]);
+  `,
+    [testModel.id, JSON.stringify(testModel)],
+  );
 
   const watcher = new OpenRouterAPIWatcher({
     db,
@@ -69,7 +75,7 @@ async function createTestSetup(): Promise<{
     dbFilePath: "",
     logFilePath: "",
     backupDir: "",
-    fixedModelList: [testModel]
+    fixedModelList: [testModel],
   });
 
   // Find an available port
@@ -113,7 +119,7 @@ Deno.test("HTTPServer should handle API lists endpoint", async () => {
     server.start();
 
     // Give the server a moment to start
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const response = await fetch(`http://localhost:${port}/api/lists`);
     assertEquals(response.status, 200);
@@ -138,7 +144,7 @@ Deno.test("HTTPServer should handle API status endpoint", async () => {
 
   try {
     server.start();
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const response = await fetch(`http://localhost:${port}/api/status`);
     assertEquals(response.status, 200);
@@ -165,7 +171,7 @@ Deno.test("HTTPServer should handle API RSS endpoint", async () => {
 
   try {
     server.start();
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const response = await fetch(`http://localhost:${port}/api/rss`);
     assertEquals(response.status, 200);
@@ -188,7 +194,7 @@ Deno.test("HTTPServer should handle 404 for unknown API endpoints", async () => 
 
   try {
     server.start();
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const response = await fetch(`http://localhost:${port}/api/unknown`);
     assertEquals(response.status, 404);
@@ -206,7 +212,7 @@ Deno.test("HTTPServer should set CORS headers", async () => {
 
   try {
     server.start();
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const response = await fetch(`http://localhost:${port}/api/status`);
     assertEquals(response.status, 200);
@@ -228,7 +234,7 @@ Deno.test("HTTPServer should handle OPTIONS preflight requests", async () => {
 
   try {
     server.start();
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const response = await fetch(`http://localhost:${port}/api/status`, {
       method: "OPTIONS",
@@ -240,5 +246,3 @@ Deno.test("HTTPServer should handle OPTIONS preflight requests", async () => {
     cleanup();
   }
 });
-
-
