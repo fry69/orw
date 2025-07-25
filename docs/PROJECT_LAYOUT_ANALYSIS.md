@@ -8,15 +8,16 @@ This document analyzes the current file structure of the OpenRouter Watcher (ORW
 
 ### Overall Project Structure
 
+**Current Structure:**
 ```
 orw/
 ├── 📁 components/         # Fresh 2 SSR components
 ├── 📁 islands/           # Fresh 2 client-side interactive components
 ├── 📁 routes/            # Fresh 2 pages + API endpoints
-├── 📁 lib/               # Shared utilities (state, client code)
+├── 📁 lib/               # ⚠️ Mixed: utilities, state, client types
 ├── 📁 static/            # CSS, images, static assets
 ├── 📁 server/            # Backend-only logic + database
-├── 📁 shared/            # Pure types and constants
+├── 📁 shared/            # ⚠️ Mixed: domain types, constants, routes
 ├── 📁 test/              # Centralized test framework
 ├── 📁 docs/              # Documentation
 ├── 📁 data/              # Runtime data storage
@@ -24,7 +25,45 @@ orw/
 ├── 🔧 main.ts            # Fresh 2 app entry point
 ├── 🔧 dev.ts             # Development server
 ├── 🔧 cli.ts             # CLI interface
-├── 🔧 utils.ts           # Legacy utils (should be moved)
+└── 🔧 deno.json          # Deno configuration
+```
+
+**Proposed Structure (Option A - Separated):**
+```
+orw/
+├── 📁 components/         # Fresh 2 SSR components
+├── 📁 islands/           # Fresh 2 client-side interactive components
+├── 📁 routes/            # Fresh 2 pages + API endpoints
+├── 📁 types/             # ✨ Pure type definitions
+├── 📁 common/            # ✨ Utilities, constants, state
+├── 📁 static/            # CSS, images, static assets
+├── 📁 server/            # Backend-only logic + database
+├── 📁 test/              # Centralized test framework
+├── 📁 docs/              # Documentation
+├── 📁 data/              # Runtime data storage
+├── 📁 _fresh/            # Fresh 2 build artifacts (auto-generated)
+├── 🔧 main.ts            # Fresh 2 app entry point
+├── 🔧 dev.ts             # Development server
+├── 🔧 cli.ts             # CLI interface
+└── 🔧 deno.json          # Deno configuration
+```
+
+**Proposed Structure (Option B - Single Directory):**
+```
+orw/
+├── 📁 components/         # Fresh 2 SSR components
+├── 📁 islands/           # Fresh 2 client-side interactive components
+├── 📁 routes/            # Fresh 2 pages + API endpoints
+├── 📁 common/            # ✨ All shared code (types, utils, constants, state)
+├── 📁 static/            # CSS, images, static assets
+├── 📁 server/            # Backend-only logic + database
+├── 📁 test/              # Centralized test framework
+├── 📁 docs/              # Documentation
+├── 📁 data/              # Runtime data storage
+├── 📁 _fresh/            # Fresh 2 build artifacts (auto-generated)
+├── 🔧 main.ts            # Fresh 2 app entry point
+├── 🔧 dev.ts             # Development server
+├── 🔧 cli.ts             # CLI interface
 └── 🔧 deno.json          # Deno configuration
 ```
 
@@ -35,13 +74,13 @@ orw/
 | `components/` | Fresh 2 SSR components | ✅ Yes | None | Keep as-is |
 | `islands/` | Fresh 2 client components | ✅ Yes | None | Keep as-is |
 | `routes/` | Fresh 2 pages + API | ✅ Yes | None | Keep as-is |
-| `lib/` | Shared utilities | ✅ Yes | None | Keep as-is |
+| `lib/` | Shared utilities | ⚠️ Mixed | Generic name, mixed content | **Consolidate with shared/** |
 | `static/` | Static assets | ✅ Yes | None | Keep as-is |
-| `server/` | Backend logic | ⚠️ Mixed | Factory pattern issues | Needs cleanup |
-| `shared/` | Types & constants | ✅ Yes | None | Keep as-is |
-| `test/` | Test framework | ✅ Excellent | Test placement | Expand usage |
+| `server/` | Backend logic | ✅ Yes | Factory pattern fixed | Keep as-is |
+| `shared/` | Types & constants | ⚠️ Mixed | Arbitrary separation from lib/ | **Consolidate with lib/** |
+| `test/` | Test framework | ✅ Excellent | All tests now centralized | Keep as-is |
 | `docs/` | Documentation | ✅ Yes | None | Keep as-is |
-| Root files | Various configs | ⚠️ Mixed | `utils.ts` placement | Needs cleanup |
+| Root files | Various configs | ✅ Yes | utils.ts moved to lib/ | Keep as-is |
 
 ## Key Issues Identified
 
@@ -149,6 +188,48 @@ All high-priority issues have been successfully resolved:
 - **Action Taken**: Moved from `./utils.ts` → `lib/utils.ts`, updated all import references
 - **Benefits Achieved**: Consistent utility organization, cleaner project structure
 - **Status**: ✅ COMPLETED - File organization standardized
+
+## 🔥 **Current High Priority (Next Focus)**
+
+### 🎯 Directory Consolidation: lib/ + shared/ → types/ + common/
+
+**Issue**: Current `lib/` and `shared/` split creates cognitive overhead and arbitrary decisions
+- **Problem**: Developer confusion about where to put new shared code
+- **Impact**: Inconsistent import paths, decision paralysis, maintenance overhead
+- **Solution**: Consolidate into logical, purpose-driven directories
+
+**Recommended Approach: Types + Common Separation**
+```
+types/               # Pure type definitions
+├── global.ts       # Domain types (ORModel, APIStatus, Lists)
+├── client.ts       # Client-specific types
+└── routes.ts       # Route definitions
+
+common/             # Utilities, constants, and state
+├── constants.ts    # App constants and configuration
+├── utils.ts        # Pure utility functions
+├── app-utils.ts    # Application-specific utilities
+└── state.ts        # Fresh 2 state management
+```
+
+**Alternative: Single Directory Approach**
+```
+common/
+├── types-global.ts    # Domain types (clear naming)
+├── types-client.ts    # Client types (clear naming)
+├── constants.ts       # App constants
+├── routes.ts         # Route definitions
+├── utils.ts          # Utility functions
+├── app-utils.ts      # App-specific utilities
+└── state.ts          # State management
+```
+
+**Benefits of Either Approach:**
+- ✅ Clear, unambiguous directory purpose
+- ✅ Consistent import patterns
+- ✅ Types appropriately separated from logic
+- ✅ No decision paralysis for new code placement
+- ✅ Better IDE experience and discoverability
 
 ### 🔥 **High Priority (Fix Soon)**
 
@@ -320,14 +401,216 @@ test/              # ✅ Excellent centralized testing
 3. **Documentation**: `docs/` folder organization is excellent
 4. **Build System**: Fresh 2 integration is working well
 
+## 🔍 **DEEP DIVE: lib/ vs shared/ Directory Consolidation Analysis**
+
+### The Problem with Current Split
+
+**Current State Issues:**
+- `lib/` and `shared/` create cognitive overhead: "Where does this go?"
+- Arbitrary distinction between "utilities" vs "types and constants"
+- Import inconsistency: sometimes `../lib/`, sometimes `../shared/`
+- Developer decision paralysis when adding new shared code
+
+### Content Analysis by Type
+
+**Pure Types & Interfaces:**
+- `shared/global.ts` - Core domain types (ORModel, APIStatus, Lists)
+- `lib/client.ts` - Client-specific types (GlobalClient, GlobalError)
+
+**Constants & Configuration:**
+- `shared/constants.ts` - App constants (versions, endpoints)
+- `shared/routes.ts` - Route definitions
+
+**Utilities & Logic:**
+- `lib/utils.ts` - Pure functions (date formatting, duration)
+- `lib/app-utils.ts` - Application-specific utilities
+- `lib/state.ts` - Fresh 2 signal-based state management
+
+### Directory Naming Analysis
+
+#### Option 1: `common/` (Recommended)
+**Rationale:**
+- Universal term that doesn't imply specific content type
+- Clear intention: "code used across multiple parts"
+- Not overloaded like `lib/` in the ecosystem
+- Natural fit for types, utilities, constants, and state
+
+**Pros:**
+- ✅ Clear, unambiguous meaning
+- ✅ No preconceptions about content type
+- ✅ Common in enterprise codebases
+- ✅ Works well with Fresh 2 conventions
+
+**Cons:**
+- ⚠️ Less trendy than `lib/` in modern frameworks
+
+#### Option 2: `core/`
+**Rationale:**
+- Implies essential, foundational code
+- Suggests "core business logic and types"
+
+**Pros:**
+- ✅ Implies importance and centrality
+- ✅ Good for domain types and key utilities
+
+**Cons:**
+- ⚠️ Might suggest more than just shared code
+- ⚠️ Could be confused with "core business logic"
+
+#### Option 3: `src/` (Alternative)
+**Rationale:**
+- Traditional source code directory
+- Clear separation from framework directories
+
+**Pros:**
+- ✅ Very clear "this is our app code"
+- ✅ Familiar to developers from other ecosystems
+
+**Cons:**
+- ❌ Breaks Fresh 2 conventions (Fresh expects flat structure)
+- ❌ Might suggest all app code should be there
+
+#### Option 4: Keep `lib/` but Rename
+**Rationale:**
+- `lib/` is standard in Fresh 2 ecosystem
+- Most Deno projects use `lib/`
+
+**Pros:**
+- ✅ Follows Fresh 2 patterns
+- ✅ Ecosystem consistency
+
+**Cons:**
+- ❌ Overused and generic
+- ❌ Doesn't convey specific meaning
+
+### Types vs Utilities Separation Dilemma
+
+You're absolutely right that type files feel different. Let's explore options:
+
+#### Approach A: Types Separation (Recommended)
+```
+types/
+├── global.ts      # Domain types (ORModel, APIStatus, Lists)
+├── client.ts      # Client types (GlobalClient, GlobalError)
+└── routes.ts      # Route definitions (these are really types)
+
+common/            # or core/ or utils/
+├── constants.ts   # App constants
+├── utils.ts       # Pure utility functions
+├── app-utils.ts   # App-specific utilities
+└── state.ts       # State management
+```
+
+**Benefits:**
+- ✅ Clear type/logic separation
+- ✅ Easy to find type definitions
+- ✅ IDE autocompletion works better
+- ✅ Follows TypeScript project conventions
+
+#### Approach B: Content-Based Grouping
+```
+domain/
+├── types.ts       # All domain types
+└── constants.ts   # Domain constants
+
+utils/
+├── date.ts        # Date utilities
+├── state.ts       # State management
+└── app.ts         # App utilities
+```
+
+#### Approach C: Single Directory with Clear Naming
+```
+common/
+├── types-global.ts    # Domain types
+├── types-client.ts    # Client types
+├── constants.ts       # App constants
+├── routes.ts         # Route definitions
+├── utils-date.ts     # Date utilities
+├── utils-app.ts      # App utilities
+└── state.ts          # State management
+```
+
+### Final Recommendation: `types/` + `common/`
+
+**Proposed Structure:**
+```
+orw/
+├── types/
+│   ├── global.ts      # ORModel, APIStatus, Lists, etc.
+│   ├── client.ts      # GlobalClient, GlobalError
+│   └── routes.ts      # Route definitions
+├── common/
+│   ├── constants.ts   # Versions, endpoints, etc.
+│   ├── utils.ts       # Pure utility functions
+│   ├── app-utils.ts   # App-specific utilities
+│   └── state.ts       # Fresh 2 state management
+├── components/        # Fresh 2 SSR components
+├── islands/          # Fresh 2 client components
+├── routes/           # Fresh 2 pages + API
+├── server/           # Backend-only logic
+└── ...existing structure...
+```
+
+**Rationale:**
+1. **`types/`** - Crystal clear purpose, IDE-friendly, follows TS conventions
+2. **`common/`** - Clear but not overloaded, works for utilities/constants/state
+3. **Separation** - Types feel different because they ARE different
+4. **Discoverability** - Easy to find what you're looking for
+5. **Scalability** - Clear rules for where new code goes
+
+**Import Examples:**
+```typescript
+// Clear and predictable
+import type { ORModel, APIStatus } from "../types/global.ts";
+import type { GlobalClient } from "../types/client.ts";
+import { API_VERSION, OPENROUTER_API_URL } from "../common/constants.ts";
+import { dateString, durationAgo } from "../common/utils.ts";
+import { globalStatus, globalLists } from "../common/state.ts";
+```
+
+### Alternative: Single Directory Solution
+
+If you prefer absolute simplicity, a single `common/` directory works too:
+
+```
+common/
+├── types-global.ts    # Domain types (renamed for clarity)
+├── types-client.ts    # Client types (renamed for clarity)
+├── constants.ts       # App constants
+├── routes.ts         # Route definitions
+├── utils.ts          # Utility functions
+├── app-utils.ts      # App-specific utilities
+└── state.ts          # State management
+```
+
+**Benefits:**
+- ✅ Single import source: `../common/something`
+- ✅ No directory decision paralysis
+- ✅ File naming clarifies content type
+
+**Trade-offs:**
+- ⚠️ Types mixed with utilities (but clearly named)
+- ⚠️ Slightly longer file names
+
+### Implementation Priority
+
+Given the completed high-priority items, this consolidation becomes the next logical step:
+
+**New High Priority:** Consolidate `lib/` and `shared/` directories
+- Choose between `types/` + `common/` OR single `common/` approach
+- Migrate all files with clear naming
+- Update all import references
+- Document the new structure standards
+
 ## Conclusion
 
-The current project structure is **85% excellent**, with just a few inconsistencies from the evolution through different architectural phases. The main issues are:
+The current project structure is **85% excellent**, with just a few inconsistencies from the evolution through different architectural phases. With the completed improvements and the proposed directory consolidation, the structure would be **95% excellent**.
 
-1. **Test organization inconsistency** (easy fix)
-2. **Unnecessary factory complexity** (easy fix)
-3. **Minor file placement issues** (easy fix)
+**Key Insights:**
+1. **Types deserve their own space** - They're fundamentally different from utilities
+2. **`lib/` is overused** - `common/` or `core/` better conveys purpose
+3. **Clear separation reduces cognitive load** - Less decisions, better DX
+4. **Fresh 2 integration remains excellent** - Don't touch what works
 
-The underlying architecture decisions are sound - the Fresh 2 integration is well-executed, and the separation between client/server concerns is appropriate for this type of application.
-
-**Verdict**: Focus on the high-priority test organization and factory simplification. The rest of the structure is working well and should be preserved.
+**Verdict**: The high-priority items are complete. Next focus should be the `lib/`+`shared/` consolidation using either the `types/`+`common/` approach or the single `common/` directory with clear file naming.
