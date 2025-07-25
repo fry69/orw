@@ -12,7 +12,7 @@
     "query": "deno run --allow-all cli.ts --query 10",
     "background": "deno run --allow-all cli.ts --background",
     "build": "deno run --allow-all dev.ts build",
-    "test": "deno test --allow-all",
+    "test": "deno test --allow-all --quiet test/",
     "lint": "deno lint",
     "fmt": "deno fmt",
     "check": "deno check components islands lib routes server shared static main.ts dev.ts",

@@ -3,13 +3,13 @@
 // Updated to use the new test framework features:
 // - Uses createTestContext() from test/helpers/test-setup.ts for better isolation
 // - Uses real test fixtures from test/fixtures/ instead of inline test data
-// - Leverages factory pattern from watcher-factory.ts for consistent test setup
+// - Leverages test framework's createTestWatcher() for consistent test setup
 // - Improved cleanup and better handling of pre-populated test data
 //
 import { assert, assertEquals, assertExists } from "@std/assert";
-import type { Model, ModelDiff } from "../shared/global.ts";
-import { createTestContext, sampleModel } from "../test/helpers/test-setup.ts";
-import { testModels } from "../test/fixtures/models.ts";
+import type { Model, ModelDiff } from "../../shared/global.ts";
+import { createTestContext, sampleModel } from "../helpers/test-setup.ts";
+import { testModels } from "../fixtures/models.ts";
 
 Deno.test("OpenRouterAPIWatcher should store and load model list", async () => {
   const { watcher, cleanup } = await createTestContext();
@@ -48,7 +48,7 @@ Deno.test("OpenRouterAPIWatcher should store and load changes", async () => {
     const loadedChanges = watcher.loadChanges(10);
 
     // Find our specific change among all loaded changes (test fixtures pre-populate some)
-    const ourChange = loadedChanges.find(c => c.id === sampleModel.id);
+    const ourChange = loadedChanges.find((c) => c.id === sampleModel.id);
 
     assertExists(ourChange, "Should find our stored change");
     assertEquals(ourChange.type, "changed");
