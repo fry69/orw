@@ -490,6 +490,43 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
+   * Computes set-based differences for arrays that should be treated as sets.
+   * Returns meaningful additions/removals instead of array index changes.
+   */
+  private computeSetDifferences(
+    oldArray: unknown[] | undefined,
+    newArray: unknown[] | undefined,
+    fieldPath: string
+  ): { [key: string]: { old: unknown; new: unknown } } {
+    const changes: { [key: string]: { old: unknown; new: unknown } } = {};
+
+    if (!oldArray && !newArray) return changes;
+
+    const oldSet = new Set(oldArray || []);
+    const newSet = new Set(newArray || []);
+
+    // Find elements that were removed
+    const removed = [...oldSet].filter(item => !newSet.has(item));
+    if (removed.length > 0) {
+      changes[`${fieldPath}.removed`] = {
+        old: removed.length === 1 ? removed[0] : removed,
+        new: null
+      };
+    }
+
+    // Find elements that were added
+    const added = [...newSet].filter(item => !oldSet.has(item));
+    if (added.length > 0) {
+      changes[`${fieldPath}.added`] = {
+        old: null,
+        new: added.length === 1 ? added[0] : added
+      };
+    }
+
+    return changes;
+  }
+
+  /**
    * Compares two models and returns the differences between them.
    */
   private diffModels(
@@ -497,22 +534,43 @@ export class OpenRouterAPIWatcher {
     oldModel: Model,
   ): { changes: { [key: string]: { old: unknown; new: unknown } } } {
     const changes: { [key: string]: { old: unknown; new: unknown } } = {};
+
+    // First, handle set-based arrays that should not be compared element-by-element
+    const setArrayFields = [
+      { path: 'supported_parameters', oldValue: oldModel.supported_parameters, newValue: newModel.supported_parameters },
+      { path: 'architecture.input_modalities', oldValue: oldModel.architecture?.input_modalities, newValue: newModel.architecture?.input_modalities },
+      { path: 'architecture.output_modalities', oldValue: oldModel.architecture?.output_modalities, newValue: newModel.architecture?.output_modalities },
+    ];
+
+    for (const field of setArrayFields) {
+      const setChanges = this.computeSetDifferences(field.oldValue, field.newValue, field.path);
+      Object.assign(changes, setChanges);
+    }
+
+    // Use deep-diff for all other field comparisons
     const diffs = deepDiff.diff(oldModel, newModel);
 
     if (diffs) {
       for (const d of diffs) {
         if (d.kind === "E") {
           if (d.path) {
-            changes[d.path.join(".")] = { old: d.lhs, new: d.rhs };
+            const pathStr = d.path.join(".");
+
+            // Skip set-based array fields that we already handled
+            const isSetArrayField = setArrayFields.some(field =>
+              pathStr.startsWith(field.path) && pathStr.includes('.')
+            );
+
+            if (!isSetArrayField) {
+              changes[pathStr] = { old: d.lhs, new: d.rhs };
+            }
           }
         }
       }
     }
 
     return { changes };
-  }
-
-  /**
+  }  /**
    * High level check logic
    */
   private async check() {

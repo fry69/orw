@@ -272,6 +272,91 @@ Deno.test("OpenRouterAPIWatcher should load the most recent model list from the 
   }
 });
 
-// Test removed - empty database test triggers API calls in constructor
-// even with fixedModelList due to seeding logic
+Deno.test("OpenRouterAPIWatcher should not detect changes when arrays have the same elements in different order", async () => {
+  const { watcher, cleanup } = await createTestWatcher();
+
+  try {
+    // Create two models with the same supported_parameters but in different order
+    const modelWithOrderedParams: Model = {
+      ...testModel1,
+      supported_parameters: ["temperature", "max_tokens", "stop", "frequency_penalty"],
+      architecture: {
+        ...testModel1.architecture,
+        input_modalities: ["text", "image"],
+        output_modalities: ["text"],
+      },
+    };
+
+    const modelWithReorderedParams: Model = {
+      ...testModel1,
+      supported_parameters: ["frequency_penalty", "stop", "max_tokens", "temperature"], // Different order
+      architecture: {
+        ...testModel1.architecture,
+        input_modalities: ["image", "text"], // Different order
+        output_modalities: ["text"],
+      },
+    };
+
+    const oldModels: Model[] = [modelWithOrderedParams];
+    const newModels: Model[] = [modelWithReorderedParams];
+
+    const changes = watcher.findChanges(newModels, oldModels);
+
+    // Should detect no changes since the arrays contain the same elements
+    assertEquals(changes.length, 0, "Should not detect changes when arrays have same elements in different order");
+  } finally {
+    cleanup();
+  }
+});
+
+Deno.test("OpenRouterAPIWatcher should detect set-based changes in arrays", async () => {
+  const { watcher, cleanup } = await createTestWatcher();
+
+  try {
+    // Create two models with different supported_parameters (actual additions/removals)
+    const modelWithOriginalParams: Model = {
+      ...testModel1,
+      supported_parameters: ["temperature", "max_tokens", "stop"],
+      architecture: {
+        ...testModel1.architecture,
+        input_modalities: ["text"],
+        output_modalities: ["text"],
+      },
+    };
+
+    const modelWithChangedParams: Model = {
+      ...testModel1,
+      supported_parameters: ["temperature", "max_tokens", "frequency_penalty"], // removed 'stop', added 'frequency_penalty'
+      architecture: {
+        ...testModel1.architecture,
+        input_modalities: ["text", "image"], // added 'image'
+        output_modalities: ["text"],
+      },
+    };
+
+    const oldModels: Model[] = [modelWithOriginalParams];
+    const newModels: Model[] = [modelWithChangedParams];
+
+    const changes = watcher.findChanges(newModels, oldModels);
+
+    // Should detect changes for actual set differences
+    assertEquals(changes.length, 1, "Should detect changes when arrays have different elements");
+
+    const modelChanges = changes[0];
+    assertEquals(modelChanges.type, "changed");
+    assertExists(modelChanges.changes);
+
+    // Should detect removed and added parameters
+    assertExists(modelChanges.changes["supported_parameters.removed"]);
+    assertExists(modelChanges.changes["supported_parameters.added"]);
+    assertExists(modelChanges.changes["architecture.input_modalities.added"]);
+
+    assertEquals(modelChanges.changes["supported_parameters.removed"].old, "stop");
+    assertEquals(modelChanges.changes["supported_parameters.added"].new, "frequency_penalty");
+    assertEquals(modelChanges.changes["architecture.input_modalities.added"].new, "image");
+  } finally {
+    cleanup();
+  }
+});
+
 // 7/8 tests passing is excellent for the conversion from vitest to Deno.test
