@@ -5,6 +5,7 @@ import { join } from "@std/path";
 import { createDatabase } from "./server/database.ts";
 import { createProductionWatcher } from "./server/watcher-factory.ts";
 import { serve } from "./main.ts";
+import { VERSION } from "./lib/constants.ts";
 
 interface CLIArgs {
   help?: boolean;
@@ -19,8 +20,6 @@ interface CLIArgs {
   "no-watcher"?: boolean;
   init?: boolean;
 }
-
-const VERSION = "4.0.0-fresh2";
 
 function showHelp() {
   console.log(`

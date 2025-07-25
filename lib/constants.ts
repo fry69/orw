@@ -1,7 +1,7 @@
 /**
  * Global version string
  */
-export const ORW_VERSION = "0.6.0-deno1";
+export const ORW_VERSION = "0.6.0";
 export const VERSION = ORW_VERSION; // Alias for backwards compatibility
 
 /**

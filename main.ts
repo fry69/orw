@@ -2,10 +2,9 @@
 import { App } from "fresh";
 import { OpenRouterAPIWatcher } from "./server/watcher.ts";
 import { createProductionWatcher } from "./server/watcher-factory.ts";
+import { VERSION } from "./lib/constants.ts";
 
 type State = { watcher?: OpenRouterAPIWatcher };
-
-const VERSION = "0.6.0";
 
 // Initialize watcher once at startup
 const dataDir = Deno.env.get("ORW_DATA_PATH") || "./data";
