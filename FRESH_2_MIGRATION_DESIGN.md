@@ -32,13 +32,70 @@ Fresh 2 is well-suited for this migration with significant benefits in terms of 
 5. **RSS Feed**: Generated RSS feed for changes
 6. **Responsive UI**: Mobile-friendly interface
 
+## Fresh 2 Architecture Philosophy
+
+### From Separation to Integration
+
+**Your Original Structure (Node.js/React era):**
+- `src/` - Strict separation made sense when frontend was a separate build process
+- `server/` - Backend logic completely isolated
+- `shared/` - Minimal shared code due to different runtime environments
+
+**Fresh 2 Philosophy:**
+Fresh 2 embraces **"Full-Stack Deno"** - everything runs in the same runtime, enabling:
+
+1. **Unified Type System**: Same TypeScript types across client/server
+2. **Shared Module Resolution**: Import maps work everywhere
+3. **Single Build Process**: No need for separate frontend/backend builds
+4. **Optimal Code Sharing**: Move logic between client/server without friction
+
+### What Goes Where in Fresh 2
+
+| Directory | Purpose | Runtime | Examples |
+|-----------|---------|---------|----------|
+| `routes/` | Pages & API endpoints | Server + Client | Pages, API handlers |
+| `islands/` | Interactive components | Client only | Forms, filters, real-time updates |
+| `components/` | Static UI components | Server (SSR) | Model cards, layouts |
+| `lib/` | Shared utilities | Both | State, API clients, utils |
+| `server/` | Backend-only logic | Server only | Database, background jobs |
+| `shared/` | Pure data/types | Both | Types, constants |
+
+### Benefits of Integrated Structure
+
+1. **Simpler Imports**: `import { Model } from "../lib/types.ts"` vs `import { Model } from "../../shared/global.ts"`
+2. **Better TypeScript**: Full-stack type safety without complex path mapping
+3. **Hot Reloading**: Fresh 2 can reload both client and server code seamlessly
+4. **Deployment**: Single artifact, no coordination between frontend/backend deployments
+
+### Migration Strategy
+
+**Phase 1**: Start with Fresh 2 structure
+**Phase 2**: Move backend-only code to `server/` as needed
+**Phase 3**: Keep only pure shared code in `shared/`
+
+This approach aligns with Fresh 2's design and Deno's full-stack vision.
+
 ## Migration Strategy
 
 ### Phase 1: Project Structure Setup
 
-#### 1.1 Fresh 2 Project Initialization
+#### 1.1 Fresh 2 Project Structure Analysis
+
+**❌ Separate `frontend/` Folder Approach (Node.js legacy, as `src/`):**
 ```bash
-# Initialize Fresh 2 project structure
+# DON'T DO THIS - breaks Fresh 2 conventions
+frontend/
+  ├── routes/
+  ├── islands/
+  ├── components/
+  └── ...
+server/
+  └── ...
+```
+
+**✅ Recommended Fresh 2 Structure (Integrated Approach):**
+```bash
+# Fresh 2 expects this flat structure for optimal performance
 routes/
   ├── _app.tsx        # Root layout (replaces App.tsx)
   ├── _error.tsx      # Error handling (404/500)
@@ -70,12 +127,33 @@ static/
 
 lib/
   ├── state.ts           # Fresh 2 state management
-  ├── client.ts          # Client utilities
+  ├── api.ts             # API client functions
   └── utils.ts           # Shared utilities
+
+# Backend-specific code remains separate
+server/
+  ├── database.ts        # Database operations
+  ├── watcher.ts         # OpenRouter API watcher
+  └── migrations/        # Database migrations
+
+# Truly shared code (types, constants)
+shared/
+  ├── constants.ts       # Shared constants
+  ├── global.ts          # Type definitions
+  └── routes.ts          # Route definitions
 
 main.ts                  # Fresh 2 app entry
 dev.ts                   # Development server
+deno.json               # Deno configuration
 ```
+
+**Why No `frontend/` Folder?**
+
+1. **Fresh 2 Conventions**: Fresh 2 expects `routes/`, `islands/`, etc. at the project root
+2. **Build System Integration**: Fresh 2's build system is optimized for this structure
+3. **Import Path Simplicity**: Relative imports are cleaner (`../components/` vs `../frontend/components/`)
+4. **SSR Performance**: Fresh 2 can better optimize when it knows the exact structure
+5. **Development Experience**: Hot reloading and dev tools work better with standard structure
 
 #### 1.2 Dependencies Update
 ```json
@@ -190,33 +268,49 @@ Components without interactivity become regular components:
 
 ### Phase 4: Data Flow Migration
 
-#### 4.1 API Integration
+#### 4.1 API Integration (Unified Approach)
 **Current (Brain.tsx):**
 Complex useEffect-based polling with error handling
 
-**Fresh 2 Approach:**
+**Fresh 2 Approach - Server-Side Data Loading:**
 ```typescript
-// lib/api.ts
-export async function fetchAPIData(endpoint: string): Promise<APIResponse> {
-  // Move existing fetchAPI logic here
-}
-
 // routes/_middleware.ts
+import { FreshContext } from "fresh";
+// Direct import - no HTTP boundary needed!
+import { getStatus, getLists } from "../server/database.ts";
+
 export async function handler(ctx: FreshContext) {
-  // Server-side data fetching and state updates
   if (ctx.url.pathname.startsWith('/api/')) {
     return ctx.next();
   }
 
-  // Load initial data for SSR
+  // Load initial data for SSR using existing server functions directly
   const [status, lists] = await Promise.all([
-    fetchAPIData('/api/status'),
-    fetchAPIData('/api/lists')
+    getStatus(),      // Direct function call!
+    getLists()        // No HTTP requests needed
   ]);
 
   ctx.state.initialData = { status, lists };
   return ctx.next();
 }
+```
+
+**Fresh 2 Approach - API Routes (Reuse Existing Logic):**
+```typescript
+// routes/api/status.ts
+import { FreshContext } from "fresh";
+// Direct import - no separation barrier!
+import { getStatus } from "../../server/database.ts";
+import { API_VERSION } from "../../shared/constants.ts";
+
+export const handler = {
+  GET: async (ctx: FreshContext) => {
+    // Reuse existing server logic directly
+    const status = await getStatus();
+    return Response.json({ status, version: API_VERSION });
+  }
+};
+```
 ```
 
 #### 4.2 Real-time Updates
@@ -394,7 +488,67 @@ if (backgroundMode) {
 - **Styling**: CSS mostly unchanged
 - **Database**: No changes required
 
-## Recommendation
+## Architecture Decision Summary
+
+### Your Question: Separate `frontend/` Folder?
+
+**❌ Don't use a separate `frontend/` folder for Fresh 2**
+
+**Reasons:**
+1. **Fresh 2 Convention**: Expects `routes/`, `islands/`, etc. at project root
+2. **Build Optimization**: Fresh 2's build system is designed for this flat structure
+3. **Import Simplicity**: Cleaner relative imports without deep nesting
+4. **Performance**: Better SSR performance when Fresh 2 knows exact file locations
+
+### Your Question: Is Strict Separation Still Necessary?
+
+**No - Fresh 2 + Deno 2 changes the game completely!**
+
+**Why the separation made sense before:**
+- **Different Runtimes**: Node.js backend vs Browser frontend
+- **Different Build Systems**: Webpack/Vite for frontend, separate for backend
+- **Different Module Systems**: CommonJS vs ES modules
+- **Network Boundary**: Always HTTP between frontend/backend
+
+**Why it's not needed with Fresh 2 + Deno 2:**
+- **Same Runtime**: Everything runs on Deno
+- **Unified Build**: Single build system handles everything
+- **Shared Types**: TypeScript types work across client/server
+- **Direct Function Calls**: Can call server functions directly in routes
+
+### Recommended Structure for Your Migration
+
+```bash
+# Root level - Fresh 2 conventions
+routes/              # Pages + API endpoints
+islands/             # Interactive components
+components/          # Static UI components
+lib/                 # Shared utilities
+static/              # CSS, images, etc.
+
+# Keep separate only what truly needs isolation
+server/              # Background jobs, complex DB logic
+  ├── database.ts    # Database operations
+  ├── watcher.ts     # Background API watcher
+  └── migrations/    # DB migrations
+
+shared/              # Pure data (minimal)
+  ├── constants.ts   # App constants
+  └── global.ts      # Type definitions
+
+# Configuration
+main.ts              # Fresh 2 app entry
+dev.ts               # Development server
+deno.json           # Dependencies & tasks
+```
+
+### Key Insight
+
+The `frontend/server/shared` pattern was a **necessary evil** of the Node.js/React era. Fresh 2 + Deno 2 eliminates the need for this artificial separation by providing a **truly full-stack** development experience.
+
+**Your instinct is correct** - embrace the integration!
+
+## Final Recommendation
 
 **PROCEED WITH MIGRATION** ✅
 
@@ -403,10 +557,13 @@ The migration to Fresh 2 offers significant benefits:
 - **Developer Experience**: Simpler state management and routing
 - **Maintainability**: Less complex build pipeline and dependencies
 - **Future-Proof**: Built on modern web standards
+- **Architectural Simplicity**: No more artificial frontend/backend separation
+
+**Structure Decision**: Use Fresh 2's integrated approach, not separate `frontend/` folder.
 
 The application's architecture is well-suited for Fresh 2's patterns, and most complexity comes from migrating React-specific patterns rather than fundamental incompatibilities.
 
-**Suggested Approach**: Incremental migration starting with a feature branch, allowing for thorough testing before fully switching over.
+**Suggested Approach**: Incremental migration starting with a feature branch, embracing Fresh 2's full-stack integration from day one.
 
 ## Post-Migration Enhancements
 
