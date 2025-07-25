@@ -1,0 +1,53 @@
+// routes/_app.tsx - Fresh 2 root layout (replaces App.tsx)
+import type { PageProps } from "fresh";
+
+export default function App({ Component }: PageProps) {
+  return (
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+          name="description"
+          content="Explore OpenRouter's model list and recorded changes. Updates every hour."
+        />
+        <meta property="og:url" content="https://orw.karleo.net" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="OpenRouter API Watcher" />
+        <meta
+          property="og:description"
+          content="Explore OpenRouter's model list and recorded changes. Updates every hour."
+        />
+        <meta property="og:image" content="https://orw.karleo.net/screenshot.png" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta property="twitter:title" content="OpenRouter API Watcher" />
+        <meta property="twitter:domain" content="orw.karleo.net" />
+        <meta property="twitter:url" content="https://orw.karleo.net" />
+        <meta name="twitter:title" content="OpenRouter API Watcher" />
+        <meta
+          name="twitter:description"
+          content="Explore OpenRouter's model list and recorded changes. Updates every hour."
+        />
+        <meta name="twitter:image" content="https://orw.karleo.net/screenshot.png" />
+        <meta name="theme-color" content="#444" />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="OpenRouter Model Changes"
+          href="/rss"
+        />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="32x32" />
+        <link rel="stylesheet" href="/app.css" />
+        <title>OpenRouter API Watcher</title>
+      </head>
+      <body>
+        <div class="content-container">
+          <Component />
+        </div>
+      </body>
+    </html>
+  );
+}

@@ -30,11 +30,12 @@
     "@std/encoding": "jsr:@std/encoding@1",
     "@std/streams": "jsr:@std/streams@1",
     "@std/cli": "jsr:@std/cli@1",
-    "react": "npm:react@19",
-    "react/jsx-runtime": "npm:react@19/jsx-runtime",
-    "react-dom": "npm:react-dom@19",
-    "react-dom/client": "npm:react-dom@19/client",
-    "react-router-dom": "npm:react-router-dom@7.7.0",
+    "fresh": "jsr:@fresh/core@2.0.0-alpha.46",
+    "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9",
+    "preact": "npm:preact@10.26.9",
+    "preact/hooks": "npm:preact@10.26.9/hooks",
+    "preact/jsx-runtime": "npm:preact@10.26.9/jsx-runtime",
+    "@preact/signals": "npm:@preact/signals@2.2.1",
     "deep-diff": "npm:deep-diff@1.0.2",
     "luxon": "npm:luxon@3.7.1",
     "@kitsuyui/luxon-ext": "npm:@kitsuyui/luxon-ext@0.2.1",
@@ -43,8 +44,7 @@
   },
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "react",
-    "jsxImportSourceTypes": "npm:@types/react",
+    "jsxImportSource": "preact",
     "lib": ["dom", "deno.ns"]
   },
   "fmt": {
