@@ -7,7 +7,7 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function waitForServer(port: number, maxAttempts = 60): Promise<boolean> {
+async function waitForServer(port: number, maxAttempts = 3): Promise<boolean> {
   console.log(`Waiting for server on port ${port}...`);
   await sleep(500); // give the server a bit time to startup
   for (let i = 0; i < maxAttempts; i++) {
@@ -31,14 +31,17 @@ async function waitForServer(port: number, maxAttempts = 60): Promise<boolean> {
 function startTestServer() {
   const command = new Deno.Command("deno", {
     args: [
-      "run",
+      "serve",
       "--allow-all",
-      "cli.ts",
-      "--serve",
       "--port",
       TEST_PORT.toString(),
-      "--no-watcher", // Disable watcher for testing
+      "_fresh/server.js",
     ],
+    env: {
+      ORW_DISABLE_WATCHER: "true", // Disable watcher for testing
+      ORW_DATA_PATH: "./test-data", // Use test data directory
+      ORW_SEED_DATABASE: "false", // Don't seed for tests
+    },
     cwd: Deno.cwd(),
     stdout: "piped",
     stderr: "piped",
@@ -47,7 +50,7 @@ function startTestServer() {
   return command.spawn();
 }
 
-Deno.test.ignore("Server starts and serves routes correctly", async () => {
+Deno.test.ignore("Production server starts and serves routes correctly", async () => {
   let process: Deno.ChildProcess | undefined;
 
   try {
@@ -56,7 +59,7 @@ Deno.test.ignore("Server starts and serves routes correctly", async () => {
 
     // Wait for server to start
     const serverStarted = await waitForServer(TEST_PORT);
-    assertEquals(serverStarted, true, "Server should start within 60 seconds");
+    assertEquals(serverStarted, true, "Server should start within 3 seconds");
 
     console.log("Testing root route (should redirect)...");
     // Test root route - should redirect to /changes
