@@ -1,5 +1,5 @@
 // server/database/index.ts - Database module exports
-export { runMigrations, getMigrationStatus } from "./db-migration.ts";
+export { getMigrationStatus, runMigrations } from "./migrations/index.ts";
 export type { Migration } from "./migrations/index.ts";
 
 // Create database function using node:sqlite (aliased as "sqlite")

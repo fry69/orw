@@ -1,0 +1,10 @@
+{
+  "version": 4,
+  "description": "Create last_api_check table for tracking API status",
+  "statements": [
+    {
+      "sql": "CREATE TABLE IF NOT EXISTS last_api_check (id INTEGER PRIMARY KEY, last_check TEXT NOT NULL)",
+      "description": "Create table to store last API check timestamp"
+    }
+  ]
+}

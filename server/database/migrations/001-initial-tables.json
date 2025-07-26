@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "description": "Create initial tables for models, changes, and migrations",
+  "statements": [
+    {
+      "sql": "CREATE TABLE IF NOT EXISTS models (id TEXT PRIMARY KEY, data TEXT, timestamp TEXT)",
+      "description": "Create models table"
+    },
+    {
+      "sql": "CREATE TABLE IF NOT EXISTS changes (id TEXT, changes TEXT, timestamp TEXT)",
+      "description": "Create changes table"
+    },
+    {
+      "sql": "CREATE TABLE IF NOT EXISTS migrations (version INTEGER PRIMARY KEY)",
+      "description": "Create migrations tracking table"
+    }
+  ]
+}
