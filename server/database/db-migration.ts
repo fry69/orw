@@ -1,11 +1,11 @@
-import type { Database } from "sqlite";
-import migrations from "./migrations/migrations.ts";
+import type { DatabaseSync } from "sqlite";
+import migrations from "./migrations/index.ts";
 
 /**
  * Runs the migrations on the database.
  * @param db - The database to run migrations on.
  */
-export function runMigrations(db: Database) {
+export function runMigrations(db: DatabaseSync) {
   // Validate migrations are properly numbered
   validateMigrations(migrations);
 
@@ -33,7 +33,7 @@ export function runMigrations(db: Database) {
  * Initializes the migrations table if it doesn't exist.
  * @param db - The database to initialize the migrations table in.
  */
-function initializeMigrationsTable(db: Database) {
+function initializeMigrationsTable(db: DatabaseSync) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS migrations (
       version INTEGER PRIMARY KEY,
@@ -48,8 +48,8 @@ function initializeMigrationsTable(db: Database) {
  * @param migration - The migration to apply.
  */
 function applyMigration(
-  db: Database,
-  migration: { version: number; up: (db: Database) => void },
+  db: DatabaseSync,
+  migration: { version: number; up: (db: DatabaseSync) => void },
 ) {
   console.log(`Applying migration version ${migration.version}`);
 
@@ -80,7 +80,7 @@ function applyMigration(
  * @param db - The database to get the current version of.
  * @returns - The current version of the database.
  */
-function getCurrentVersion(db: Database): number {
+function getCurrentVersion(db: DatabaseSync): number {
   try {
     const row = db.prepare("SELECT MAX(version) AS version FROM migrations").get();
     return Number(row?.version) || 0;
@@ -96,7 +96,7 @@ function getCurrentVersion(db: Database): number {
  * @param db - The database to set the current version of.
  * @param version - The version to set.
  */
-function setCurrentVersion(db: Database, version: number) {
+function setCurrentVersion(db: DatabaseSync, version: number) {
   const insertVersion = db.prepare("INSERT INTO migrations (version) VALUES (?)");
   insertVersion.run(version);
 }
@@ -123,7 +123,7 @@ function validateMigrations(migrations: Array<{ version: number }>) {
  * @param db - The database to check.
  * @returns Migration status information.
  */
-export function getMigrationStatus(db: Database) {
+export function getMigrationStatus(db: DatabaseSync) {
   initializeMigrationsTable(db);
   const currentVersion = getCurrentVersion(db);
   const totalMigrations = migrations.length;

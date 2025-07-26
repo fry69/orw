@@ -1,5 +1,5 @@
 // watcher.ts - Simplified OpenRouter API watcher for Deno
-import type { Database } from "sqlite";
+import type { DatabaseSync } from "sqlite";
 import { dirname, join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import deepDiff from "deep-diff";
@@ -35,7 +35,7 @@ export interface WatcherStatus {
  */
 export interface WatcherConfig {
   /** The SQLite database used for storing model changes. */
-  db?: Database;
+  db?: DatabaseSync;
   /** Directory for storing data files. */
   dataDir?: string;
   /** Path to the SQLite database file. */
