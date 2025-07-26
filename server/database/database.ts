@@ -1,5 +1,5 @@
 // database.ts - Simplified database layer for Deno
-import { Database } from "sqlite";
+import { DatabaseSync } from "sqlite";
 import { dirname } from "@std/path";
 import { ensureDir } from "@std/fs";
 
@@ -10,7 +10,7 @@ export interface Migration {
   /** Migration version number. */
   version: number;
   /** Function to apply the migration. */
-  up: (db: Database) => void;
+  up: (db: DatabaseSync) => void;
 }
 
 /**
@@ -19,7 +19,7 @@ export interface Migration {
 const migrations: Migration[] = [
   {
     version: 1,
-    up: (db: Database) => {
+    up: (db: DatabaseSync) => {
       db.exec(`
         CREATE TABLE IF NOT EXISTS models (
           id TEXT PRIMARY KEY,
@@ -43,7 +43,7 @@ const migrations: Migration[] = [
   },
   {
     version: 2,
-    up: (db: Database) => {
+    up: (db: DatabaseSync) => {
       // Create a new table with the primary key constraint
       db.exec(`
         CREATE TABLE changes_new (
@@ -69,7 +69,7 @@ const migrations: Migration[] = [
   },
   {
     version: 3,
-    up: (db: Database) => {
+    up: (db: DatabaseSync) => {
       // Fix changes entries without data
       db.exec(`
         UPDATE changes
@@ -110,7 +110,7 @@ const migrations: Migration[] = [
   },
   {
     version: 4,
-    up: (db: Database) => {
+    up: (db: DatabaseSync) => {
       // Create table to store last API check timestamp
       db.exec(`
         CREATE TABLE IF NOT EXISTS last_api_check (
@@ -122,7 +122,7 @@ const migrations: Migration[] = [
   },
   {
     version: 5,
-    up: (db: Database) => {
+    up: (db: DatabaseSync) => {
       // Add status column to last_api_check
       db.exec(`
         ALTER TABLE last_api_check
@@ -135,7 +135,7 @@ const migrations: Migration[] = [
 /**
  * Gets the current version of the database.
  */
-function getCurrentVersion(db: Database): number {
+function getCurrentVersion(db: DatabaseSync): number {
   try {
     const result = db.prepare("SELECT MAX(version) AS version FROM migrations").get() as {
       version: number | null;
@@ -150,7 +150,7 @@ function getCurrentVersion(db: Database): number {
 /**
  * Sets the current version of the database.
  */
-function setCurrentVersion(db: Database, version: number) {
+function setCurrentVersion(db: DatabaseSync, version: number) {
   const insertVersion = db.prepare("INSERT INTO migrations (version) VALUES (?)");
   insertVersion.run(version);
 }
@@ -158,7 +158,7 @@ function setCurrentVersion(db: Database, version: number) {
 /**
  * Runs database migrations.
  */
-export function runMigrations(db: Database) {
+export function runMigrations(db: DatabaseSync) {
   let currentVersion = getCurrentVersion(db);
 
   // Create the migrations table if it doesn't exist
@@ -184,11 +184,11 @@ export function runMigrations(db: Database) {
 /**
  * Creates and initializes a database connection.
  */
-export async function createDatabase(dbPath: string): Promise<Database> {
+export function createDatabase(dbPath: string): DatabaseSync {
   // Ensure the database directory exists
-  await ensureDir(dirname(dbPath));
+  ensureDir(dirname(dbPath));
 
   // Create and return the database instance
-  const db = new Database(dbPath);
+  const db: DatabaseSync = new DatabaseSync(dbPath);
   return db;
 }

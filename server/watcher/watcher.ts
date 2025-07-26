@@ -1,5 +1,5 @@
 // watcher.ts - Simplified OpenRouter API watcher for Deno
-import { Database } from "sqlite";
+import type { Database } from "sqlite";
 import { dirname, join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import deepDiff from "deep-diff";
@@ -393,10 +393,28 @@ export class OpenRouterAPIWatcher {
       .prepare("SELECT timestamp, data FROM removed_models ORDER BY timestamp DESC")
       .all()
       .map((row: Record<string, unknown>) => {
-        const model: Model = JSON.parse(row.data as string);
-        model.removed_at = row.timestamp as string;
-        return model;
-      });
+        try {
+          const dataStr = row.data as string;
+          if (!dataStr || dataStr === "null") {
+            console.warn(`Skipping removed model with invalid data: ${dataStr}`);
+            return null;
+          }
+
+          const model: Model = JSON.parse(dataStr);
+          if (!model || typeof model !== "object") {
+            console.warn(`Skipping removed model with invalid parsed data: ${model}`);
+            return null;
+          }
+
+          model.removed_at = row.timestamp as string;
+          return model;
+        } catch (error) {
+          console.warn(`Error parsing removed model data: ${error}, row:`, row);
+          return null;
+        }
+      })
+      .filter((model: Model): model is Model => model !== null);
+
     return removedModels;
   }
 

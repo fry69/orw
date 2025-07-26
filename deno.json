@@ -45,7 +45,7 @@
     "luxon": "npm:luxon@3.7.1",
     "@kitsuyui/luxon-ext": "npm:@kitsuyui/luxon-ext@0.2.1",
     "rss": "npm:rss@1.2.2",
-    "sqlite": "jsr:@db/sqlite@0.12",
+    "sqlite": "node:sqlite",
     "@tailwindcss/postcss": "npm:@tailwindcss/postcss@^4.1.10",
     "postcss": "npm:postcss@^8.5.6"
   },

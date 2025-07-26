@@ -1,6 +1,6 @@
 // test/helpers/test-setup.ts - Test setup utilities using factory pattern
 import { join } from "@std/path";
-import { Database } from "sqlite";
+import { DatabaseSync } from "sqlite";
 import { OpenRouterAPIWatcher } from "../../server/watcher/index.ts";
 import { runMigrations } from "../../server/database/index.ts";
 import { testModels } from "../fixtures/models.ts";
@@ -9,7 +9,7 @@ import type { Model, ModelDiff } from "../../types/global.ts";
 
 export interface TestContext {
   watcher: OpenRouterAPIWatcher;
-  db: Database;
+  db: DatabaseSync;
   cleanup: () => Promise<void>;
 }
 
@@ -32,7 +32,7 @@ export interface TestWatcherConfig {
  */
 export async function createTestWatcher(config: TestWatcherConfig): Promise<{
   watcher: OpenRouterAPIWatcher;
-  db: Database;
+  db: DatabaseSync;
   cleanup: () => Promise<void>;
 }> {
   // Create temporary directory if not provided
@@ -44,7 +44,7 @@ export async function createTestWatcher(config: TestWatcherConfig): Promise<{
   Deno.env.set("NODE_ENV", "test");
 
   // Create in-memory or temp database
-  const db = new Database(dbPath);
+  const db = new DatabaseSync(dbPath);
   runMigrations(db);
 
   // Populate with test data
@@ -82,46 +82,49 @@ export async function createTestWatcher(config: TestWatcherConfig): Promise<{
 /**
  * Populates database with test data
  */
-function populateTestData(db: Database, models: Model[], changes: ModelDiff[]) {
+function populateTestData(db: DatabaseSync, models: Model[], changes: ModelDiff[]) {
   // Insert test models
+  const insertModel = db.prepare("INSERT INTO models (id, data, timestamp) VALUES (?, ?, ?)");
+  const insertAddedModel = db.prepare(
+    "INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)",
+  );
+
   for (const model of models) {
     const timestamp = new Date().toISOString();
-    db.exec(
-      `INSERT INTO models (id, data, timestamp) VALUES (?, ?, ?)`,
-      [model.id, JSON.stringify(model), timestamp],
-    );
+    insertModel.run(model.id, JSON.stringify(model), timestamp);
     // Also insert into added_models table
-    db.exec(
-      `INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)`,
-      [model.id, JSON.stringify(model), timestamp],
-    );
+    insertAddedModel.run(model.id, JSON.stringify(model), timestamp);
   }
 
   // Insert test changes
+  const insertChange = db.prepare(
+    "INSERT INTO changes (id, changes, timestamp, type) VALUES (?, ?, ?, ?)",
+  );
+  const insertRemovedModel = db.prepare(
+    "INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)",
+  );
+
   for (const change of changes) {
-    db.exec(
-      `INSERT INTO changes (id, changes, timestamp, type) VALUES (?, ?, ?, ?)`,
-      [change.id, JSON.stringify(change.changes || change.model), change.timestamp, change.type],
+    insertChange.run(
+      change.id,
+      JSON.stringify(change.changes || change.model),
+      change.timestamp,
+      change.type,
     );
 
     // Insert into type-specific tables
     if (change.type === "added" && change.model) {
-      db.exec(
-        `INSERT INTO added_models (id, data, timestamp) VALUES (?, ?, ?)`,
-        [change.id, JSON.stringify(change.model), change.timestamp],
-      );
+      insertAddedModel.run(change.id, JSON.stringify(change.model), change.timestamp);
     } else if (change.type === "removed" && change.model) {
-      db.exec(
-        `INSERT INTO removed_models (id, data, timestamp) VALUES (?, ?, ?)`,
-        [change.id, JSON.stringify(change.model), change.timestamp],
-      );
+      insertRemovedModel.run(change.id, JSON.stringify(change.model), change.timestamp);
     }
   }
 
   // Set last API check status
-  db.exec(
-    `INSERT INTO last_api_check (id, last_check, last_status) VALUES (1, datetime('now'), 'success')`,
+  const insertLastCheck = db.prepare(
+    "INSERT INTO last_api_check (id, last_check, last_status) VALUES (1, ?, 'success')",
   );
+  insertLastCheck.run(new Date().toISOString());
 }
 
 /**
