@@ -1,10 +1,7 @@
 #!/usr/bin/env -S deno run --allow-all
 // cli.ts - Dedicated CLI entry point
 import { parseArgs } from "@std/cli/parse-args";
-import { join } from "@std/path";
-import { createDatabase } from "./server/database.ts";
-import { createProductionWatcher } from "./server/watcher-factory.ts";
-import { serve } from "./main.ts";
+import { createCliWatcher, serve } from "./server/app.ts";
 import { VERSION } from "./lib/constants.ts";
 
 interface CLIArgs {
@@ -77,24 +74,18 @@ async function main() {
 
   // Configuration
   const dataDir = args["data-dir"] || Deno.env.get("ORW_DATA_PATH") || "./data";
-  const dbPath = join(dataDir, "orw.db");
   const port = args.port || parseInt(Deno.env.get("ORW_PORT") || "3100");
   const hostname = args.hostname || Deno.env.get("ORW_HOSTNAME") || "localhost";
 
   console.log(`ORW v${VERSION} (CLI Mode)`);
   console.log(`Data directory: ${dataDir}`);
-  console.log(`Database: ${dbPath}`);
 
   try {
-    // Initialize database (but not needed for all commands)
-    const _db = await createDatabase(dbPath);
-    console.log("Database initialized");
-
     if (args.init) {
       console.log("Initializing database with fresh API data...");
-      const _watcher = await createProductionWatcher({
+      await createCliWatcher({
         dataDir,
-        skipInitialization: false, // Force seeding
+        seed: true, // Force seeding
       });
       console.log("Database initialized successfully!");
       Deno.exit(0);
@@ -108,24 +99,24 @@ async function main() {
         enableWatcher,
       });
     } else if (args.background) {
-      const watcher = await createProductionWatcher({
+      const watcher = await createCliWatcher({
         dataDir,
-        skipInitialization: true, // Don't auto-seed in background mode
+        seed: false, // Don't auto-seed in background mode
       });
       console.log("Starting background watcher...");
       await watcher.enterBackgroundMode();
     } else if (args["run-once"]) {
-      const watcher = await createProductionWatcher({
+      const watcher = await createCliWatcher({
         dataDir,
-        skipInitialization: true,
+        seed: false,
       });
       console.log("Running once...");
       await watcher.runOnce();
       Deno.exit(0);
     } else if (args.query !== undefined) {
-      const watcher = await createProductionWatcher({
+      const watcher = await createCliWatcher({
         dataDir,
-        skipInitialization: true,
+        seed: false,
       });
       const limit = typeof args.query === "number" ? args.query : 10;
       console.log(`\nShowing ${limit} most recent changes:`);
