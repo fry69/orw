@@ -1,6 +1,11 @@
 This project uses latest Deno 2 and Fresh 2 versions, please consult the online documentation for updated information:
 
 - https://fresh.deno.dev/docs/canary/introduction
+- https://fresh.deno.dev/docs/canary/getting-started
+- https://fresh.deno.dev/docs/canary/concepts
+- https://fresh.deno.dev/docs/canary/concepts/islands
+- https://fresh.deno.dev/docs/canary/concepts/middleware
+- https://fresh.deno.dev/docs/canary/examples/creating-a-crud-api
 - https://fresh.deno.dev/docs/canary/examples/migration-guide
 
 Use tasks defined in `deno.json` in the repository root instead of invoking deno manually without those tasks.
