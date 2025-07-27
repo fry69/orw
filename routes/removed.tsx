@@ -1,14 +1,14 @@
-// routes/removed.tsx - Removed models page
-import type { PageProps } from "fresh";
+// routes/removed.tsx - Removed models page (Fresh 2 with server-side data loading)
+import { define } from "../lib/app.ts";
 import NavBar from "../islands/NavBar.tsx";
-import DataUpdater from "../islands/DataUpdater.tsx";
 import ModelList from "../islands/ModelList.tsx";
 import ErrorContainer from "../components/ErrorContainer.tsx";
+import DataInitializer from "../islands/DataInitializer.tsx";
 
-export default function RemovedPage(_props: PageProps) {
+export default define.page((props) => {
   return (
     <>
-      <DataUpdater />
+      <DataInitializer initialData={props.state.commonData} />
       <NavBar />
       <div class="main-content">
         <ErrorContainer>
@@ -17,4 +17,4 @@ export default function RemovedPage(_props: PageProps) {
       </div>
     </>
   );
-}
+});

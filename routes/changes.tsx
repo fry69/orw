@@ -1,14 +1,14 @@
-// routes/changes.tsx - Changes page
-import type { PageProps } from "fresh";
+// routes/changes.tsx - Changes page (Fresh 2 with server-side data loading)
+import { define } from "../lib/app.ts";
 import NavBar from "../islands/NavBar.tsx";
-import DataUpdater from "../islands/DataUpdater.tsx";
 import ChangeList from "../islands/ChangeList.tsx";
 import ErrorContainer from "../components/ErrorContainer.tsx";
+import DataInitializer from "../islands/DataInitializer.tsx";
 
-export default function ChangesPage(_props: PageProps) {
+export default define.page((props) => {
   return (
     <>
-      <DataUpdater />
+      <DataInitializer initialData={props.state.commonData} />
       <NavBar />
       <div class="main-content">
         <ErrorContainer>
@@ -17,4 +17,4 @@ export default function ChangesPage(_props: PageProps) {
       </div>
     </>
   );
-}
+});

@@ -1,6 +1,11 @@
 import { createDefine } from "fresh";
+import type { APIStatus, Lists } from "../types/global.ts";
 
-// deno-lint-ignore no-empty-interface
-export interface State {}
+export interface State {
+  commonData?: {
+    status: APIStatus;
+    lists: Lists;
+  };
+}
 
 export const define = createDefine<State>();

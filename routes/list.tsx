@@ -1,14 +1,14 @@
-// routes/list.tsx - Model list page
-import type { PageProps } from "fresh";
+// routes/list.tsx - Model list page (Fresh 2 with server-side data loading)
+import { define } from "../lib/app.ts";
 import NavBar from "../islands/NavBar.tsx";
-import DataUpdater from "../islands/DataUpdater.tsx";
 import ModelList from "../islands/ModelList.tsx";
 import ErrorContainer from "../components/ErrorContainer.tsx";
+import DataInitializer from "../islands/DataInitializer.tsx";
 
-export default function ListPage(_props: PageProps) {
+export default define.page((props) => {
   return (
     <>
-      <DataUpdater />
+      <DataInitializer initialData={props.state.commonData} />
       <NavBar />
       <div class="main-content">
         <ErrorContainer>
@@ -17,4 +17,4 @@ export default function ListPage(_props: PageProps) {
       </div>
     </>
   );
-}
+});
