@@ -6,9 +6,6 @@ export const app = new App<State>();
 
 app.use(staticFiles());
 
-// Add health check route for monitoring/testing (before fsRoutes)
-app.get("/health", () => new Response("OK", { status: 200 }));
-
 // Include file-system based routes here
 app.fsRoutes();
 

@@ -13,12 +13,16 @@ export interface TestContext {
   cleanup: () => Promise<void>;
 }
 
-export interface TestServerContext extends TestContext {
+export interface TestServerContext {
+  watcher: OpenRouterAPIWatcher;
+  db: DatabaseSync;
+  cleanup: () => Promise<void>;
   port: number;
   baseUrl: string;
   tempDir: string;
   originalEnv: Record<string, string | undefined>;
-  server: AbortController;
+  handler: (request: Request) => Response | Promise<Response>;
+  shutdown: () => Promise<void>;
 }
 
 export interface TestWatcherConfig {
@@ -138,57 +142,67 @@ export async function createTestContext(): Promise<TestContext> {
 }
 
 /**
- * Creates an isolated test server context with temporary directory and unique port
+ * Sets up isolated test environment for server testing
  */
-export async function createTestServerContext(): Promise<TestServerContext> {
-  // Find a free port for testing (start from 9000 to avoid conflicts)
-  const port = await findFreePort(9000);
+async function setupTestEnvironment(config: TestWatcherConfig): Promise<{
+  watcher: OpenRouterAPIWatcher;
+  db: DatabaseSync;
+  cleanup: () => Promise<void>;
+  tempDir: string;
+  baseUrl: string;
+  originalEnv: Record<string, string | undefined>;
+}> {
+  // Create temporary directory if not provided
+  const tempDir = config.tempDir || await Deno.makeTempDir({ prefix: "orw_test_server_" });
+  const dbPath = join(tempDir, "test.db");
 
-  // Create temporary directory for isolated test environment
-  const tempDir = await Deno.makeTempDir({ prefix: "orw_test_server_" });
-
-  // Store original environment variables
+  // Store original environment
   const originalEnv = {
-    ORW_DATA_PATH: Deno.env.get("ORW_DATA_PATH"),
-    ORW_PORT: Deno.env.get("ORW_PORT"),
-    ORW_HOSTNAME: Deno.env.get("ORW_HOSTNAME"),
     NODE_ENV: Deno.env.get("NODE_ENV"),
+    ORW_DB_PATH: Deno.env.get("ORW_DB_PATH"),
+    ORW_DATA_DIR: Deno.env.get("ORW_DATA_DIR"),
+    ORW_DEV_MODE: Deno.env.get("ORW_DEV_MODE"),
+    ORW_DISABLE_WATCHER: Deno.env.get("ORW_DISABLE_WATCHER"),
+    ORW_SEED_DATABASE: Deno.env.get("ORW_SEED_DATABASE"),
   };
 
-  // Set test environment variables
-  Deno.env.set("ORW_DATA_PATH", tempDir);
-  Deno.env.set("ORW_PORT", port.toString());
-  Deno.env.set("ORW_HOSTNAME", "localhost");
+  // Set test environment
   Deno.env.set("NODE_ENV", "test");
+  Deno.env.set("ORW_DB_PATH", dbPath);
+  Deno.env.set("ORW_DATA_DIR", tempDir);
+  Deno.env.set("ORW_DEV_MODE", "false"); // Disable dev mode for tests
+  Deno.env.set("ORW_DISABLE_WATCHER", "true"); // Disable background watcher for tests
+  Deno.env.set("ORW_SEED_DATABASE", "false"); // Don't seed database in tests
 
-  // Create test watcher with isolated data
-  const { watcher, db, cleanup: watcherCleanup } = await createTestWatcher({
-    models: testModels.slice(0, 5),
-    changes: testChanges.slice(0, 3),
-    tempDir,
-  });
+  // Create and populate database
+  const db = new DatabaseSync(dbPath);
+  runMigrations(db);
+  populateTestData(db, config.models, config.changes);
 
-  const baseUrl = `http://localhost:${port}`;
-  const server = new AbortController(); // Placeholder for now
+  const watcherConfig = {
+    db,
+    dataDir: tempDir,
+    dbFilePath: dbPath,
+    logFilePath: "", // Disable log file for tests
+    backupDir: "", // Disable backup for tests
+    fixedModelList: config.models, // Use fixed list to prevent API calls
+  };
+
+  const watcher = new OpenRouterAPIWatcher(watcherConfig);
+  await watcher.initialize({ seed: false, skipAPI: true });
 
   const cleanup = async () => {
-    // Stop the server first (when we implement it)
-    server.abort();
-
-    // Cleanup watcher
-    await watcherCleanup();
-
-    // Remove temporary directory
+    db.close();
     await Deno.remove(tempDir, { recursive: true }).catch(() => {
       // Ignore cleanup errors
     });
 
-    // Restore original environment variables
+    // Restore environment
     for (const [key, value] of Object.entries(originalEnv)) {
-      if (value === undefined) {
-        Deno.env.delete(key);
-      } else {
+      if (value !== undefined) {
         Deno.env.set(key, value);
+      } else {
+        Deno.env.delete(key);
       }
     }
   };
@@ -196,33 +210,53 @@ export async function createTestServerContext(): Promise<TestServerContext> {
   return {
     watcher,
     db,
-    port,
-    baseUrl,
-    tempDir,
-    originalEnv,
-    server,
     cleanup,
+    tempDir,
+    baseUrl: `http://localhost:8000`,
+    originalEnv,
   };
 }
 
 /**
- * Finds a free port starting from the given port number
+ * Test server context for HTTP endpoint testing
  */
-function findFreePort(startPort: number): Promise<number> {
-  return new Promise((resolve, reject) => {
-    for (let port = startPort; port < startPort + 100; port++) {
-      try {
-        const listener = Deno.listen({ port, hostname: "localhost" });
-        listener.close();
-        resolve(port);
-        return;
-      } catch {
-        // Port is in use, try next one
-        continue;
-      }
-    }
-    reject(new Error(`No free port found in range ${startPort}-${startPort + 100}`));
-  });
+export async function createTestServerContext(
+  config: TestWatcherConfig,
+): Promise<TestServerContext> {
+  const testEnv = await setupTestEnvironment(config);
+
+  // Create Fresh 2 test server using Builder pattern from dev.ts
+  const { Builder } = await import("fresh/dev");
+  const { tailwind } = await import("@fresh/plugin-tailwind");
+
+  const builder = new Builder();
+  tailwind(builder);
+
+  // Build the snapshot for testing (similar to Fresh testing docs)
+  const applySnapshot = await builder.build({ snapshot: "memory" });
+
+  // Import the app and apply snapshot
+  const appModule = await import("../../main.ts");
+  applySnapshot(appModule.app);
+
+  // Create handler for testing
+  const handler = appModule.app.handler();
+
+  // Start HTTP server on port 8000 for testing
+  const server = Deno.serve({
+    port: 8000,
+    hostname: "localhost",
+  }, handler);
+
+  return {
+    ...testEnv,
+    port: 8000,
+    handler,
+    shutdown: async () => {
+      await server.shutdown();
+      await testEnv.cleanup();
+    },
+  };
 }
 
 /**
