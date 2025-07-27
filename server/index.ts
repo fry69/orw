@@ -1,5 +1,5 @@
 import { createDatabase, runMigrations } from "./database/index.ts";
-import { OpenRouterAPIWatcher } from "./watcher/index.ts";
+import { OpenRouterAPIWatcher } from "./watcher.ts";
 import { join } from "@std/path";
 
 // Global watcher instance - single source of truth

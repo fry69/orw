@@ -3,8 +3,8 @@ import type { DatabaseSync } from "sqlite";
 import { dirname, join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import deepDiff from "deep-diff";
-import type { Lists, Model, ModelChangeType, ModelDiff } from "../../types/global.ts";
-import { FETCH_TIMEOUT, OPENROUTER_API_URL } from "../../lib/constants.ts";
+import type { Lists, Model, ModelChangeType, ModelDiff } from "../types/global.ts";
+import { FETCH_TIMEOUT, OPENROUTER_API_URL } from "../lib/constants.ts";
 
 export const isDevelopment = Deno.env.get("NODE_ENV") === "development" ||
   Deno.env.get("NODE_ENV") === "test" || false;
@@ -63,6 +63,7 @@ export class OpenRouterAPIWatcher {
     this.config = { ...defaultConfig, ...config };
     console.log("Starting watcher with config:", {
       ...this.config,
+      fixedModelList: this.config.fixedModelList ? "[fixedModelList object]" : "undefined",
       db: this.config.db ? "[Database object]" : "undefined",
     });
 
