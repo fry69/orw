@@ -19,7 +19,10 @@ Deno.test("RSS feed should return valid XML", async () => {
     assertStringIncludes(rssXML, "<rss");
     assertStringIncludes(rssXML, "<channel>");
     assertStringIncludes(rssXML, "<title><![CDATA[OpenRouter Model Changes]]></title>");
-    assertStringIncludes(rssXML, "<description><![CDATA[Feed for detected changes in the OpenRouter model list]]></description>");
+    assertStringIncludes(
+      rssXML,
+      "<description><![CDATA[Feed for detected changes in the OpenRouter model list]]></description>",
+    );
     assertStringIncludes(rssXML, "</channel>");
     assertStringIncludes(rssXML, "</rss>");
   } finally {
@@ -80,7 +83,7 @@ Deno.test("RSS feed should handle changed models correctly", async () => {
   }
 });
 
-Deno.test("RSS feed should set proper cache headers", async () => {
+Deno.test("RSS feed should set dynamic cache headers based on next API check", async () => {
   const { cleanup } = await createTestContext();
 
   try {
@@ -89,7 +92,15 @@ Deno.test("RSS feed should set proper cache headers", async () => {
     // Consume the response to avoid leaks
     await response.text();
 
-    assertEquals(response.headers.get("Cache-Control"), "public, max-age=3600");
+    const cacheControl = response.headers.get("Cache-Control");
+    assertEquals(cacheControl?.startsWith("public, max-age="), true);
+
+    // Extract max-age value
+    const maxAge = parseInt(cacheControl?.split("max-age=")[1] || "0");
+
+    // Should be between 60 seconds (minimum) and 3600 seconds (maximum)
+    assertEquals(maxAge >= 60, true, `max-age should be at least 60 seconds, got ${maxAge}`);
+    assertEquals(maxAge <= 3600, true, `max-age should be at most 3600 seconds, got ${maxAge}`);
   } finally {
     await cleanup();
   }
@@ -107,7 +118,11 @@ Deno.test("RSS feed should limit to 50 items maximum", async () => {
     const itemCount = itemMatches ? itemMatches.length : 0;
 
     // Should not exceed 50 items
-    assertEquals(itemCount <= 50, true, `RSS feed should have at most 50 items, but found ${itemCount}`);
+    assertEquals(
+      itemCount <= 50,
+      true,
+      `RSS feed should have at most 50 items, but found ${itemCount}`,
+    );
   } finally {
     await cleanup();
   }

@@ -97,7 +97,7 @@ The OpenRouter API Watcher includes an RSS feed generator, available at the `/rs
 - **Removed models**: Shows full model details of the removed model
 - **Updated models**: Shows specific field changes with old/new values highlighted
 
-The RSS feed is automatically cached and regenerated only when database changes are detected, ensuring optimal performance. The feed includes proper RSS metadata and is compatible with all standard RSS readers.
+The RSS feed uses **intelligent caching** - instead of a fixed cache time, it dynamically calculates when the next API check will happen (when new changes could appear) and sets the cache expiration accordingly. This means RSS clients will fetch fresh content exactly when needed, optimizing both performance and freshness.
 
 ## Testing
 

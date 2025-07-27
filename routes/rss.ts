@@ -3,6 +3,7 @@ import { define } from "../lib/app.ts";
 import { getGlobalWatcher } from "../server/index.ts";
 import RSS from "rss";
 import type { ModelDiff } from "../types/global.ts";
+import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
 
 // Cache for RSS feed to avoid regenerating on every request
 let rssCache: {
@@ -50,22 +51,37 @@ function renderChangeSnippetHTML(change: ModelDiff): string {
 }
 
 /**
+ * Calculates the time left until the next API check, which is when RSS feed might change.
+ * This provides intelligent cache timing: RSS clients cache until just before new changes could appear.
+ */
+function calculateCacheMaxAge(watcherStatus: { apiLastCheck: Date }): number {
+  const timeSinceLastCheck = Date.now() - watcherStatus.apiLastCheck.getTime();
+  const timeUntilNextCheck = WATCHER_INTERVAL_MS - timeSinceLastCheck;
+
+  // Ensure we have at least 60 seconds cache time, but not more than 1 hour
+  const maxAgeSeconds = Math.max(60, Math.min(Math.floor(timeUntilNextCheck / 1000), 3600));
+
+  return maxAgeSeconds;
+} /**
  * Generates RSS feed XML
  */
+
 async function generateRSSFeed(): Promise<string> {
   const watcher = await getGlobalWatcher();
   const watcherStatus = watcher.watcherStatus;
 
   // Check if we can use cached version
-  if (rssCache &&
-      rssCache.dbLastChange.getTime() === watcherStatus.dbLastChange.getTime()) {
+  if (
+    rssCache &&
+    rssCache.dbLastChange.getTime() === watcherStatus.dbLastChange.getTime()
+  ) {
     return rssCache.xml;
   }
 
   // Get the base URL from environment or default
   const baseURL = Deno.env.get("ORW_PUBLIC_URL") ||
-                  Deno.env.get("PUBLIC_URL") ||
-                  `http://localhost:${Deno.env.get("PORT") || "8000"}`;
+    Deno.env.get("PUBLIC_URL") ||
+    `http://localhost:${Deno.env.get("PORT") || "8000"}`;
 
   const feed = new RSS({
     title: "OpenRouter Model Changes",
@@ -86,8 +102,18 @@ async function generateRSSFeed(): Promise<string> {
     .slice(0, 50);
 
   for (const change of changesForRSS) {
-    const changeTypeText = change.type === "added" ? "added" :
-                          change.type === "removed" ? "removed" : "updated";
+    let changeTypeText: string;
+
+    switch (change.type) {
+      case "added":
+        changeTypeText = "added";
+        break;
+      case "removed":
+        changeTypeText = "removed";
+        break;
+      default:
+        changeTypeText = "updated";
+    }
 
     feed.item({
       title: `Model ${change.id} ${changeTypeText}`,
@@ -113,12 +139,18 @@ async function generateRSSFeed(): Promise<string> {
 export const handler = define.handlers({
   async GET() {
     try {
+      const watcher = await getGlobalWatcher();
+      const watcherStatus = watcher.watcherStatus;
+
       const rssXML = await generateRSSFeed();
+
+      // Calculate dynamic cache time based on when next API check will happen
+      const cacheMaxAge = calculateCacheMaxAge(watcherStatus);
 
       return new Response(rssXML, {
         headers: {
           "Content-Type": "application/rss+xml; charset=utf-8",
-          "Cache-Control": "public, max-age=3600", // Cache for 1 hour
+          "Cache-Control": `public, max-age=${cacheMaxAge}`,
         },
       });
     } catch (error) {
@@ -129,7 +161,7 @@ export const handler = define.handlers({
         {
           status: 500,
           headers: { "Content-Type": "text/plain" },
-        }
+        },
       );
     }
   },
