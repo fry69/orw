@@ -21,4 +21,5 @@ export const FETCH_TIMEOUT_MS = 4_000; // 4 seconds in milliseconds
 /**
  * UI refresh interval
  */
-export const UI_REFRESH_MS = 60_000; // one minute in milliseconds
+// export const UI_REFRESH_MS = 60_000; // one minute in milliseconds
+export const UI_REFRESH_MS = 1_000; // one second in milliseconds

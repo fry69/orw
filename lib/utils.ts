@@ -30,7 +30,7 @@ export const durationAgo = (timestamp: DateTime | string, until: boolean = false
     } else {
       duration = DateTime.now().setLocale("en-us").diff(timestamp);
     }
-    return toHumanDurationExtended(duration);
+    return toHumanDurationExtended(duration, { rounding: { numOfUnits: 1, minUnit: "minutes" } });
   }
   return "";
 };
