@@ -1,7 +1,7 @@
 // islands/ModelList.tsx - Interactive model list with search and sorting
 import { useEffect, useState } from "preact/hooks";
 import { clientLists } from "../lib/state.ts";
-import type { Model } from "../types/global.ts";
+import type { Model } from "../lib/types.ts";
 
 interface ModelListProps {
   removed?: boolean;

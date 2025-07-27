@@ -1,5 +1,5 @@
 // test/fixtures/changes.ts - Test fixtures for model changes
-import type { Model, ModelDiff } from "../../types/global.ts";
+import type { Model, ModelDiff } from "../../lib/types.ts";
 
 export const testChanges: ModelDiff[] = [
   {

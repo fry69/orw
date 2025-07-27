@@ -2,11 +2,11 @@ import { createDatabase, runMigrations } from "./database/index.ts";
 import { OpenRouterAPIWatcher } from "./watcher.ts";
 import { join } from "@std/path";
 
-// Global watcher instance - single source of truth
+// Watcher instance - single source of truth
 let watcherInstance: OpenRouterAPIWatcher | null = null;
 
 /**
- * Get or create the global watcher instance
+ * Get or create the watcher instance singleton
  */
 export async function getWatcher(): Promise<OpenRouterAPIWatcher> {
   if (!watcherInstance) {

@@ -1,5 +1,5 @@
 import { createDefine } from "fresh";
-import type { Lists, WatcherStatus } from "../types/global.ts";
+import type { Lists, WatcherStatus } from "./types.ts";
 
 export interface State {
   commonData?: {

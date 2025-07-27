@@ -2,7 +2,7 @@
 import { define } from "../lib/app.ts";
 import { getWatcher } from "../server/index.ts";
 import RSS from "rss";
-import type { ModelDiff } from "../types/global.ts";
+import type { ModelDiff } from "../lib/types.ts";
 import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
 
 // Cache for RSS feed to avoid regenerating on every request

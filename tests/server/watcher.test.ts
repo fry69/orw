@@ -7,7 +7,7 @@
 // - Improved cleanup and better handling of pre-populated test data
 //
 import { assert, assertEquals, assertExists } from "@std/assert";
-import type { Model, ModelDiff } from "../../types/global.ts";
+import type { Model, ModelDiff } from "../../lib/types.ts";
 import { createTestContext, sampleModel } from "../helpers/test-setup.ts";
 import { testModels } from "../fixtures/models.ts";
 

@@ -1,7 +1,7 @@
 // islands/ChangeList.tsx - Interactive change history list
 import { useEffect, useState } from "preact/hooks";
 import { clientLists } from "../lib/state.ts";
-import type { ModelDiff } from "../types/global.ts";
+import type { ModelDiff } from "../lib/types.ts";
 
 const durationAgo = (timestamp: string): string => {
   if (!timestamp) return "";
