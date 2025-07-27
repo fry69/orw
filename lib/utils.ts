@@ -20,7 +20,7 @@ export const durationAgo = (timestamp: DateTime | string, until: boolean = false
   if (typeof timestamp === "string" && timestamp !== "") {
     timestamp = DateTime.fromISO(timestamp);
   }
-  if (DateTime.isDateTime(timestamp)) {
+  if (DateTime.isDateTime(timestamp) && timestamp.isValid) {
     let duration: Duration;
     if (until) {
       duration = timestamp.setLocale("en-us").plus({ hours: 1 }).diffNow();
