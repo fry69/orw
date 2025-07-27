@@ -13,3 +13,5 @@ Use tasks defined in `deno.json` in the repository root instead of invoking deno
 If an import in a source code file looks funky, first check if it is due to being an alias defined in `deno.json` or, if present, `import_map.json`, both in the repository root.
 
 All imports must be pinned to specific versions via alias in `deno.json` or `import_map.json`, never in any source code file!
+
+NOTE: Documentation in the `docs/` folder is probably very out-of-date, they will refer to no longer existing files and folders, some may have been moved, some may have been deleted/refactored/etc. Treat these documents as historic information. Deeper concepts mentioned in those documents may still be valid.
