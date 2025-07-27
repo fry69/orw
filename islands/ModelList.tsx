@@ -1,6 +1,6 @@
 // islands/ModelList.tsx - Interactive model list with search and sorting
 import { useEffect, useState } from "preact/hooks";
-import { globalLists } from "../lib/state.ts";
+import { clientLists } from "../lib/state.ts";
 import type { Model } from "../types/global.ts";
 
 interface ModelListProps {
@@ -104,7 +104,7 @@ const sortModels = (models: Model[], field: string, direction: "asc" | "desc"): 
 };
 
 export default function ModelList({ removed = false }: ModelListProps) {
-  const lists = globalLists.value;
+  const lists = clientLists.value;
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
   const [filterText, setFilterText] = useState<string>("");
   const [sortField, setSortField] = useState<string>("added_at");

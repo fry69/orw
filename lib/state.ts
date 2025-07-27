@@ -1,10 +1,10 @@
-// lib/state.ts - Fresh 2 global state management using signals
+// lib/state.ts - Fresh 2 client state management using signals
 import { computed, signal } from "@preact/signals";
 import type { Lists, WatcherStatus } from "../types/global.ts";
 import { durationAgo } from "./utils.ts";
 
 /**
- * Default values for global state
+ * Default values for client state
  */
 const defaultStatus: WatcherStatus = {
   isDevelopment: false,
@@ -20,19 +20,19 @@ const defaultLists: Lists = {
 };
 
 /**
- * Global signals for state management
+ * Client signals for state management
  */
-export const globalStatus = signal<WatcherStatus>(defaultStatus);
-export const globalLists = signal<Lists>(defaultLists);
+export const clientStatus = signal<WatcherStatus>(defaultStatus);
+export const clientLists = signal<Lists>(defaultLists);
 
 /**
  * Computed values for derived state
  */
 export const navBarDurations = computed(() => ({
-  dbLastChange: durationAgo(globalStatus.value.dbLastChange),
-  apiLastCheck: globalStatus.value.isDevelopment
+  dbLastChange: durationAgo(clientStatus.value.dbLastChange),
+  apiLastCheck: clientStatus.value.isDevelopment
     ? "[dev mode]"
-    : durationAgo(globalStatus.value.apiLastCheck, true),
+    : durationAgo(clientStatus.value.apiLastCheck, true),
 }));
 
 /**
@@ -40,5 +40,5 @@ export const navBarDurations = computed(() => ({
  */
 export const filteredModels = computed(() => {
   // This will be implemented in the ModelList island
-  return globalLists.value.models;
+  return clientLists.value.models;
 });

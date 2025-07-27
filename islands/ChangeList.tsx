@@ -1,6 +1,6 @@
 // islands/ChangeList.tsx - Interactive change history list
 import { useEffect, useState } from "preact/hooks";
-import { globalLists } from "../lib/state.ts";
+import { clientLists } from "../lib/state.ts";
 import type { ModelDiff } from "../types/global.ts";
 
 const durationAgo = (timestamp: string): string => {
@@ -59,7 +59,7 @@ const ChangeSnippet = ({ change }: { change: ModelDiff }) => {
 };
 
 export default function ChangeList() {
-  const lists = globalLists.value;
+  const lists = clientLists.value;
   const [filteredChanges, setFilteredChanges] = useState<ModelDiff[]>([]);
   const [filterText, setFilterText] = useState<string>("");
   const [limit, setLimit] = useState<number>(50);

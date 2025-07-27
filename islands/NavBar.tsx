@@ -1,6 +1,6 @@
 // islands/NavBar.tsx - Navigation bar with real-time updates
 import { useEffect } from "preact/hooks";
-import { globalLists, globalStatus, navBarDurations } from "../lib/state.ts";
+import { clientLists, clientStatus, navBarDurations } from "../lib/state.ts";
 import { DateTime } from "luxon";
 import { UI_REFRESH_MS, VERSION } from "../lib/constants.ts";
 
@@ -9,14 +9,14 @@ export default function NavBar() {
   useEffect(() => {
     const interval = setInterval(() => {
       // This will trigger computed signal updates
-      globalStatus.value = { ...globalStatus.value };
+      clientStatus.value = { ...clientStatus.value };
     }, UI_REFRESH_MS);
 
     return () => clearInterval(interval);
   }, []);
 
-  const status = globalStatus.value;
-  const lists = globalLists.value;
+  const status = clientStatus.value;
+  const lists = clientLists.value;
   const durations = navBarDurations.value;
 
   // Calculate first change timestamp for display

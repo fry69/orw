@@ -1,6 +1,6 @@
 // routes/_middleware.ts - Load common data for all pages
 import { define } from "../lib/app.ts";
-import { getGlobalWatcher } from "../server/index.ts";
+import { getWatcher } from "../server/index.ts";
 
 export default define.middleware(async (ctx) => {
   // Skip API routes and health check
@@ -10,7 +10,7 @@ export default define.middleware(async (ctx) => {
 
   try {
     // ✅ Load common data once for all routes
-    const watcher = await getGlobalWatcher();
+    const watcher = await getWatcher();
     const watcherStatus = watcher.watcherStatus;
 
     ctx.state.commonData = {

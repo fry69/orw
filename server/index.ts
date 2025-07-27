@@ -3,23 +3,23 @@ import { OpenRouterAPIWatcher } from "./watcher.ts";
 import { join } from "@std/path";
 
 // Global watcher instance - single source of truth
-let globalWatcher: OpenRouterAPIWatcher | null = null;
+let watcherInstance: OpenRouterAPIWatcher | null = null;
 
 /**
  * Get or create the global watcher instance
  */
-export async function getGlobalWatcher(): Promise<OpenRouterAPIWatcher> {
-  if (!globalWatcher) {
+export async function getWatcher(): Promise<OpenRouterAPIWatcher> {
+  if (!watcherInstance) {
     await initializeWatcher();
   }
-  return globalWatcher!;
+  return watcherInstance!;
 }
 
 /**
  * Initialize the application watcher
  */
 export async function initializeWatcher(): Promise<void> {
-  if (globalWatcher) return; // Already initialized
+  if (watcherInstance) return; // Already initialized
 
   console.log("Initializing ORW...");
 
@@ -48,13 +48,13 @@ export async function initializeWatcher(): Promise<void> {
       backupDir,
     };
 
-    globalWatcher = new OpenRouterAPIWatcher(watcherConfig);
-    await globalWatcher.initialize({ seed: seedDatabase });
+    watcherInstance = new OpenRouterAPIWatcher(watcherConfig);
+    await watcherInstance.initialize({ seed: seedDatabase });
 
     if (enableWatcher) {
       console.log("Starting background watcher...");
       // Don't await - let it run in the background
-      globalWatcher.enterBackgroundMode().catch((error) => {
+      watcherInstance.enterBackgroundMode().catch((error) => {
         console.error("Background watcher error:", error);
       });
     } else {

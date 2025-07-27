@@ -1,6 +1,6 @@
 // routes/rss.ts - RSS feed endpoint for OpenRouter model changes
 import { define } from "../lib/app.ts";
-import { getGlobalWatcher } from "../server/index.ts";
+import { getWatcher } from "../server/index.ts";
 import RSS from "rss";
 import type { ModelDiff } from "../types/global.ts";
 import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
@@ -67,7 +67,7 @@ function calculateCacheMaxAge(watcherStatus: { apiLastCheck: Date }): number {
  */
 
 async function generateRSSFeed(): Promise<string> {
-  const watcher = await getGlobalWatcher();
+  const watcher = await getWatcher();
   const watcherStatus = watcher.watcherStatus;
 
   // Check if we can use cached version
@@ -139,7 +139,7 @@ async function generateRSSFeed(): Promise<string> {
 export const handler = define.handlers({
   async GET() {
     try {
-      const watcher = await getGlobalWatcher();
+      const watcher = await getWatcher();
       const watcherStatus = watcher.watcherStatus;
 
       const rssXML = await generateRSSFeed();
