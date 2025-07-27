@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -A --watch=components/,islands/,lib,/routes/,server/,static/,types/
+#!/usr/bin/env -S deno run -A --watch=components/,islands/,lib,/routes/,server/,static/
 // dev.ts - Fresh 2 development server
 
 import { Builder } from "fresh/dev";

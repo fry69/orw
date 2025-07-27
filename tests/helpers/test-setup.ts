@@ -5,7 +5,7 @@ import { OpenRouterAPIWatcher } from "../../server/watcher.ts";
 import { runMigrations } from "../../server/database/index.ts";
 import { testModels } from "../fixtures/models.ts";
 import { testChanges } from "../fixtures/changes.ts";
-import type { Model, ModelDiff } from "../../lib/global.ts";
+import type { Model, ModelDiff } from "../../lib/types.ts";
 
 export interface TestContext {
   watcher: OpenRouterAPIWatcher;
