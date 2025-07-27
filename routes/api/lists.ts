@@ -5,7 +5,7 @@ import { API_VERSION } from "../../lib/constants.ts";
 export async function handler(_req: Request): Promise<Response> {
   try {
     const watcher = await getGlobalWatcher();
-    const lists = watcher.getLists;
+    const lists = watcher.allLists;
 
     return Response.json({
       lists: lists,

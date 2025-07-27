@@ -1,7 +1,7 @@
 // test/helpers/test-setup.ts - Test setup utilities using factory pattern
 import { join } from "@std/path";
 import { DatabaseSync } from "sqlite";
-import { OpenRouterAPIWatcher } from "../../server/watcher/index.ts";
+import { OpenRouterAPIWatcher } from "../../server/watcher.ts";
 import { runMigrations } from "../../server/database/index.ts";
 import { testModels } from "../fixtures/models.ts";
 import { testChanges } from "../fixtures/changes.ts";

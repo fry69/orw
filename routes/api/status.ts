@@ -8,9 +8,9 @@ export async function handler(_req: Request): Promise<Response> {
 
     const response_status = {
       status: {
-        dbLastChange: watcher.getDBLastChange,
-        apiLastCheck: watcher.getAPILastCheck,
-        apiLastCheckStatus: watcher.getAPILastCheckStatus,
+        dbLastChange: watcher.watcherStatus.dbLastChange,
+        apiLastCheck: watcher.watcherStatus.apiLastCheck,
+        apiLastCheckStatus: watcher.watcherStatus.apiLastCheckStatus,
         isDevelopment: Deno.env.get("NODE_ENV") === "development" || false,
         isValid: true,
       },

@@ -119,6 +119,10 @@ export class OpenRouterAPIWatcher {
     }
   }
 
+  // =============================================================================
+  // Private Database Helper Methods
+  // =============================================================================
+
   /**
    * Check if database has data (models table exists and has data)
    */
@@ -144,7 +148,9 @@ export class OpenRouterAPIWatcher {
    */
   private hasDatabase(): boolean {
     return this.config.db !== undefined;
-  } /**
+  }
+
+  /**
    * Ensure required directories exist.
    */
 
@@ -174,38 +180,28 @@ export class OpenRouterAPIWatcher {
     }
   }
 
+  // =============================================================================
+  // Core Getter Methods
+  // =============================================================================
+
   /**
-   * Get cached database lists
+   * Get all cached database lists
    */
-  get getLists(): Lists {
+  get allLists(): Lists {
     return this.lists;
   }
 
   /**
-   * Get last change timestamp recorded in the database
+   * Get current watcher status including timestamps and API check results
    */
-  get getDBLastChange(): Date {
-    return this.status.dbLastChange;
+  get watcherStatus(): Readonly<WatcherStatus> {
+    return this.status;
   }
 
   /**
-   * Get timestamp of the last OpenRouter API check
+   * Get the path to the current database backup file
    */
-  get getAPILastCheck(): Date {
-    return this.status.apiLastCheck;
-  }
-
-  /**
-   * Get status of the last OpenRouter API check result
-   */
-  get getAPILastCheckStatus(): string {
-    return this.status.apiLastCheckStatus;
-  }
-
-  /**
-   * Get the path to the current database backup file.
-   */
-  get getDbBackupPath(): string | undefined {
+  get dbBackupPath(): string | undefined {
     if (this.config.backupDir && this.config.dbFilePath) {
       const basename = this.config.dbFilePath.split("/").pop() || "orw.db";
       return join(this.config.backupDir, basename + ".backup");
@@ -233,6 +229,49 @@ export class OpenRouterAPIWatcher {
   get removedModels(): Model[] {
     return this.lists.removed;
   }
+
+  // =============================================================================
+  // Status and Health Check Methods
+  // =============================================================================
+
+  /**
+   * Check if the watcher is ready to perform operations
+   */
+  get isReady(): boolean {
+    return this.hasDatabase() && this.databaseHasData();
+  }
+
+  /**
+   * Check if we're currently in development mode
+   */
+  get isDevelopmentMode(): boolean {
+    return isDevelopment;
+  }
+
+  /**
+   * Check if the last API check was successful
+   */
+  get lastAPICheckSuccessful(): boolean {
+    return this.status.apiLastCheckStatus === "success";
+  }
+
+  /**
+   * Get time since last API check in milliseconds
+   */
+  get timeSinceLastAPICheck(): number {
+    return Date.now() - this.status.apiLastCheck.getTime();
+  }
+
+  /**
+   * Check if it's time for the next API check (more than 1 hour ago)
+   */
+  get shouldCheckAPI(): boolean {
+    return this.timeSinceLastAPICheck > 3_600_000; // 1 hour
+  }
+
+  // =============================================================================
+  // Logging and Error Handling Methods
+  // =============================================================================
 
   /**
    * Receives error messages and outputs to console and logfile
@@ -264,6 +303,10 @@ export class OpenRouterAPIWatcher {
       Deno.writeTextFile(this.config.logFilePath, `${logMessage}\n`, { append: true });
     }
   }
+
+  // =============================================================================
+  // API Communication Methods
+  // =============================================================================
 
   /**
    * Fetches the current list of OpenRouter models from the API.
@@ -309,6 +352,32 @@ export class OpenRouterAPIWatcher {
     this.status.apiLastCheckStatus = "failed";
     this.updateAPILastCheck();
     return [];
+  }
+
+  // =============================================================================
+  // Database Operations - Data Loading
+  // =============================================================================
+
+  /**
+   * Loads last API check timestamp and result status from database and updates internal status.
+   */
+  loadAPILastCheck() {
+    if (!this.hasDatabase()) {
+      return;
+    }
+
+    const result: Record<string, unknown> | undefined = this.config.db!
+      .prepare("SELECT last_check, last_status FROM last_api_check WHERE id = 1")
+      .get();
+
+    if (result) {
+      if (result.last_check) {
+        this.status.apiLastCheck = new Date(result.last_check as string);
+      } else {
+        this.status.apiLastCheck = new Date(0);
+      }
+      this.status.apiLastCheckStatus = (result.last_status as string) ?? "unknown";
+    }
   }
 
   /**
@@ -362,27 +431,6 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
-   * Stores the current list of OpenRouter models in the SQLite database.
-   */
-  storeModelList(models: Model[], timestamp: Date = new Date()) {
-    if (!this.hasDatabase()) {
-      this.log("No database available, cannot store model list");
-      return;
-    }
-
-    const deleteModels = this.config.db!.prepare("DELETE FROM models");
-    deleteModels.run();
-
-    const insertModels = this.config.db!.prepare(
-      "INSERT INTO models (id, data, timestamp) VALUES (?, ?, ?)",
-    );
-
-    for (const model of models) {
-      insertModels.run(model.id, JSON.stringify(model), timestamp.toISOString());
-    }
-  }
-
-  /**
    * Loads list of removed OpenRouter models from the SQLite database.
    */
   loadRemovedModelList(): Model[] {
@@ -420,6 +468,73 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
+   * Loads the most recent model changes from the SQLite database.
+   */
+  loadChanges(n?: number): ModelDiff[] {
+    /**
+     * Helper method for transforming a row from the changes table to a ModelDiff object
+     */
+    function transformChangesRow(row: Record<string, unknown>): ModelDiff {
+      const changes = JSON.parse(row.changes as string);
+      if (row.type === "changed") {
+        return {
+          id: row.id as string,
+          type: row.type as ModelChangeType,
+          changes,
+          timestamp: row.timestamp as string,
+        };
+      }
+      return {
+        id: row.id as string,
+        type: row.type as ModelChangeType,
+        model: changes,
+        timestamp: row.timestamp as string,
+      };
+    }
+
+    if (!this.hasDatabase()) {
+      return [];
+    }
+
+    if (n) {
+      return this.config.db!
+        .prepare("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?")
+        .all(n)
+        .map(transformChangesRow);
+    } else {
+      return this.config.db!
+        .prepare("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC")
+        .all()
+        .map(transformChangesRow);
+    }
+  }
+
+  // =============================================================================
+  // Database Operations - Data Storage
+  // =============================================================================
+
+  /**
+   * Stores the current list of OpenRouter models in the SQLite database.
+   */
+  storeModelList(models: Model[], timestamp: Date = new Date()) {
+    if (!this.hasDatabase()) {
+      this.log("No database available, cannot store model list");
+      return;
+    }
+
+    const deleteModels = this.config.db!.prepare("DELETE FROM models");
+    deleteModels.run();
+
+    const insertModels = this.config.db!.prepare(
+      "INSERT INTO models (id, data, timestamp) VALUES (?, ?, ?)",
+    );
+
+    for (const model of models) {
+      insertModels.run(model.id, JSON.stringify(model), timestamp.toISOString());
+    }
+  }
+
+  /**
    * Stores a removed model from the OpenRouter models list in the SQLite database.
    */
   storeRemovedModel(model: Model, timestamp: Date = new Date()) {
@@ -433,48 +548,6 @@ export class OpenRouterAPIWatcher {
     );
     insertModel.run(model.id, JSON.stringify(model), timestamp.toISOString());
   }
-
-  /**
-   * Loads the most recent model changes from the SQLite database.
-   */
-  loadChanges(n?: number): ModelDiff[] {
-    if (!this.hasDatabase()) {
-      return [];
-    }
-
-    if (n) {
-      return this.config.db!
-        .prepare("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC LIMIT ?")
-        .all(n)
-        .map(this.transformChangesRow);
-    } else {
-      return this.config.db!
-        .prepare("SELECT id, type, changes, timestamp FROM changes ORDER BY timestamp DESC")
-        .all()
-        .map(this.transformChangesRow);
-    }
-  }
-
-  /**
-   * Transform a row from the changes table to a ModelDiff object
-   */
-  private transformChangesRow = (row: Record<string, unknown>): ModelDiff => {
-    const changes = JSON.parse(row.changes as string);
-    if (row.type === "changed") {
-      return {
-        id: row.id as string,
-        type: row.type as ModelChangeType,
-        changes,
-        timestamp: row.timestamp as string,
-      };
-    }
-    return {
-      id: row.id as string,
-      type: row.type as ModelChangeType,
-      model: changes,
-      timestamp: row.timestamp as string,
-    };
-  };
 
   /**
    * Stores a list of model changes in the SQLite database.
@@ -515,28 +588,6 @@ export class OpenRouterAPIWatcher {
   }
 
   /**
-   * Loads last API check timestamp and result status from database and updates internal status.
-   */
-  loadAPILastCheck() {
-    if (!this.hasDatabase()) {
-      return;
-    }
-
-    const result: Record<string, unknown> | undefined = this.config.db!
-      .prepare("SELECT last_check, last_status FROM last_api_check WHERE id = 1")
-      .get();
-
-    if (result) {
-      if (result.last_check) {
-        this.status.apiLastCheck = new Date(result.last_check as string);
-      } else {
-        this.status.apiLastCheck = new Date(0);
-      }
-      this.status.apiLastCheckStatus = (result.last_status as string) ?? "unknown";
-    }
-  }
-
-  /**
    * Updates the last check API timestamp and result status in the database.
    */
   updateAPILastCheck() {
@@ -549,6 +600,10 @@ export class OpenRouterAPIWatcher {
     );
     replaceLastCheck.run(this.status.apiLastCheck.toISOString(), this.status.apiLastCheckStatus);
   }
+
+  // =============================================================================
+  // Change Detection and Model Diffing
+  // =============================================================================
 
   /**
    * Finds the changes between a new list of models and the last stored list of models.
@@ -698,10 +753,15 @@ export class OpenRouterAPIWatcher {
     }
 
     return { changes };
-  } /**
+  }
+
+  // =============================================================================
+  // Main Control Flow and Public API Methods
+  // =============================================================================
+
+  /**
    * High level check logic
    */
-
   private async check() {
     let newModels = await this.getAPIModelList();
     if (newModels.length === 0) {
