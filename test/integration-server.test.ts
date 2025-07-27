@@ -85,19 +85,6 @@ Deno.test.ignore("Production server starts and serves routes correctly", async (
     const changesContent = await changesResponse.text();
     assertMatch(changesContent, /OpenRouter.*Changes/, "Should contain expected content");
 
-    console.log("Testing API route...");
-    // Test API route
-    const apiResponse = await fetch(`http://localhost:${TEST_PORT}/api/status`);
-    assertEquals(apiResponse.status, 200, "API status route should return 200");
-    assertEquals(
-      apiResponse.headers.get("content-type")?.includes("application/json"),
-      true,
-      "Should return JSON",
-    );
-
-    const apiContent = await apiResponse.json();
-    assertEquals(typeof apiContent.status, "object", "Should return status object");
-
     console.log("Testing 404 route...");
     // Test 404 route
     const notFoundResponse = await fetch(`http://localhost:${TEST_PORT}/nonexistent`);

@@ -1,9 +1,9 @@
 import { createDefine } from "fresh";
-import type { APIStatus, Lists } from "../types/global.ts";
+import type { Lists, WatcherStatus } from "../types/global.ts";
 
 export interface State {
   commonData?: {
-    status: APIStatus;
+    status: WatcherStatus;
     lists: Lists;
   };
 }

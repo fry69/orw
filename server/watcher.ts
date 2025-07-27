@@ -4,7 +4,7 @@ import { dirname, join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import deepDiff from "deep-diff";
 import type { Lists, Model, ModelChangeType, ModelDiff } from "../types/global.ts";
-import { FETCH_TIMEOUT_MS, OPENROUTER_API_URL, POLLING_INTERVAL_MS } from "../lib/constants.ts";
+import { FETCH_TIMEOUT_MS, OPENROUTER_API_URL, WATCHER_INTERVAL_MS } from "../lib/constants.ts";
 
 const isDevelopment = Deno.env.get("NODE_ENV") === "development" ||
   Deno.env.get("NODE_ENV") === "test" || false;
@@ -811,7 +811,7 @@ export class OpenRouterAPIWatcher {
   private async runBackgroundLoop() {
     while (true) {
       await this.check();
-      await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL_MS));
+      await new Promise((resolve) => setTimeout(resolve, WATCHER_INTERVAL_MS));
     }
   }
 
@@ -825,7 +825,7 @@ export class OpenRouterAPIWatcher {
     const timeDiff = Date.now() - this.status.apiLastCheck.getTime();
 
     // schedule the next API check after the remaining wait time has elapsed
-    const sleeptime = POLLING_INTERVAL_MS - timeDiff;
+    const sleeptime = WATCHER_INTERVAL_MS - timeDiff;
     if (sleeptime > 0) {
       this.log(`Next API check in ${(sleeptime / 1_000 / 60).toFixed(0)} minutes`);
       setTimeout(() => this.runBackgroundLoop(), sleeptime);

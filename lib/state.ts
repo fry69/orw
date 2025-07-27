@@ -1,14 +1,13 @@
 // lib/state.ts - Fresh 2 global state management using signals
 import { computed, signal } from "@preact/signals";
-import type { APIStatus, Lists } from "../types/global.ts";
-import type { GlobalClient, GlobalError } from "../types/client.ts";
+import type { Lists, WatcherStatus } from "../types/global.ts";
+import type { GlobalError } from "../types/client.ts";
 import { durationAgo } from "./utils.ts";
 
 /**
  * Default values for global state
  */
-const defaultStatus: APIStatus = {
-  isValid: false,
+const defaultStatus: WatcherStatus = {
   isDevelopment: false,
   apiLastCheck: "",
   apiLastCheckStatus: "",
@@ -21,14 +20,6 @@ const defaultLists: Lists = {
   changes: [],
 };
 
-const defaultClient: GlobalClient = {
-  navBarDynamicElement: null,
-  navBarDurations: {
-    dbLastChange: "",
-    apiLastCheck: "",
-  },
-};
-
 const defaultError: GlobalError = {
   isError: false,
   preventClearing: false,
@@ -38,9 +29,8 @@ const defaultError: GlobalError = {
 /**
  * Global signals for state management
  */
-export const globalStatus = signal<APIStatus>(defaultStatus);
+export const globalStatus = signal<WatcherStatus>(defaultStatus);
 export const globalLists = signal<Lists>(defaultLists);
-export const globalClient = signal<GlobalClient>(defaultClient);
 export const globalError = signal<GlobalError>(defaultError);
 
 /**
@@ -70,17 +60,5 @@ export function setGlobalError(message?: string, preventClearing: boolean = fals
     globalError.value = { isError: true, message, preventClearing };
   } else {
     globalError.value = { isError: false, message: "", preventClearing: false };
-  }
-}
-
-/**
- * Initialize state with server-side data
- */
-export function initializeState(initialData: { status?: APIStatus; lists?: Lists }) {
-  if (initialData.status) {
-    globalStatus.value = initialData.status;
-  }
-  if (initialData.lists) {
-    globalLists.value = initialData.lists;
   }
 }

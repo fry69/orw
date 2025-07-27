@@ -59,8 +59,7 @@ export interface ModelDiff {
 /**
  * Represents status information in an API response.
  */
-export type APIStatus = {
-  isValid: boolean;
+export type WatcherStatus = {
   isDevelopment: boolean;
   apiLastCheck: string;
   apiLastCheckStatus: string;
@@ -75,12 +74,3 @@ export type Lists = {
   removed: Model[];
   changes: ModelDiff[];
 };
-
-/**
- * Represents a generic API response.
- */
-export interface APIResponse {
-  version: number;
-  status?: APIStatus;
-  lists?: Lists;
-}

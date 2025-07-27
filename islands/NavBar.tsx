@@ -2,7 +2,7 @@
 import { useEffect } from "preact/hooks";
 import { globalLists, globalStatus, navBarDurations } from "../lib/state.ts";
 import { DateTime } from "luxon";
-import { VERSION } from "../lib/constants.ts";
+import { UI_REFRESH_MS, VERSION } from "../lib/constants.ts";
 
 export default function NavBar() {
   // Update durations every minute
@@ -10,7 +10,7 @@ export default function NavBar() {
     const interval = setInterval(() => {
       // This will trigger computed signal updates
       globalStatus.value = { ...globalStatus.value };
-    }, 60000);
+    }, UI_REFRESH_MS);
 
     return () => clearInterval(interval);
   }, []);

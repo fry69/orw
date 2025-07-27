@@ -15,7 +15,6 @@ export default define.middleware(async (ctx) => {
 
     ctx.state.commonData = {
       status: {
-        isValid: true,
         isDevelopment: Deno.env.get("NODE_ENV") === "development" || false,
         apiLastCheck: watcherStatus.apiLastCheck.toISOString(),
         apiLastCheckStatus: watcherStatus.apiLastCheckStatus,
@@ -28,7 +27,6 @@ export default define.middleware(async (ctx) => {
     // Continue with empty data rather than failing
     ctx.state.commonData = {
       status: {
-        isValid: false,
         isDevelopment: false,
         apiLastCheck: "",
         apiLastCheckStatus: "",
