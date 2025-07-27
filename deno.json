@@ -7,7 +7,7 @@
   "nodeModulesDir": "auto",
   "tasks": {
     "dev": "deno run --allow-all --watch=components/,islands/,lib/,routes/,server/,static/,types/,main.ts dev.ts",
-    "serve": "deno serve --allow-all --env-file=.env _fresh/server.js",
+    "serve": "deno task build && deno serve --allow-all --env-file=.env _fresh/server.js",
     "serve-prod": "deno serve --allow-all _fresh/server.js",
     "build": "deno run --allow-all dev.ts build",
     "test": "deno test --allow-all --reporter=dot test/",
