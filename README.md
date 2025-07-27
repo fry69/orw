@@ -91,7 +91,13 @@ By default, the web interface is available at http://localhost:3100.
 
 ## RSS feed
 
-The OpenRouter API Watcher also includes a RSS feed generator, available at the `/rss` endpoint. It will serve the last 50 recorded changes as formatted JSON encapsulated in a `<code>` tag, so it does not look like a garbled mess in RSS readers.
+The OpenRouter API Watcher includes an RSS feed generator, available at the `/rss` endpoint. It serves the last 50 recorded changes with proper HTML formatting:
+
+- **Added models**: Shows full model details in JSON format
+- **Removed models**: Shows full model details of the removed model
+- **Updated models**: Shows specific field changes with old/new values highlighted
+
+The RSS feed is automatically cached and regenerated only when database changes are detected, ensuring optimal performance. The feed includes proper RSS metadata and is compatible with all standard RSS readers.
 
 ## Testing
 
