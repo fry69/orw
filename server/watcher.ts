@@ -4,12 +4,12 @@ import { dirname, join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import deepDiff from "deep-diff";
 import type { Lists, Model, ModelChangeType, ModelDiff } from "../types/global.ts";
-import { FETCH_TIMEOUT, OPENROUTER_API_URL } from "../lib/constants.ts";
+import { FETCH_TIMEOUT_MS, OPENROUTER_API_URL, POLLING_INTERVAL_MS } from "../lib/constants.ts";
 
-export const isDevelopment = Deno.env.get("NODE_ENV") === "development" ||
+const isDevelopment = Deno.env.get("NODE_ENV") === "development" ||
   Deno.env.get("NODE_ENV") === "test" || false;
-const dataDir = Deno.env.get("ORW_DATA_PATH") || "./data";
 
+const dataDir = Deno.env.get("ORW_DATA_PATH") || "./data";
 const defaultConfig = {
   dataDir,
   backupDir: Deno.env.get("ORW_BACKUP_PATH") || join(dataDir, "backup"),
@@ -87,8 +87,9 @@ export class OpenRouterAPIWatcher {
    * Initialize the watcher instance
    */
   async initialize(options: { seed?: boolean; skipAPI?: boolean } = {}) {
-    // Only load lists if database has data (tables exist and are populated)
+    // Only load lists and last check timestamp if database has data (tables exist and are populated)
     if (this.config.db && this.databaseHasData()) {
+      this.loadAPILastCheck();
       this.loadLists();
 
       // Update status with last change timestamp
@@ -201,34 +202,34 @@ export class OpenRouterAPIWatcher {
   /**
    * Get the path to the current database backup file
    */
-  get dbBackupPath(): string | undefined {
-    if (this.config.backupDir && this.config.dbFilePath) {
-      const basename = this.config.dbFilePath.split("/").pop() || "orw.db";
-      return join(this.config.backupDir, basename + ".backup");
-    }
-    return undefined;
-  }
+  // get dbBackupPath(): string | undefined {
+  //   if (this.config.backupDir && this.config.dbFilePath) {
+  //     const basename = this.config.dbFilePath.split("/").pop() || "orw.db";
+  //     return join(this.config.backupDir, basename + ".backup");
+  //   }
+  //   return undefined;
+  // }
 
   /**
    * Get current models list
    */
-  get models(): Model[] {
-    return this.lists.models;
-  }
+  // get models(): Model[] {
+  //   return this.lists.models;
+  // }
 
   /**
    * Get current changes list
    */
-  get changes(): ModelDiff[] {
-    return this.lists.changes;
-  }
+  // get changes(): ModelDiff[] {
+  //   return this.lists.changes;
+  // }
 
   /**
    * Get current removed models list
    */
-  get removedModels(): Model[] {
-    return this.lists.removed;
-  }
+  // get removedModels(): Model[] {
+  //   return this.lists.removed;
+  // }
 
   // =============================================================================
   // Status and Health Check Methods
@@ -237,37 +238,37 @@ export class OpenRouterAPIWatcher {
   /**
    * Check if the watcher is ready to perform operations
    */
-  get isReady(): boolean {
-    return this.hasDatabase() && this.databaseHasData();
-  }
+  // get isReady(): boolean {
+  //   return this.hasDatabase() && this.databaseHasData();
+  // }
 
   /**
    * Check if we're currently in development mode
    */
-  get isDevelopmentMode(): boolean {
-    return isDevelopment;
-  }
+  // get isDevelopmentMode(): boolean {
+  //   return isDevelopment;
+  // }
 
   /**
    * Check if the last API check was successful
    */
-  get lastAPICheckSuccessful(): boolean {
-    return this.status.apiLastCheckStatus === "success";
-  }
+  // get lastAPICheckSuccessful(): boolean {
+  //   return this.status.apiLastCheckStatus === "success";
+  // }
 
   /**
    * Get time since last API check in milliseconds
    */
-  get timeSinceLastAPICheck(): number {
-    return Date.now() - this.status.apiLastCheck.getTime();
-  }
+  // get timeSinceLastAPICheck(): number {
+  //   return Date.now() - this.status.apiLastCheck.getTime();
+  // }
 
   /**
    * Check if it's time for the next API check (more than 1 hour ago)
    */
-  get shouldCheckAPI(): boolean {
-    return this.timeSinceLastAPICheck > 3_600_000; // 1 hour
-  }
+  // get shouldCheckAPI(): boolean {
+  //   return this.timeSinceLastAPICheck > CHECK_INTERVAL_MS
+  // }
 
   // =============================================================================
   // Logging and Error Handling Methods
@@ -324,7 +325,7 @@ export class OpenRouterAPIWatcher {
 
     try {
       const response = await fetch(OPENROUTER_API_URL, {
-        signal: AbortSignal.timeout(FETCH_TIMEOUT),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       });
 
       if (response.ok) {
@@ -810,7 +811,7 @@ export class OpenRouterAPIWatcher {
   private async runBackgroundLoop() {
     while (true) {
       await this.check();
-      await new Promise((resolve) => setTimeout(resolve, 3_600_000)); // 1 hour
+      await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL_MS));
     }
   }
 
@@ -822,13 +823,9 @@ export class OpenRouterAPIWatcher {
 
     // Check the last API timestamp and check if it is older than one hour
     const timeDiff = Date.now() - this.status.apiLastCheck.getTime();
-    if (timeDiff > 3_600_000) {
-      await this.runBackgroundLoop();
-      // this never returns...
-    }
 
     // schedule the next API check after the remaining wait time has elapsed
-    const sleeptime = 3_600_000 - timeDiff;
+    const sleeptime = POLLING_INTERVAL_MS - timeDiff;
     if (sleeptime > 0) {
       this.log(`Next API check in ${(sleeptime / 1_000 / 60).toFixed(0)} minutes`);
       setTimeout(() => this.runBackgroundLoop(), sleeptime);

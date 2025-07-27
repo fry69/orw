@@ -3,14 +3,14 @@ import { useEffect, useRef } from "preact/hooks";
 import { globalLists, globalStatus, setGlobalError } from "../lib/state.ts";
 import {
   API_VERSION,
-  FETCH_TIMEOUT,
-  INITIAL_INTERVAL,
-  REFRESH_INTERVAL,
+  FETCH_TIMEOUT_MS,
+  INITIAL_INTERVAL_MS,
+  REFRESH_INTERVAL_MS,
   VERSION,
 } from "../lib/constants.ts";
 import type { APIResponse } from "../types/global.ts";
 
-let updateInterval = INITIAL_INTERVAL;
+let updateInterval = INITIAL_INTERVAL_MS;
 
 export default function DataUpdater() {
   const errorCount = useRef(0);
@@ -26,7 +26,7 @@ export default function DataUpdater() {
   const fetchAPI = async (endpoint: string): Promise<APIResponse> => {
     try {
       const response = await fetch(endpoint, {
-        signal: AbortSignal.timeout(FETCH_TIMEOUT),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
         headers: {
           "X-ORW-Version": VERSION,
         },
@@ -53,7 +53,7 @@ export default function DataUpdater() {
       // Clear any existing error
       setGlobalError();
       // Reset updateInterval and error count
-      updateInterval = INITIAL_INTERVAL;
+      updateInterval = INITIAL_INTERVAL_MS;
       errorCount.current = 0;
 
       return apiResponse;
@@ -114,7 +114,7 @@ export default function DataUpdater() {
     const lastCheck = new Date(globalStatus.value.apiLastCheck).getTime();
 
     // If last API check is longer than an hour ago, refresh
-    if (now - lastCheck > REFRESH_INTERVAL) {
+    if (now - lastCheck > REFRESH_INTERVAL_MS) {
       handleRefresh().catch((err) => {
         errorHandler(`Error in update loop: ${err}`);
       });
