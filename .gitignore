@@ -58,5 +58,8 @@ _fresh/
 node_modules/
 vendor/
 
+# directory used for testing?
+test-*/
+
 # Includes
 !lib

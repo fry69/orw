@@ -2,7 +2,6 @@
 import { define } from "../lib/app.ts";
 import NavBar from "../islands/NavBar.tsx";
 import ChangeList from "../islands/ChangeList.tsx";
-import ErrorContainer from "../components/ErrorContainer.tsx";
 import DataInitializer from "../islands/DataInitializer.tsx";
 
 export default define.page((props) => {
@@ -11,9 +10,7 @@ export default define.page((props) => {
       <DataInitializer initialData={props.state.commonData} />
       <NavBar />
       <div class="main-content">
-        <ErrorContainer>
-          <ChangeList />
-        </ErrorContainer>
+        <ChangeList />
       </div>
     </>
   );
