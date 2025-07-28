@@ -58,8 +58,9 @@ _fresh/
 node_modules/
 vendor/
 
-# directory used for testing?
+# GitHub Copilot agent just loves to create folders...
 test-*/
+cov_*/
 
 # Includes
 !lib
