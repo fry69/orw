@@ -85,9 +85,9 @@ export default function ChangeList() {
   }, [lists.changes, filterText, limit]);
 
   const handleRowClick = (changeId: string) => {
-    // For now, just open model detail in a new tab
+    // Navigate to model detail page (URL encode to handle slashes in model IDs)
     if (changeId) {
-      globalThis.open(`/model?id=${changeId}`, "_blank");
+      globalThis.location.href = `/model/${encodeURIComponent(changeId)}`;
     }
   };
 

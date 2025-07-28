@@ -138,8 +138,8 @@ export default function ModelList({ removed = false }: ModelListProps) {
   };
 
   const handleRowClick = (modelId: string) => {
-    // For now, just open in a new tab (we'll implement model detail page later)
-    globalThis.open(`/model?id=${modelId}`, "_blank");
+    // Navigate to model detail page (URL encode to handle slashes in model IDs)
+    globalThis.location.href = `/model/${encodeURIComponent(modelId)}`;
   };
 
   return (
