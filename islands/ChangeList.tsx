@@ -43,10 +43,10 @@ const ChangeSnippet = ({ change }: { change: ModelDiff }) => {
     <div class="mt-2 text-xs text-base-content/70">
       {changeEntries.slice(0, 3).map(([path, changeItem], index) => (
         <div key={index} class="mb-1">
-          <span class="font-bold">{path}</span>:
+          <span class="text-success font-bold">{path}</span>:
           <span class="text-error ml-1">{JSON.stringify(changeItem.old)}</span>
           <span class="mx-1">→</span>
-          <span class="text-success">{JSON.stringify(changeItem.new)}</span>
+          <span class="text-info">{JSON.stringify(changeItem.new)}</span>
         </div>
       ))}
       {changeEntries.length > 3 && (
