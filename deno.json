@@ -18,6 +18,7 @@
     "update": "deno run -A -r jsr:@fresh/update ."
   },
   "exclude": [
+    "**/.github/instructions/*",
     "**/_fresh/*",
     "**/data/*",
     "**/docs/*"
