@@ -13,13 +13,14 @@ This project tracks changes to the public OpenRouter model list via API. Is uses
 - `routes`: Contains Fresh routes.
 - `server`: Contains the backend watcher and database logic for tracking changes to the OpenRouter model list.
 - `static`: Contains static files for the frontend.
-- `tests`: Contains all test scripts.
+- `tests`: Contains all test scripts (currently empty, skip testing for now).
 
 NOTE: Documentation `*.md` files in the folder `docs/` need to be treated carefully. While deeper concepts mentioned in those documents are still valid, files and folders mentioned in those `docs/*.md` files may not exist anymore, some may have been moved, some may have been deleted/refactored/etc.
 
 ## Notable Files
 
 - `main.ts`: Contains the Fresh startup script for production, cannot be invoked directly, see documentation for details.
+- `utils.ts`: Contains application middleware define helper and state type definitions.
 - `dev.ts`: Contains the Fresh startup script for development, can get invoked directly.
 - `deno.json`: Contains Deno configuration, tasks, import aliases, etc.
 - `.env`: Contains environment variable settings for production, do not touch this file if it exists.

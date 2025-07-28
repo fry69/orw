@@ -1,5 +1,5 @@
 // routes/_middleware.ts - Load common data for all pages
-import { define } from "../lib/app.ts";
+import { define } from "../utils.ts";
 import { getWatcher } from "../server/index.ts";
 
 export default define.middleware(async (ctx) => {
