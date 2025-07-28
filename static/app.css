@@ -1,4 +1,7 @@
 /* app.css */
+@import "tailwindcss";
+@plugin "daisyui";
+
 body {
   min-width: 480px;
   margin: 0;

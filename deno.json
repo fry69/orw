@@ -33,6 +33,7 @@
     "@std/encoding": "jsr:@std/encoding@1",
     "@std/streams": "jsr:@std/streams@1",
     "@std/cli": "jsr:@std/cli@1",
+    "daisyui": "npm:daisyui@^5.0.48",
     "fresh": "jsr:@fresh/core@2.0.0-alpha.46",
     "tailwindcss": "npm:tailwindcss@^4.1.10",
     "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9",
