@@ -56,19 +56,20 @@ export default function NavBar() {
               </a>
             </li>
             <li>
-              <div class="flex items-center gap-1">
-                <a
-                  href="/changes"
-                  class={`btn btn-ghost ${
-                    globalThis.location?.pathname === "/changes" ? "btn-accent" : ""
-                  }`}
-                >
-                  Changes
-                </a>
-                <a href="/rss" class="btn btn-ghost btn-square btn-xs">
-                  <img class="image-link" src="/rss.svg" alt="RSS Feed" width="12" height="12" />
-                </a>
-              </div>
+              <a
+                href="/changes"
+                class={`btn btn-ghost ${
+                  globalThis.location?.pathname === "/changes" ? "btn-accent" : ""
+                }`}
+              >
+                Changes
+              </a>
+            </li>
+            <li>
+              <a href="/rss" class="btn btn-ghost">
+                <img class="image-link" src="/rss.svg" alt="RSS Feed" width="12" height="12" />
+                RSS
+              </a>
             </li>
             <li>
               <a

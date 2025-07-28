@@ -62,7 +62,8 @@ export default function ChangeList() {
   const lists = clientLists.value;
   const [filteredChanges, setFilteredChanges] = useState<ModelDiff[]>([]);
   const [filterText, setFilterText] = useState<string>("");
-  const [limit, setLimit] = useState<number>(50);
+  // const [limit, setLimit] = useState<number>(500);
+  const limit = 500;
 
   // Update filtered changes when lists change or filter changes
   useEffect(() => {
@@ -105,8 +106,6 @@ export default function ChangeList() {
 
   return (
     <div class="container mx-auto px-4 py-6">
-      <h1 class="text-3xl font-bold text-center mb-6">OpenRouter Model Changes</h1>
-
       {/* Controls */}
       <div class="flex flex-col sm:flex-row gap-4 items-center justify-center mb-6">
         <input
@@ -116,7 +115,8 @@ export default function ChangeList() {
           onInput={(e) => setFilterText((e.target as HTMLInputElement).value)}
           class="input input-bordered w-full max-w-xs"
         />
-        <select
+        {
+          /* <select
           value={limit}
           onChange={(e) => setLimit(parseInt((e.target as HTMLSelectElement).value))}
           class="select select-bordered w-full max-w-xs"
@@ -125,7 +125,8 @@ export default function ChangeList() {
           <option value={50}>Show 50</option>
           <option value={100}>Show 100</option>
           <option value={200}>Show 200</option>
-        </select>
+        </select> */
+        }
       </div>
 
       <div class="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">

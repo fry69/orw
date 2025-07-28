@@ -28,15 +28,15 @@ const durationAgo = (timestamp: string): string => {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) return "today";
-  if (diffDays === 1) return "1 day ago";
-  if (diffDays < 30) return `${diffDays} days ago`;
+  if (diffDays === 1) return "1 day";
+  if (diffDays < 30) return `${diffDays} days`;
 
   const diffMonths = Math.floor(diffDays / 30);
-  if (diffMonths === 1) return "1 month ago";
-  if (diffMonths < 12) return `${diffMonths} months ago`;
+  if (diffMonths === 1) return "1 mo";
+  if (diffMonths < 12) return `${diffMonths} mos`;
 
   const diffYears = Math.floor(diffDays / 365);
-  return diffYears === 1 ? "1 year ago" : `${diffYears} years ago`;
+  return diffYears === 1 ? "1 yr" : `${diffYears} yrs`;
 };
 
 const sortModels = (models: Model[], field: string, direction: "asc" | "desc"): Model[] => {
@@ -176,7 +176,7 @@ export default function ModelList({ removed = false }: ModelListProps) {
       </div>
 
       <div class="overflow-x-auto">
-        <table class="table table-zebra table-pin-rows w-full">
+        <table class="table">
           <thead>
             <tr class="bg-base-300">
               <th
@@ -210,7 +210,8 @@ export default function ModelList({ removed = false }: ModelListProps) {
               >
                 Price/MT{getSortIcon("pricing")}
               </th>
-              <th
+              {
+                /* <th
                 class="cursor-pointer select-none hover:bg-base-200 text-right"
                 onClick={() => handleSort("max_completion_tokens")}
               >
@@ -233,14 +234,15 @@ export default function ModelList({ removed = false }: ModelListProps) {
                 onClick={() => handleSort("instruct_type")}
               >
                 Instruct{getSortIcon("instruct_type")}
-              </th>
+              </th> */
+              }
             </tr>
           </thead>
           <tbody>
             {filteredModels.map((model) => (
               <tr
                 key={model.id}
-                class="hover cursor-pointer"
+                class="hover:bg-base-300"
                 onClick={() => handleRowClick(model.id)}
               >
                 <td>
@@ -272,7 +274,8 @@ export default function ModelList({ removed = false }: ModelListProps) {
                       : showPricePerMillion(model.pricing.completion)}
                   </span>
                 </td>
-                <td class="text-right">
+                {
+                  /* <td class="text-right">
                   {(() => {
                     const maxOut = model.top_provider.max_completion_tokens ?? 0;
                     return maxOut > 0
@@ -296,7 +299,8 @@ export default function ModelList({ removed = false }: ModelListProps) {
                       {model.architecture.instruct_type}
                     </span>
                   )}
-                </td>
+                </td> */
+                }
               </tr>
             ))}
           </tbody>
