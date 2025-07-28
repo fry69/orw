@@ -1,3 +1,6 @@
+---
+applyTo: "**"
+---
 # Deno 2
 
 Use tasks defined in `deno.json` in the repository root instead of invoking Deno manually without those tasks.
