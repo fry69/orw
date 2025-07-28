@@ -143,185 +143,93 @@ export default function ModelList({ removed = false }: ModelListProps) {
   };
 
   return (
-    <div class="model-list">
+    <div class="container mx-auto px-4 py-6">
       {removed && (
-        <h2 style={{ textAlign: "center", color: "white", marginBottom: "20px" }}>
-          Models no longer available on OpenRouter or renamed:
-        </h2>
+        <div class="alert alert-info mb-6">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            class="stroke-current shrink-0 w-6 h-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            >
+            </path>
+          </svg>
+          <span>Models no longer available on OpenRouter or renamed</span>
+        </div>
       )}
 
       {/* Filter input */}
-      <div style={{ marginBottom: "20px", textAlign: "center" }}>
+      <div class="form-control w-full max-w-xs mx-auto mb-6">
         <input
           type="text"
           placeholder="Filter models by ID or name..."
           value={filterText}
           onInput={(e) => setFilterText((e.target as HTMLInputElement).value)}
-          style={{
-            padding: "8px 12px",
-            fontSize: "14px",
-            borderRadius: "4px",
-            border: "1px solid #333",
-            backgroundColor: "#2a2a2a",
-            color: "white",
-            width: "300px",
-          }}
+          class="input input-bordered w-full"
         />
       </div>
 
-      <div style={{ overflowX: "auto", maxHeight: "calc(100vh - 250px)", overflowY: "auto" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            backgroundColor: "#1a1a1a",
-            color: "white",
-            fontSize: "14px",
-          }}
-        >
+      <div class="overflow-x-auto">
+        <table class="table table-zebra table-pin-rows w-full">
           <thead>
-            <tr>
+            <tr class="bg-base-300">
               <th
-                style={{
-                  padding: "12px 8px",
-                  borderBottom: "2px solid #333",
-                  backgroundColor: "#2a2a2a",
-                  textAlign: "left",
-                  cursor: "pointer",
-                  userSelect: "none",
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
-                }}
+                class="cursor-pointer select-none hover:bg-base-200"
                 onClick={() => handleSort("id")}
               >
                 ID{getSortIcon("id")}
               </th>
               <th
-                style={{
-                  padding: "12px 8px",
-                  borderBottom: "2px solid #333",
-                  backgroundColor: "#2a2a2a",
-                  textAlign: "left",
-                  cursor: "pointer",
-                  userSelect: "none",
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
-                }}
+                class="cursor-pointer select-none hover:bg-base-200"
                 onClick={() => handleSort("name")}
               >
                 Name{getSortIcon("name")}
               </th>
               <th
-                style={{
-                  padding: "12px 8px",
-                  borderBottom: "2px solid #333",
-                  backgroundColor: "#2a2a2a",
-                  textAlign: "left",
-                  cursor: "pointer",
-                  userSelect: "none",
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
-                }}
+                class="cursor-pointer select-none hover:bg-base-200"
                 onClick={() => handleSort("added_at")}
               >
                 {removed ? "Removed" : "Added"}
                 {getSortIcon("added_at")}
               </th>
               <th
-                style={{
-                  padding: "12px 8px",
-                  borderBottom: "2px solid #333",
-                  backgroundColor: "#2a2a2a",
-                  textAlign: "right",
-                  cursor: "pointer",
-                  userSelect: "none",
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
-                }}
+                class="cursor-pointer select-none hover:bg-base-200 text-right"
                 onClick={() => handleSort("context_length")}
               >
                 Context{getSortIcon("context_length")}
               </th>
               <th
-                style={{
-                  padding: "12px 8px",
-                  borderBottom: "2px solid #333",
-                  backgroundColor: "#2a2a2a",
-                  textAlign: "right",
-                  cursor: "pointer",
-                  userSelect: "none",
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
-                }}
+                class="cursor-pointer select-none hover:bg-base-200 text-right"
                 onClick={() => handleSort("pricing")}
               >
                 Price/MT{getSortIcon("pricing")}
               </th>
               <th
-                style={{
-                  padding: "12px 8px",
-                  borderBottom: "2px solid #333",
-                  backgroundColor: "#2a2a2a",
-                  textAlign: "right",
-                  cursor: "pointer",
-                  userSelect: "none",
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
-                }}
+                class="cursor-pointer select-none hover:bg-base-200 text-right"
                 onClick={() => handleSort("max_completion_tokens")}
               >
                 maxOut{getSortIcon("max_completion_tokens")}
               </th>
               <th
-                style={{
-                  padding: "12px 8px",
-                  borderBottom: "2px solid #333",
-                  backgroundColor: "#2a2a2a",
-                  textAlign: "left",
-                  cursor: "pointer",
-                  userSelect: "none",
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
-                }}
+                class="cursor-pointer select-none hover:bg-base-200"
                 onClick={() => handleSort("modality")}
               >
                 Modality{getSortIcon("modality")}
               </th>
               <th
-                style={{
-                  padding: "12px 8px",
-                  borderBottom: "2px solid #333",
-                  backgroundColor: "#2a2a2a",
-                  textAlign: "left",
-                  cursor: "pointer",
-                  userSelect: "none",
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
-                }}
+                class="cursor-pointer select-none hover:bg-base-200"
                 onClick={() => handleSort("tokenizer")}
               >
                 Tokenizer{getSortIcon("tokenizer")}
               </th>
               <th
-                style={{
-                  padding: "12px 8px",
-                  borderBottom: "2px solid #333",
-                  backgroundColor: "#2a2a2a",
-                  textAlign: "left",
-                  cursor: "pointer",
-                  userSelect: "none",
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 1,
-                }}
+                class="cursor-pointer select-none hover:bg-base-200"
                 onClick={() => handleSort("instruct_type")}
               >
                 Instruct{getSortIcon("instruct_type")}
@@ -332,46 +240,62 @@ export default function ModelList({ removed = false }: ModelListProps) {
             {filteredModels.map((model) => (
               <tr
                 key={model.id}
-                style={{ cursor: "pointer" }}
+                class="hover cursor-pointer"
                 onClick={() => handleRowClick(model.id)}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#333")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
               >
-                <td style={{ padding: "8px", borderBottom: "1px solid #333" }}>
-                  {model.id}
+                <td>
+                  <span class="model-id">{model.id}</span>
                 </td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #333" }}>
-                  {model.name}
+                <td class="font-medium">{model.name}</td>
+                <td>
+                  <span class="text-warning">
+                    {model.removed_at
+                      ? durationAgo(model.removed_at)
+                      : model.added_at
+                      ? durationAgo(model.added_at)
+                      : ""}
+                  </span>
                 </td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #333" }}>
-                  {model.removed_at
-                    ? durationAgo(model.removed_at)
-                    : model.added_at
-                    ? durationAgo(model.added_at)
-                    : ""}
+                <td class="text-right">
+                  <span class="badge badge-neutral badge-sm">
+                    {roundKb(model.context_length)}
+                  </span>
                 </td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #333", textAlign: "right" }}>
-                  {roundKb(model.context_length)}
+                <td class="text-right">
+                  <span
+                    class={`badge badge-sm ${
+                      model.id === "openrouter/auto" ? "badge-ghost" : "badge-info"
+                    }`}
+                  >
+                    {model.id === "openrouter/auto"
+                      ? "[N/A]"
+                      : showPricePerMillion(model.pricing.completion)}
+                  </span>
                 </td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #333", textAlign: "right" }}>
-                  {model.id === "openrouter/auto"
-                    ? "[N/A]"
-                    : showPricePerMillion(model.pricing.completion)}
-                </td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #333", textAlign: "right" }}>
+                <td class="text-right">
                   {(() => {
                     const maxOut = model.top_provider.max_completion_tokens ?? 0;
-                    return maxOut > 0 ? roundKb(maxOut) : "";
+                    return maxOut > 0
+                      ? <span class="badge badge-neutral badge-sm">{roundKb(maxOut)}</span>
+                      : "";
                   })()}
                 </td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #333" }}>
-                  {model.architecture.modality}
+                <td>
+                  <span class="badge badge-primary badge-sm">
+                    {model.architecture.modality}
+                  </span>
                 </td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #333" }}>
-                  {model.architecture.tokenizer}
+                <td>
+                  <span class="badge badge-secondary badge-sm">
+                    {model.architecture.tokenizer}
+                  </span>
                 </td>
-                <td style={{ padding: "8px", borderBottom: "1px solid #333" }}>
-                  {model.architecture.instruct_type ?? ""}
+                <td>
+                  {model.architecture.instruct_type && (
+                    <span class="badge badge-accent badge-sm">
+                      {model.architecture.instruct_type}
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}
@@ -379,15 +303,8 @@ export default function ModelList({ removed = false }: ModelListProps) {
         </table>
 
         {filteredModels.length === 0 && (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "20px",
-              color: "#666",
-              fontSize: "16px",
-            }}
-          >
-            No models found
+          <div class="text-center py-10">
+            <div class="text-lg text-base-content/50">No models found</div>
           </div>
         )}
       </div>

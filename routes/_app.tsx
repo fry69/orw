@@ -44,9 +44,7 @@ export default function App({ Component }: PageProps) {
         <title>OpenRouter API Watcher</title>
       </head>
       <body>
-        <div class="content-container">
-          <Component />
-        </div>
+        <Component />
       </body>
     </html>
   );

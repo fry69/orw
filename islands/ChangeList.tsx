@@ -34,23 +34,23 @@ const formatDateTime = (timestamp: string): string => {
 
 const ChangeSnippet = ({ change }: { change: ModelDiff }) => {
   if (!change.changes || Object.keys(change.changes).length === 0) {
-    return <div style={{ color: "#888", fontStyle: "italic" }}>No detailed changes recorded</div>;
+    return <div class="text-base-content/50 italic">No detailed changes recorded</div>;
   }
 
   const changeEntries = Object.entries(change.changes);
 
   return (
-    <div style={{ marginTop: "8px", fontSize: "12px", color: "#ccc" }}>
+    <div class="mt-2 text-xs text-base-content/70">
       {changeEntries.slice(0, 3).map(([path, changeItem], index) => (
-        <div key={index} style={{ marginBottom: "4px" }}>
-          <strong>{path}</strong>:
-          <span style={{ color: "#ff9999" }}>{JSON.stringify(changeItem.old)}</span>
-          <span>→</span>
-          <span style={{ color: "#99ff99" }}>{JSON.stringify(changeItem.new)}</span>
+        <div key={index} class="mb-1">
+          <span class="font-bold">{path}</span>:
+          <span class="text-error ml-1">{JSON.stringify(changeItem.old)}</span>
+          <span class="mx-1">→</span>
+          <span class="text-success">{JSON.stringify(changeItem.new)}</span>
         </div>
       ))}
       {changeEntries.length > 3 && (
-        <div style={{ color: "#666", fontStyle: "italic" }}>
+        <div class="text-base-content/40 italic">
           ... and {changeEntries.length - 3} more changes
         </div>
       )}
@@ -90,59 +90,36 @@ export default function ChangeList() {
     }
   };
 
-  const getChangeTypeColor = (type: string) => {
+  const getChangeTypeBadge = (type: string) => {
     switch (type) {
       case "added":
-        return "#99ff99";
+        return "badge-success";
       case "removed":
-        return "#ff9999";
+        return "badge-error";
       case "modified":
-        return "#ffff99";
+        return "badge-warning";
       default:
-        return "#ccc";
+        return "badge-neutral";
     }
   };
 
   return (
-    <div class="change-list">
-      <h1 style={{ color: "white", marginBottom: "20px" }}>OpenRouter Model Changes</h1>
+    <div class="container mx-auto px-4 py-6">
+      <h1 class="text-3xl font-bold text-center mb-6">OpenRouter Model Changes</h1>
 
       {/* Controls */}
-      <div
-        style={{
-          marginBottom: "20px",
-          display: "flex",
-          gap: "20px",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+      <div class="flex flex-col sm:flex-row gap-4 items-center justify-center mb-6">
         <input
           type="text"
           placeholder="Filter changes by model ID or type..."
           value={filterText}
           onInput={(e) => setFilterText((e.target as HTMLInputElement).value)}
-          style={{
-            padding: "8px 12px",
-            fontSize: "14px",
-            borderRadius: "4px",
-            border: "1px solid #333",
-            backgroundColor: "#2a2a2a",
-            color: "white",
-            width: "300px",
-          }}
+          class="input input-bordered w-full max-w-xs"
         />
         <select
           value={limit}
           onChange={(e) => setLimit(parseInt((e.target as HTMLSelectElement).value))}
-          style={{
-            padding: "8px 12px",
-            fontSize: "14px",
-            borderRadius: "4px",
-            border: "1px solid #333",
-            backgroundColor: "#2a2a2a",
-            color: "white",
-          }}
+          class="select select-bordered w-full max-w-xs"
         >
           <option value={25}>Show 25</option>
           <option value={50}>Show 50</option>
@@ -151,92 +128,45 @@ export default function ChangeList() {
         </select>
       </div>
 
-      <div style={{ overflowY: "auto", maxHeight: "calc(100vh - 250px)" }}>
+      <div class="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
         {filteredChanges.map((change, index) => (
           <div
             key={`${change.id}-${change.timestamp}-${index}`}
-            style={{
-              backgroundColor: "#1a1a1a",
-              border: "1px solid #333",
-              borderRadius: "8px",
-              padding: "16px",
-              marginBottom: "12px",
-              cursor: change.id ? "pointer" : "default",
-            }}
+            class={`card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-200 ${
+              change.id ? "cursor-pointer hover:bg-base-200" : ""
+            }`}
             onClick={() => change.id && handleRowClick(change.id)}
-            onMouseEnter={(e) => {
-              if (change.id) {
-                e.currentTarget.style.backgroundColor = "#2a2a2a";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#1a1a1a";
-            }}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: "8px",
-              }}
-            >
-              <div>
-                <h3
-                  style={{
-                    margin: 0,
-                    color: "white",
-                    fontSize: "16px",
-                    textDecoration: change.id ? "underline" : "none",
-                  }}
-                >
-                  {change.id || "Unknown Model"}
-                </h3>
-                <div
-                  style={{
-                    color: getChangeTypeColor(change.type),
-                    fontWeight: "bold",
-                    textTransform: "uppercase",
-                    fontSize: "12px",
-                    marginTop: "4px",
-                  }}
-                >
-                  {change.type}
+            <div class="card-body">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class={`card-title text-lg ${change.id ? "link" : ""}`}>
+                    {change.id || "Unknown Model"}
+                  </h3>
+                  <div class={`badge ${getChangeTypeBadge(change.type)} badge-sm mt-1`}>
+                    {change.type.toUpperCase()}
+                  </div>
+                </div>
+                <div class="text-right text-sm text-base-content/70">
+                  <div>{formatDateTime(change.timestamp)}</div>
+                  <div class="font-bold text-warning">{durationAgo(change.timestamp)}</div>
                 </div>
               </div>
-              <div style={{ textAlign: "right", color: "#999", fontSize: "12px" }}>
-                <div>{formatDateTime(change.timestamp)}</div>
-                <div style={{ fontWeight: "bold" }}>{durationAgo(change.timestamp)}</div>
-              </div>
-            </div>
 
-            <ChangeSnippet change={change} />
+              <ChangeSnippet change={change} />
+            </div>
           </div>
         ))}
 
         {filteredChanges.length === 0 && (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "40px",
-              color: "#666",
-              fontSize: "16px",
-            }}
-          >
-            No changes found
+          <div class="text-center py-10">
+            <div class="text-lg text-base-content/50">No changes found</div>
           </div>
         )}
       </div>
 
       {lists.changes.length > 0 && (
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: "20px",
-            color: "#999",
-            fontSize: "14px",
-          }}
-        >
+        <div class="text-center mt-6 text-sm text-base-content/70">
           Showing {filteredChanges.length} of {lists.changes.length} total changes
         </div>
       )}
