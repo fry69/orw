@@ -28,7 +28,7 @@ NOTE: Documentation `*.md` files in the folder `docs/` need to be treated carefu
 ## Libraries and Frameworks
 
 - Deno 2
-- Fresh 2
+- Fresh 2 canary
 - TailwindCSS 4
 - DaisyUI 5
 
