@@ -1,8 +1,11 @@
 # Variables
+DOCKER := podman
+CONTAINERFILE := ./docker/Containerfile
+COMPOSE := podman-compose -f ./docker/compose.yaml
 PROJECT_DIR := orw-deno
 IMAGE_NAME := orw-deno
-COMPOSE_FILE := ./podman/compose.yaml
-CONTAINERFILE := ./podman/Containerfile
+
+# DENO_CACHE := ${HOME}/.cache/deno
 
 # Default target
 all:
@@ -10,27 +13,29 @@ all:
 
 # Build the container image
 build: prune
-	podman build --build-arg GIT_REVISION=$$(git rev-parse HEAD) -t $(IMAGE_NAME) -f $(CONTAINERFILE) $(PROJECT_DIR)
+	$(DOCKER) build --build-arg GIT_REVISION=$$(git rev-parse HEAD) -t $(IMAGE_NAME) -f $(CONTAINERFILE) $(PROJECT_DIR)
+# 	$(DOCKER) build --build-arg GIT_REVISION=$$(git rev-parse HEAD) -v $(DENO_CACHE):/deno-dir -t $(IMAGE_NAME) -f $(CONTAINERFILE) $(PROJECT_DIR)
 
 # Start services using podman-compose
-up:
-	podman-compose -f $(COMPOSE_FILE) up
+up: clean
+	$(COMPOSE) up
 
 # Stop services using podman-compose
 down:
-	podman-compose -f $(COMPOSE_FILE) down
+	$(COMPOSE) down
 
 # Show status of services
 status:
-	podman-compose -f $(COMPOSE_FILE) ps
+	$(COMPOSE) ps
 
 # Remove all containers
 clean:
-	podman rm --all
+	$(DOCKER) rm --all
+	$(DOCKER) image prune -f
 
 # List all containers
 list:
-	podman ps -a
+	$(DOCKER) ps -a
 
 # Clean up generated files and directories
 prune:

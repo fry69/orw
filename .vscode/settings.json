@@ -18,9 +18,12 @@
     ".vscode/tailwind.json"
   ],
   "[yaml]": {
-  "editor.insertSpaces": true,
-  "editor.tabSize": 2,
-  "editor.formatOnSave": true  // optional, formats YAML on save
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true // optional, formats YAML on save
   },
-  "yaml.format.enable": true
+  "yaml.format.enable": true,
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+  }
 }

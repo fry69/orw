@@ -1,0 +1,12 @@
+[Unit]
+Description=OpenRouter API Watcher (Deno)
+
+[Install]
+WantedBy=default.target
+
+[Service]
+ExecStart=/home/orw/.deno/bin/deno serve --port 19914 --allow-all _fresh/server.js
+WorkingDirectory=/home/orw/orw-deno
+PrivateTmp=1
+Restart=always
+RestartSec=60

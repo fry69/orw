@@ -1,4 +1,4 @@
-import { App, staticFiles } from "fresh";
+import { App, staticFiles } from "@fresh/core";
 import type { State } from "./utils.ts";
 import { initializeWatcher } from "./server/index.ts";
 

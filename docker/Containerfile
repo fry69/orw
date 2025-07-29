@@ -1,0 +1,23 @@
+FROM docker.io/denoland/deno:latest
+
+ARG GIT_REVISION
+ENV DENO_DEPLOYMENT_ID=${GIT_REVISION}
+ENV DENO_DIR=/deno-dir/
+
+WORKDIR /app
+
+COPY . .
+# RUN deno task build
+# RUN deno install -A --entrypoint _fresh/server.js
+# Official docs still recommend 'deno cache' -> https://fresh.deno.dev/docs/canary/deployment/docker
+# RUN deno cache _fresh/server.js
+
+RUN deno cache dev.ts
+
+EXPOSE 8000
+
+# CMD ["serve", "-A", "_fresh/server.js"]
+CMD ["task", "dev"]
+
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD deno eval "try { await fetch('http://localhost:8000/health'); } catch { Deno.exit(1); }"

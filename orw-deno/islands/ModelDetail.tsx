@@ -203,7 +203,9 @@ export default function ModelDetail({ modelId }: ModelDetailProps) {
     setError("");
 
     // Find all changes for this model
-    const foundChanges: ModelDiff[] = lists.changes.filter((change: ModelDiff) => change.id === modelId);
+    const foundChanges: ModelDiff[] = lists.changes.filter((change: ModelDiff) =>
+      change.id === modelId
+    );
     setChanges(foundChanges);
   }, [lists, modelId]);
 

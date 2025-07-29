@@ -1,0 +1,12 @@
+[Unit]
+Description=OpenRouter API Watcher (Deno)
+
+[Install]
+WantedBy=default.target
+
+[Service]
+ExecStart=podman run -it --rm -v .:/app -v /home/orw/.deno:/deno-dir --workdir /app --publish 127.0.0.1:19914:8000 docker.io/denoland/deno:2.4.2 task serve
+WorkingDirectory=/home/orw/orw-deno
+PrivateTmp=1
+Restart=always
+RestartSec=60

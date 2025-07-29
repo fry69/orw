@@ -1,4 +1,4 @@
-import { createDefine } from "fresh";
+import { createDefine } from "@fresh/core";
 import type { Lists, WatcherStatus } from "./lib/types.ts";
 
 export interface State {
