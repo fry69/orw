@@ -17,7 +17,9 @@
     "fmt": "deno fmt",
     "check": "deno check components islands lib routes server static tests main.ts dev.ts",
     "pre-commit": "deno task fmt && deno task lint && deno task check && deno task test",
-    "update": "deno run -A -r jsr:@fresh/update ."
+    "update": "deno run -A -r jsr:@fresh/update .",
+    "podman-build": "podman build --build-arg GIT_REVISION=$(git rev-parse HEAD) -t orw-deno -f ../podman/Containerfile .",
+    "compile": "deno task build && deno compile --output orw.bin --include static --include _fresh --include deno.json -A main.ts"
   },
   "exclude": [
     "**/.github/instructions/*",

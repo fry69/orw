@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  app:
+    # Replace with your actual image name
+    image: orw-deno:latest
+
+    # Working directory inside the container
+    working_dir: /app
+
+    # Volume mounts
+    volumes:
+      - orw_data:/app/data
+    # - .:/app # Mount current directory to /app
+    # - ${HOME}/.deno:/deno-dir # Mount Deno cache directory
+
+    # Port mappings (host:container)
+    ports:
+      - "127.0.0.1:19913:8000" # Bind to localhost only
+
+## always set 'external: true' and give the volume a static name, to NOT let *-compose handle volumes
+## otherwise the volume name gets drived from the parent directory name etc
+## if you suddenly get greeted by an empty DB, you now know why
+volumes:
+  orw_data:
+    external: true
+    name: "orw_data"
+
+# Optional: Environment variables
+# environment:
+#   - DENO_DIR=/deno-dir
+
+# Optional: Command override
+# command: ["deno", "run", "--allow-all", "main.ts"]
+
+# Optional: Keep container running for development
+# stdin_open: true
+# tty: true

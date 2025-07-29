@@ -1,0 +1,11 @@
+_fresh
+.git
+.github
+.vscode
+data
+docs
+node_modules
+tests
+.env.example
+.gitignore
+**/*.md

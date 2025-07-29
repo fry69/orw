@@ -1,0 +1,15 @@
+FROM docker.io/denoland/deno:latest
+
+ARG GIT_REVISION
+ENV DENO_DEPLOYMENT_ID=${GIT_REVISION}
+
+WORKDIR /app
+
+COPY . .
+RUN deno task build
+RUN deno install -A --entrypoint _fresh/server.js
+# RUN deno cache _fresh/server.js
+
+EXPOSE 8000
+
+CMD ["serve", "--cached-only", "--no-remote", "-A", "_fresh/server.js"]
