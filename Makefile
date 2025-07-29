@@ -9,7 +9,7 @@ all:
 	@echo "No task specified."
 
 # Build the container image
-build:
+build: prune
 	podman build --build-arg GIT_REVISION=$$(git rev-parse HEAD) -t $(IMAGE_NAME) -f $(CONTAINERFILE) $(PROJECT_DIR)
 
 # Start services using podman-compose

@@ -70,7 +70,7 @@ export default function ChangeList() {
     let filtered = lists.changes;
 
     if (filterText) {
-      filtered = filtered.filter((change) =>
+      filtered = filtered.filter((change: ModelDiff) =>
         change.id?.toLowerCase().includes(filterText.toLowerCase()) ||
         change.type?.toLowerCase().includes(filterText.toLowerCase())
       );
@@ -78,7 +78,7 @@ export default function ChangeList() {
 
     // Apply limit and sort by timestamp (newest first)
     filtered = filtered
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .sort((a: ModelDiff, b: ModelDiff) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, limit);
 
     setFilteredChanges(filtered);

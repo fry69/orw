@@ -114,7 +114,7 @@ export default function ModelList({ removed = false }: ModelListProps) {
   useEffect(() => {
     const models = removed ? lists.removed : lists.models;
     const filtered = filterText
-      ? models.filter((model) =>
+      ? models.filter((model: Model) =>
         model.id.toLowerCase().includes(filterText.toLowerCase()) ||
         model.name.toLowerCase().includes(filterText.toLowerCase())
       )
