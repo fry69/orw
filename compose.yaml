@@ -2,33 +2,48 @@ version: "3.8"
 
 services:
   app:
-    # Replace with your actual image name
-    image: orw-deno:latest
+    build:
+      context: ./${PROJECT_DIR}
+      dockerfile: Containerfile
+      # args:
+      #   GIT_REVISION: ${GIT_REVISION}
+    image: ${IMAGE_NAME}:latest
 
     # Working directory inside the container
     working_dir: /app
 
     # Volume mounts
     volumes:
-      - orw_data:/app/data
+      - data_volume:/app/data
     # - .:/app # Mount current directory to /app
     # - ${HOME}/.deno:/deno-dir # Mount Deno cache directory
 
     # Port mappings (host:container)
     ports:
-      - "19913:8000"
-      # - "127.0.0.1:19913:8000" # Bind to localhost only
+      - "${EXTERNAL_PORT}:8000"
+      # - "127.0.0.1:${EXTERNAL_PORT}:8000" # Bind to localhost only
 
     # extra_hosts:
     #   - "openrouter.ai:host-gateway"
+
+  seed:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: ${SEED_IMAGE}:latest
+    volumes:
+      - data_volume:/data
+    command: ["cp", "/seed/orw.db", "/data/"]
+    profiles:
+      - seed  # Only runs when explicitly requested
 
 ## always set 'external: true' and give the volume a static name, to NOT let *-compose handle volumes
 ## otherwise the volume name gets drived from the parent directory name etc
 ## if you suddenly get greeted by an empty DB, you now know why
 volumes:
-  orw_data:
+  data_volume:
     external: true
-    name: "orw_data"
+    name: "${VOLUME_NAME}"
 
 # Optional: Environment variables
 # environment:
