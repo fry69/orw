@@ -2,29 +2,38 @@
 
 This project tracks changes to the public OpenRouter model list via API. Is uses Deno with Fresh as frontend and SQLite for data storage.
 
-## Folder Structure
+## Folder Structure (root)
 
-- `_fresh`: Contains generated (compiled) Fresh artifacts.
-- `components`: Contains Fresh components.
-- `data`: Contains live production data like database, log files, automatic backups. Do not touch files inside this folder.
+- `data`: Contains live production data like database, log files, automatic backups. Used for generating seed images. Do not touch files inside this folder.
 - `docs`: Contains design documents.
-- `islands`: Contains Fresh islands.
-- `lib`: Contains shared utility code and type definitions.
-- `routes`: Contains Fresh routes.
-- `server`: Contains the backend watcher and database logic for tracking changes to the OpenRouter model list.
-- `static`: Contains static files for the frontend.
-- `tests`: Contains all test scripts (currently empty, skip testing for now).
+- `service`: systemd service files and installation scripts.
+- `Makefile`: central Makefile for container orchestration.
+- `compose.yaml`: Docker/Podman compose file.
+- `Containerfile`: Minimal Dockerfile for seed generation.
 
 NOTE: Documentation `*.md` files in the folder `docs/` need to be treated carefully. While deeper concepts mentioned in those documents are still valid, files and folders mentioned in those `docs/*.md` files may not exist anymore, some may have been moved, some may have been deleted/refactored/etc.
 
-## Notable Files
+## Folder Structure (app)
 
-- `main.ts`: Contains the Fresh startup script for production, cannot be invoked directly, see documentation for details.
-- `utils.ts`: Contains application middleware define helper and state type definitions.
-- `dev.ts`: Contains the Fresh startup script for development, can get invoked directly.
-- `deno.json`: Contains Deno configuration, tasks, import aliases, etc.
-- `.env`: Contains environment variable settings for production, do not touch this file if it exists.
-- `.env.example`: Contains example environment variable settings.
+- `orw-deno`: The main Deno app with the watcher. Inside this folder the structure looks like the following:
+- `orw-deno/_fresh`: Contains generated (compiled) Fresh artifacts. This folder may not exist and can most get ignored.
+- `orw-deno/components`: Contains Fresh components.
+- `orw-deno/islands`: Contains Fresh islands.
+- `orw-deno/lib`: Contains shared utility code and type definitions.
+- `orw-deno/routes`: Contains Fresh routes.
+- `orw-deno/server`: Contains the backend watcher and database logic for tracking changes to the OpenRouter model list.
+- `orw-deno/static`: Contains static files for the frontend.
+- `orw-deno/tests`: Contains all test scripts (currently empty, skip testing for now).
+
+## Notable Files in `orw-deno`
+
+- `orw-deno/main.ts`: Contains the Fresh startup script for production, cannot be invoked directly, see documentation for details.
+- `orw-deno/utils.ts`: Contains application middleware define helper and state type definitions.
+- `orw-deno/dev.ts`: Contains the Fresh startup script for development, can get invoked directly.
+- `orw-deno/deno.json`: Contains Deno configuration, tasks, import aliases, etc.
+- `orw-deno/.env`: Contains environment variable settings for production, do not touch this file if it exists.
+- `orw-deno/.env.example`: Contains example environment variable settings.
+- `orw-deno/Congtainerfile`: Main Dockerfile for building the containerized app.
 
 ## Libraries and Frameworks
 
