@@ -18,8 +18,23 @@ export EXTERNAL_PORT
 # DENO_CACHE := ${HOME}/.cache/deno
 
 # Default target
-all:
-	@echo "No task specified."
+all: help
+
+# Show available targets
+help:
+	@echo "Available targets:"
+	@echo "  config     - Show current configuration"
+	@echo "  build      - Build all images"
+	@echo "  up         - Start services"
+	@echo "  smart-up   - Start services (seed if needed)"
+	@echo "  up-rebuild - Start services with rebuild"
+	@echo "  down       - Stop services"
+	@echo "  status     - Show service status and recent logs"
+	@echo "  logs       - Follow service logs"
+	@echo "  seed       - Seed database with initial data"
+	@echo "  reset      - Reset volume (destructive)"
+	@echo "  clean      - Remove containers and prune images"
+	@echo "  nuke       - Reset everything for clean rebuild"
 
 # Show current configuration
 config:
@@ -31,62 +46,69 @@ config:
 	@echo "  SEED_IMAGE: $(SEED_IMAGE)"
 	@echo "  EXTERNAL_PORT: $(EXTERNAL_PORT)"
 
-# Build the container images
-build-app:
-	$(COMPOSE) build app
-
-# Build the seed image
-build-seed:
-	$(COMPOSE) --profile seed build seed
-
 # Build all images
-build: build-seed
+build:
 	$(COMPOSE) build
+	$(COMPOSE) --profile seed build
 
-# Start services using podman-compose (will build if needed)
-up: clean
+# Start services
+up:
 	$(COMPOSE) up --detach
 
-# Start services and force rebuild
-up-build: clean
+# Smart startup: seed if needed, then start services
+smart-up:
+	@echo "Checking if database seeding is needed..."
+	@if ! $(DOCKER) run --rm -v $(VOLUME_NAME):/data alpine test -f /data/orw.db 2>/dev/null; then \
+		echo "Database not found, seeding..."; \
+		$(MAKE) seed; \
+		echo "Seeding complete."; \
+	else \
+		echo "Database exists, skipping seed."; \
+	fi
+	@echo "Starting services..."
+	$(COMPOSE) up --detach
+
+# Start services with rebuild
+up-rebuild:
 	$(COMPOSE) up --build --detach
 
-# Stop services using podman-compose
+# Stop services
 down:
 	$(COMPOSE) down
 
-# Show status of services
-status: logs
+# Show service status and recent logs
+status:
+	@echo "=== Service Status ==="
 	$(COMPOSE) ps
+	@echo ""
+	@echo "=== Recent Logs ==="
+	$(COMPOSE) logs --tail=20
 
-# Show status of services
+# Follow service logs
 logs:
-	$(COMPOSE) logs
+	$(COMPOSE) logs --follow
 
-# Remove all containers
+# Remove containers and prune images
 clean:
-	$(DOCKER) rm --all
-	$(DOCKER) image prune -f
+	$(DOCKER) rm --all --force 2>/dev/null || true
+	$(DOCKER) image prune --force
 
-# List all containers
-list:
-	$(DOCKER) ps -a
-
-# Clean up generated files and directories, should not be necessary with .dockerignore
+# Remove generated files (should not be necessary with .dockerignore)
 prune:
-	rm -fR $(PROJECT_DIR)/node_modules
-	rm -fR $(PROJECT_DIR)/_fresh
-	rm -fR $(PROJECT_DIR)/data
+	rm -rf $(PROJECT_DIR)/node_modules $(PROJECT_DIR)/_fresh $(PROJECT_DIR)/data
 
-# Delete an recreate the volume holding data (destructive obviously)
-reset: down clean
-	$(DOCKER) volume rm $(VOLUME_NAME)
+# Reset volume (destructive)
+reset: down
+	$(DOCKER) volume rm $(VOLUME_NAME) 2>/dev/null || true
 	$(DOCKER) volume create $(VOLUME_NAME)
 
-# Seeding volume with initial database, requires seed service to be built
-seed: build-seed
+# Seed database with initial data
+seed:
+	$(COMPOSE) --profile seed build seed
 	$(COMPOSE) --profile seed run --rm seed
 
-# Nuke everything for a clean rebuild
-nuke: reset
-	$(DOCKER) image rm $(SEED_IMAGE) $(IMAGE_NAME)
+# Reset everything for clean rebuild (destructive)
+nuke: down clean
+	$(DOCKER) volume rm $(VOLUME_NAME) 2>/dev/null || true
+	$(DOCKER) image rm $(SEED_IMAGE) $(IMAGE_NAME) 2>/dev/null || true
+	$(DOCKER) volume create $(VOLUME_NAME)
