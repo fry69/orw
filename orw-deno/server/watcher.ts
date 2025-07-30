@@ -61,11 +61,6 @@ export class OpenRouterAPIWatcher {
    */
   constructor(config: Partial<typeof defaultConfig>) {
     this.config = { ...defaultConfig, ...config };
-    console.log("Starting watcher with config:", {
-      ...this.config,
-      fixedModelList: this.config.fixedModelList ? "[fixedModelList object]" : "undefined",
-      db: this.config.db ? "[Database object]" : "undefined",
-    });
 
     this.status = {
       apiLastCheck: new Date(0),
@@ -392,6 +387,9 @@ export class OpenRouterAPIWatcher {
     this.lists.models = this.loadModelList();
     this.lists.removed = this.loadRemovedModelList();
     this.lists.changes = this.loadChanges();
+
+    // Log database contents summary
+    console.log(`Database loaded: ${this.lists.models.length} models, ${this.lists.changes.length} changes, ${this.lists.removed.length} removed`);
   }
 
   /**

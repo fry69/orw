@@ -2,7 +2,7 @@
 import { useEffect } from "preact/hooks";
 import { clientLists, clientStatus, navBarDurations } from "../lib/state.ts";
 import { DateTime } from "luxon";
-import { UI_REFRESH_MS, VERSION } from "../lib/constants.ts";
+import { UI_REFRESH_MS, VERSION, REPOSITORY_URL } from "../lib/constants.ts";
 
 export default function NavBar() {
   // Update durations every minute
@@ -29,7 +29,7 @@ export default function NavBar() {
         <div class="flex items-center gap-2">
           {/* GitHub Link */}
           <a
-            href="https://github.com/fry69/orw"
+            href={REPOSITORY_URL}
             target="_blank"
             rel="noopener noreferrer"
             class="btn btn-ghost btn-square"

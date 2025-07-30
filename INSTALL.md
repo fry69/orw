@@ -23,7 +23,7 @@ git clone https://github.com/fry69/orw
 cd orw
 ```
 
-4. Create a production environment and edit it (make sure `ORW_PORT` and `ORW_URL` match reverse proxy settings)
+4. Create a production environment and edit it (make sure `PORT` and `ORW_PUBLIC_URL` match reverse proxy settings)
 
 ```shell
 cp .env.example .env.production

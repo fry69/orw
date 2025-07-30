@@ -23,3 +23,14 @@ export const FETCH_TIMEOUT_MS = 4_000; // 4 seconds in milliseconds
  */
 // export const UI_REFRESH_MS = 60_000; // one minute in milliseconds
 export const UI_REFRESH_MS = 1_000; // one second in milliseconds
+
+/**
+ * Repository URL - configurable source code repository location
+ */
+export const REPOSITORY_URL = Deno.env.get("ORW_REPOSITORY_URL") || "https://github.com/fry69/orw";
+
+/**
+ * Public URL for the application
+ * This is used for RSS feeds, redirects, and other absolute URL references
+ */
+export const PUBLIC_URL = Deno.env.get("ORW_PUBLIC_URL") || `http://localhost:${Deno.env.get("PORT") || "8000"}`;

@@ -3,7 +3,7 @@ import { define } from "../utils.ts";
 import { getWatcher } from "../server/index.ts";
 import RSS from "rss";
 import type { ModelDiff } from "../lib/types.ts";
-import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
+import { WATCHER_INTERVAL_MS, REPOSITORY_URL, PUBLIC_URL } from "../lib/constants.ts";
 
 // Cache for RSS feed to avoid regenerating on every request
 let rssCache: {
@@ -79,9 +79,7 @@ async function generateRSSFeed(): Promise<string> {
   }
 
   // Get the base URL from environment or default
-  const baseURL = Deno.env.get("ORW_PUBLIC_URL") ||
-    Deno.env.get("PUBLIC_URL") ||
-    `http://localhost:${Deno.env.get("PORT") || "8000"}`;
+  const baseURL = PUBLIC_URL;
 
   const feed = new RSS({
     title: "OpenRouter Model Changes",
@@ -89,7 +87,7 @@ async function generateRSSFeed(): Promise<string> {
     feed_url: `${baseURL}/rss`,
     site_url: baseURL,
     image_url: `${baseURL}/favicon.svg`,
-    docs: "https://github.com/fry69/orw",
+    docs: REPOSITORY_URL,
     language: "en",
     ttl: 60,
     pubDate: watcherStatus.dbLastChange,
