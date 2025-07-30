@@ -2,6 +2,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { clientLists } from "../lib/state.ts";
 import type { ModelDiff } from "../lib/types.ts";
+import { formatNumber, showPricePerMillion } from "../lib/utils.ts";
 
 const durationAgo = (timestamp: string): string => {
   if (!timestamp) return "";
@@ -32,6 +33,48 @@ const formatDateTime = (timestamp: string): string => {
   return date.toLocaleString();
 };
 
+/**
+ * Formats a single change value for display with human-readable formatting
+ */
+const formatChangeValue = (value: unknown, path: string): string => {
+  if (value === null) return "[null]";
+  if (value === undefined) return "[undefined]";
+
+  // Handle pricing fields with proper formatting
+  if (path.includes("pricing.")) {
+    if (typeof value === "string") {
+      return `${showPricePerMillion(value)} per million tokens`;
+    }
+  }
+
+  // Handle numbers with locale formatting
+  if (typeof value === "number") {
+    return formatNumber(value);
+  }
+
+  // Handle arrays
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "[]";
+    return `[${value.join(", ")}]`;
+  }
+
+  // Default: JSON stringify but without quotes for simple values
+  if (typeof value === "string") return value;
+  return JSON.stringify(value);
+};
+
+/**
+ * Calculates percentage change for numeric values
+ */
+const calculatePercentageChange = (oldVal: unknown, newVal: unknown): string => {
+  if (typeof oldVal !== "number" || typeof newVal !== "number") return "";
+  if (oldVal === 0) return "";
+
+  const change = ((newVal - oldVal) / oldVal) * 100;
+  const sign = change >= 0 ? "+" : "";
+  return ` (${sign}${Math.round(change)}%)`;
+};
+
 const ChangeSnippet = ({ change }: { change: ModelDiff }) => {
   if (!change.changes || Object.keys(change.changes).length === 0) {
     return <div class="text-base-content/50 italic">No detailed changes recorded</div>;
@@ -41,14 +84,33 @@ const ChangeSnippet = ({ change }: { change: ModelDiff }) => {
 
   return (
     <div class="mt-2 text-xs text-base-content/70">
-      {changeEntries.slice(0, 3).map(([path, changeItem], index) => (
-        <div key={index} class="mb-1">
-          <span class="text-success font-bold">{path}</span>:
-          <span class="text-error ml-1">{JSON.stringify(changeItem.old)}</span>
-          <span class="mx-1">→</span>
-          <span class="text-info">{JSON.stringify(changeItem.new)}</span>
-        </div>
-      ))}
+      {changeEntries.slice(0, 3).map(([path, changeItem], index) => {
+        const oldFormatted = formatChangeValue(changeItem.old, path);
+        const newFormatted = formatChangeValue(changeItem.new, path);
+
+        // Calculate percentage change for pricing fields
+        let percentageChange = "";
+        if (
+          path.includes("pricing.") && typeof changeItem.old === "string" &&
+          typeof changeItem.new === "string"
+        ) {
+          const oldPrice = parseFloat(changeItem.old);
+          const newPrice = parseFloat(changeItem.new);
+          if (!isNaN(oldPrice) && !isNaN(newPrice)) {
+            percentageChange = calculatePercentageChange(oldPrice, newPrice);
+          }
+        }
+
+        return (
+          <div key={index} class="mb-1">
+            <span class="text-success font-bold">{path}</span>:
+            <span class="text-error ml-1">{oldFormatted}</span>
+            <span class="mx-1">→</span>
+            <span class="text-info">{newFormatted}</span>
+            {percentageChange && <span class="text-warning font-semibold">{percentageChange}</span>}
+          </div>
+        );
+      })}
       {changeEntries.length > 3 && (
         <div class="text-base-content/40 italic">
           ... and {changeEntries.length - 3} more changes

@@ -389,7 +389,9 @@ export class OpenRouterAPIWatcher {
     this.lists.changes = this.loadChanges();
 
     // Log database contents summary
-    console.log(`Database loaded: ${this.lists.models.length} models, ${this.lists.changes.length} changes, ${this.lists.removed.length} removed`);
+    console.log(
+      `Database loaded: ${this.lists.models.length} models, ${this.lists.changes.length} changes, ${this.lists.removed.length} removed`,
+    );
   }
 
   /**

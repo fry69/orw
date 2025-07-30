@@ -4,7 +4,7 @@ import { getWatcher } from "../server/index.ts";
 import RSS from "rss";
 import type { ModelDiff } from "../lib/types.ts";
 import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
-import { showPricePerMillion, formatNumber } from "../lib/utils.ts";
+import { formatNumber, showPricePerMillion } from "../lib/utils.ts";
 
 // Cache for RSS feed to avoid regenerating on every request
 let rssCache: {
@@ -79,7 +79,10 @@ function renderChangeSnippetHTML(change: ModelDiff): string {
 
         // Calculate percentage change for pricing fields
         let percentageChange = "";
-        if (path.includes("pricing.") && typeof changeItem.old === "string" && typeof changeItem.new === "string") {
+        if (
+          path.includes("pricing.") && typeof changeItem.old === "string" &&
+          typeof changeItem.new === "string"
+        ) {
           const oldPrice = parseFloat(changeItem.old);
           const newPrice = parseFloat(changeItem.new);
           if (!isNaN(oldPrice) && !isNaN(newPrice)) {
@@ -134,7 +137,7 @@ async function generateRSSFeed(): Promise<string> {
   // Get the base URL from config
   const baseURL = config.publicUrl;
 
-  const feedOptions = {
+  const feedOptions: Record<string, unknown> = {
     title: "OpenRouter Model Changes",
     description: "Feed for detected changes in the OpenRouter model list",
     feed_url: `${baseURL}/rss`,
@@ -143,8 +146,12 @@ async function generateRSSFeed(): Promise<string> {
     language: "en",
     ttl: 60,
     pubDate: watcherStatus.dbLastChange,
-    ...(config.repositoryUrl && { docs: config.repositoryUrl }),
   };
+
+  // Add docs URL only if repository URL is configured
+  if (config.repositoryUrl) {
+    feedOptions.docs = config.repositoryUrl;
+  }
 
   const feed = new RSS(feedOptions);
 

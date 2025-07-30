@@ -28,7 +28,7 @@ services:
     # export ORW_PUBLIC_URL="https://your-domain.com"
     # export ORW_REPOSITORY_URL="https://github.com/your-username/your-repo"
     environment:
-      - ORW_PUBLIC_URL=${ORW_PUBLIC_URL:-http://localhost:${EXTERNAL_PORT}}
+      - ORW_PUBLIC_URL=${ORW_PUBLIC_URL:-http://localhost:8000}
       - ORW_REPOSITORY_URL=${ORW_REPOSITORY_URL:-}
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=8000

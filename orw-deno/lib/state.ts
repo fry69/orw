@@ -1,6 +1,6 @@
 // lib/state.ts - Fresh 2 client state management using signals
 import { computed, signal } from "@preact/signals";
-import type { Lists, WatcherStatus, AppConfig } from "./types.ts";
+import type { AppConfig, Lists, WatcherStatus } from "./types.ts";
 import { durationAgo } from "./utils.ts";
 
 /**

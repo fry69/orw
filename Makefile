@@ -1,18 +1,23 @@
 # Variables
-DOCKER := podman
-COMPOSE := podman-compose -f ./compose.yaml
+DOCKER ?= podman
+COMPOSE := $(DOCKER)-compose -f ./compose.yaml
 PROJECT_DIR := orw-deno
 IMAGE_NAME := orw
 VOLUME_NAME := orw_data
 SEED_IMAGE := orw_seed
-EXTERNAL_PORT := 19913
 
-# Application configuration
-ORW_PUBLIC_URL ?= https://dev-orw.karleo.net:$(EXTERNAL_PORT)
+## Application configuration
+
+# Note that this port is external from the view of the container
+# It may still be an internal port for the TLS proxy
+EXTERNAL_PORT ?= 19913
+
+# The real public URL people can see, for e.g. RSS feed links
+ORW_PUBLIC_URL ?= https://dev-orw.karleo.net:9180
 ORW_REPOSITORY_URL ?= https://github.com/fry69/orw
 NODE_ENV ?= production
 
-# For DENO_DEPLOYMENT_ID to enable proper client caching
+# Semi-random value for DENO_DEPLOYMENT_ID, to enable proper client caching
 # see -> https://fresh.deno.dev/docs/concepts/deployment#-docker
 GIT_REVISION=$$(git rev-parse HEAD)
 
