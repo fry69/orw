@@ -8,6 +8,9 @@ WORKDIR /app
 COPY deno.json deno.lock ./
 RUN deno install --allow-scripts
 
+ARG GIT_REVISION
+ENV DENO_DEPLOYMENT_ID=${GIT_REVISION}
+
 COPY . .
 
 RUN deno task build
@@ -19,10 +22,6 @@ RUN deno cache --allow-scripts _fresh/server.js
 # RUN deno cache --allow-scripts dev.ts
 
 EXPOSE 8000
-
-## This will trigger a complete build on every git commit
-ARG GIT_REVISION
-ENV DENO_DEPLOYMENT_ID=${GIT_REVISION}
 
 ## Production version
 CMD ["serve", "-A", "_fresh/server.js"]
