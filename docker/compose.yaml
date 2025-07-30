@@ -16,7 +16,11 @@ services:
 
     # Port mappings (host:container)
     ports:
-      - "127.0.0.1:19913:8000" # Bind to localhost only
+      - "19913:8000"
+      # - "127.0.0.1:19913:8000" # Bind to localhost only
+
+    # extra_hosts:
+    #   - "openrouter.ai:host-gateway"
 
 ## always set 'external: true' and give the volume a static name, to NOT let *-compose handle volumes
 ## otherwise the volume name gets drived from the parent directory name etc
