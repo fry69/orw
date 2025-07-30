@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run -A --watch=components/,islands/,lib,/routes/,server/,static/
 // dev.ts - Fresh 2 development server
 
-import { Builder } from "@fresh/core/dev";
+import { Builder } from "fresh/dev";
 import { tailwind } from "@fresh/plugin-tailwind";
 
 // Set development mode flag and defaults
