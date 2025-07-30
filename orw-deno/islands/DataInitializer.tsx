@@ -1,10 +1,11 @@
 // islands/DataInitializer.tsx - Initialize global state with server data
 import { useEffect } from "preact/hooks";
-import { clientLists, clientStatus } from "../lib/state.ts";
-import type { Lists, WatcherStatus } from "../lib/types.ts";
+import { clientConfig, clientLists, clientStatus } from "../lib/state.ts";
+import type { Lists, WatcherStatus, AppConfig } from "../lib/types.ts";
 
 interface DataInitializerProps {
   initialData?: {
+    config: AppConfig;
     status: WatcherStatus;
     lists: Lists;
   };
@@ -14,6 +15,7 @@ export default function DataInitializer({ initialData }: DataInitializerProps) {
   useEffect(() => {
     if (initialData) {
       // ✅ Initialize global state with server-rendered data
+      clientConfig.value = initialData.config;
       clientStatus.value = initialData.status;
       clientLists.value = initialData.lists;
     }

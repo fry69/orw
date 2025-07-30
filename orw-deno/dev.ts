@@ -4,8 +4,16 @@
 import { Builder } from "@fresh/core/dev";
 import { tailwind } from "@fresh/plugin-tailwind";
 
-// Set development mode flag
+// Set development mode flag and defaults
 Deno.env.set("ORW_DEV_MODE", "true");
+
+// Set development defaults if not already configured
+if (!Deno.env.get("ORW_PUBLIC_URL")) {
+  Deno.env.set("ORW_PUBLIC_URL", "http://localhost:8000");
+}
+if (!Deno.env.get("ORW_REPOSITORY_URL")) {
+  Deno.env.set("ORW_REPOSITORY_URL", "https://github.com/fry69/orw");
+}
 
 const builder = new Builder();
 tailwind(builder);

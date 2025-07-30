@@ -1,5 +1,5 @@
 // routes/_middleware.ts - Load common data for all pages
-import { define } from "../utils.ts";
+import { define, getAppConfig } from "../utils.ts";
 import { getWatcher } from "../server/index.ts";
 
 export default define.middleware(async (ctx) => {
@@ -9,11 +9,13 @@ export default define.middleware(async (ctx) => {
   }
 
   try {
-    // ✅ Load common data once for all routes
+    // ✅ Load configuration and common data once for all routes
+    const config = getAppConfig();
     const watcher = await getWatcher();
     const watcherStatus = watcher.watcherStatus;
 
     ctx.state.commonData = {
+      config,
       status: {
         isDevelopment: Deno.env.get("NODE_ENV") === "development" || false,
         apiLastCheck: watcherStatus.apiLastCheck.toISOString(),
@@ -25,7 +27,9 @@ export default define.middleware(async (ctx) => {
   } catch (error) {
     console.error("Failed to load common data:", error);
     // Continue with empty data rather than failing
+    const config = getAppConfig(); // Still get config even if data loading fails
     ctx.state.commonData = {
+      config,
       status: {
         isDevelopment: false,
         apiLastCheck: "",

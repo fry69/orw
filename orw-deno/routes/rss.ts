@@ -1,9 +1,9 @@
 // routes/rss.ts - RSS feed endpoint for OpenRouter model changes
-import { define } from "../utils.ts";
+import { define, getAppConfig } from "../utils.ts";
 import { getWatcher } from "../server/index.ts";
 import RSS from "rss";
 import type { ModelDiff } from "../lib/types.ts";
-import { WATCHER_INTERVAL_MS, REPOSITORY_URL, PUBLIC_URL } from "../lib/constants.ts";
+import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
 import { showPricePerMillion, formatNumber } from "../lib/utils.ts";
 
 // Cache for RSS feed to avoid regenerating on every request
@@ -121,6 +121,7 @@ function calculateCacheMaxAge(watcherStatus: { apiLastCheck: Date }): number {
 async function generateRSSFeed(): Promise<string> {
   const watcher = await getWatcher();
   const watcherStatus = watcher.watcherStatus;
+  const config = getAppConfig();
 
   // Check if we can use cached version
   if (
@@ -130,20 +131,22 @@ async function generateRSSFeed(): Promise<string> {
     return rssCache.xml;
   }
 
-  // Get the base URL from environment or default
-  const baseURL = PUBLIC_URL;
+  // Get the base URL from config
+  const baseURL = config.publicUrl;
 
-  const feed = new RSS({
+  const feedOptions = {
     title: "OpenRouter Model Changes",
     description: "Feed for detected changes in the OpenRouter model list",
     feed_url: `${baseURL}/rss`,
     site_url: baseURL,
     image_url: `${baseURL}/favicon.svg`,
-    docs: REPOSITORY_URL,
     language: "en",
     ttl: 60,
     pubDate: watcherStatus.dbLastChange,
-  });
+    ...(config.repositoryUrl && { docs: config.repositoryUrl }),
+  };
+
+  const feed = new RSS(feedOptions);
 
   // Get last 50 changes, sorted newest first
   const lists = watcher.allLists;
@@ -168,7 +171,7 @@ async function generateRSSFeed(): Promise<string> {
     feed.item({
       title: `Model ${change.id} ${changeTypeText}`,
       description: renderChangeSnippetHTML(change),
-      url: `${baseURL}/changes?filter=${encodeURIComponent(change.id)}`,
+      url: `${baseURL}/model/${encodeURIComponent(change.id)}`,
       date: new Date(change.timestamp),
       guid: `${change.id}-${change.timestamp}`, // Unique identifier for each change
     });

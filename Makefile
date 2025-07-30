@@ -7,15 +7,25 @@ VOLUME_NAME := orw_data
 SEED_IMAGE := orw_seed
 EXTERNAL_PORT := 19913
 
+# Application configuration
+ORW_PUBLIC_URL ?= https://dev-orw.karleo.net:$(EXTERNAL_PORT)
+ORW_REPOSITORY_URL ?= https://github.com/fry69/orw
+NODE_ENV ?= production
+
+# For DENO_DEPLOYMENT_ID to enable proper client caching
+# see -> https://fresh.deno.dev/docs/concepts/deployment#-docker
+GIT_REVISION=$$(git rev-parse HEAD)
+
 # Export variables for docker-compose
 export IMAGE_NAME
 export VOLUME_NAME
 export SEED_IMAGE
 export PROJECT_DIR
 export EXTERNAL_PORT
-
-# BUILD_ARG := --build-arg GIT_REVISION=$$(git rev-parse HEAD)
-# DENO_CACHE := ${HOME}/.cache/deno
+export GIT_REVISION
+export ORW_PUBLIC_URL
+export ORW_REPOSITORY_URL
+export NODE_ENV
 
 # Default target
 all: help
@@ -27,7 +37,7 @@ help:
 	@echo "  build      - Build all images"
 	@echo "  up         - Start services"
 	@echo "  smart-up   - Start services (seed if needed)"
-	@echo "  up-rebuild - Start services with rebuild"
+	@echo "  rebuild    - Start services with rebuild"
 	@echo "  down       - Stop services"
 	@echo "  status     - Show service status and recent logs"
 	@echo "  logs       - Follow service logs"
@@ -45,6 +55,9 @@ config:
 	@echo "  VOLUME_NAME: $(VOLUME_NAME)"
 	@echo "  SEED_IMAGE: $(SEED_IMAGE)"
 	@echo "  EXTERNAL_PORT: $(EXTERNAL_PORT)"
+	@echo "  ORW_PUBLIC_URL: $(ORW_PUBLIC_URL)"
+	@echo "  ORW_REPOSITORY_URL: $(ORW_REPOSITORY_URL)"
+	@echo "  NODE_ENV: $(NODE_ENV)"
 
 # Build all images
 build:
@@ -69,7 +82,7 @@ smart-up:
 	$(COMPOSE) up --detach
 
 # Start services with rebuild
-up-rebuild:
+rebuild: down
 	$(COMPOSE) up --build --detach
 
 # Stop services

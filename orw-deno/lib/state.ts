@@ -1,11 +1,16 @@
 // lib/state.ts - Fresh 2 client state management using signals
 import { computed, signal } from "@preact/signals";
-import type { Lists, WatcherStatus } from "./types.ts";
+import type { Lists, WatcherStatus, AppConfig } from "./types.ts";
 import { durationAgo } from "./utils.ts";
 
 /**
  * Default values for client state
  */
+const defaultConfig: AppConfig = {
+  publicUrl: "http://localhost:8000",
+  repositoryUrl: null,
+};
+
 const defaultStatus: WatcherStatus = {
   isDevelopment: false,
   apiLastCheck: "",
@@ -22,6 +27,7 @@ const defaultLists: Lists = {
 /**
  * Client signals for state management
  */
+export const clientConfig = signal<AppConfig>(defaultConfig);
 export const clientStatus = signal<WatcherStatus>(defaultStatus);
 export const clientLists = signal<Lists>(defaultLists);
 

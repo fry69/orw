@@ -1,9 +1,5 @@
 FROM docker.io/denoland/deno:latest
 
-## This will trigger a complete build on every git commit
-# ARG GIT_REVISION
-# ENV DENO_DEPLOYMENT_ID=${GIT_REVISION}
-
 ## Deno cache folder
 ENV DENO_DIR=/deno-dir/
 
@@ -23,6 +19,10 @@ RUN deno cache --allow-scripts _fresh/server.js
 # RUN deno cache --allow-scripts dev.ts
 
 EXPOSE 8000
+
+## This will trigger a complete build on every git commit
+ARG GIT_REVISION
+ENV DENO_DEPLOYMENT_ID=${GIT_REVISION}
 
 ## Production version
 CMD ["serve", "-A", "_fresh/server.js"]

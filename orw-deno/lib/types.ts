@@ -74,3 +74,11 @@ export type Lists = {
   removed: Model[];
   changes: ModelDiff[];
 };
+
+/**
+ * Application configuration interface
+ */
+export interface AppConfig {
+  publicUrl: string;
+  repositoryUrl: string | null;
+}

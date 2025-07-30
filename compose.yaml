@@ -5,8 +5,8 @@ services:
     build:
       context: ./${PROJECT_DIR}
       dockerfile: Containerfile
-      # args:
-      #   GIT_REVISION: ${GIT_REVISION}
+      args:
+        GIT_REVISION: ${GIT_REVISION}
     image: ${IMAGE_NAME}:latest
 
     # Working directory inside the container
@@ -22,6 +22,16 @@ services:
     ports:
       - "${EXTERNAL_PORT}:8000"
       # - "127.0.0.1:${EXTERNAL_PORT}:8000" # Bind to localhost only
+
+    # Environment variables
+    # Override these in your shell environment or .env file:
+    # export ORW_PUBLIC_URL="https://your-domain.com"
+    # export ORW_REPOSITORY_URL="https://github.com/your-username/your-repo"
+    environment:
+      - ORW_PUBLIC_URL=${ORW_PUBLIC_URL:-http://localhost:${EXTERNAL_PORT}}
+      - ORW_REPOSITORY_URL=${ORW_REPOSITORY_URL:-}
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=8000
 
     # extra_hosts:
     #   - "openrouter.ai:host-gateway"

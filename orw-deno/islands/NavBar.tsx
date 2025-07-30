@@ -1,8 +1,8 @@
 // islands/NavBar.tsx - Navigation bar with real-time updates
 import { useEffect } from "preact/hooks";
-import { clientLists, clientStatus, navBarDurations } from "../lib/state.ts";
+import { clientConfig, clientLists, clientStatus, navBarDurations } from "../lib/state.ts";
 import { DateTime } from "luxon";
-import { UI_REFRESH_MS, VERSION, REPOSITORY_URL } from "../lib/constants.ts";
+import { UI_REFRESH_MS, VERSION } from "../lib/constants.ts";
 
 export default function NavBar() {
   // Update durations every minute
@@ -15,6 +15,7 @@ export default function NavBar() {
     return () => clearInterval(interval);
   }, []);
 
+  const config = clientConfig.value;
   const status = clientStatus.value;
   const lists = clientLists.value;
   const durations = navBarDurations.value;
@@ -27,21 +28,23 @@ export default function NavBar() {
       {/* Left side - GitHub link and navigation */}
       <div class="navbar-start">
         <div class="flex items-center gap-2">
-          {/* GitHub Link */}
-          <a
-            href={REPOSITORY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-ghost btn-square"
-          >
-            <img
-              class="image-link"
-              src="/github.svg"
-              alt="GitHub repository"
-              width="24"
-              height="24"
-            />
-          </a>
+          {/* GitHub Link - only show if repository URL is configured */}
+          {config.repositoryUrl && (
+            <a
+              href={config.repositoryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-ghost btn-square"
+            >
+              <img
+                class="image-link"
+                src="/github.svg"
+                alt="GitHub repository"
+                width="24"
+                height="24"
+              />
+            </a>
+          )}
 
           {/* Navigation Menu */}
           <ul class="menu menu-horizontal px-1 text-xl">
