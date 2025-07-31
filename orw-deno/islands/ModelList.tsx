@@ -222,9 +222,9 @@ export default function ModelList({ removed = false }: ModelListProps) {
             </tr>
           </thead>
           <tbody>
-            {sortedModels.map((model) => (
+            {sortedModels.map((model, index) => (
               <tr
-                key={model.id}
+                key={`${model.id}-${index}`}
                 class="hover:bg-base-300"
                 onClick={() => handleRowClick(model.id)}
               >
