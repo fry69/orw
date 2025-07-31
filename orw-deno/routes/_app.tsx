@@ -1,5 +1,6 @@
 // routes/_app.tsx - Fresh 2 root layout (replaces App.tsx)
 import type { PageProps } from "fresh";
+import { Partial } from "fresh/runtime";
 
 export default function App({ Component }: PageProps) {
   return (
@@ -43,8 +44,10 @@ export default function App({ Component }: PageProps) {
         <link rel="stylesheet" href="/app.css" />
         <title>OpenRouter API Watcher</title>
       </head>
-      <body>
-        <Component />
+      <body f-client-nav>
+        <Partial name="body">
+          <Component />
+        </Partial>
       </body>
     </html>
   );
