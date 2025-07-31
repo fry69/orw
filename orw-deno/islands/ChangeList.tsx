@@ -1,6 +1,6 @@
 // islands/ChangeList.tsx - Interactive change history list
 import { useEffect, useState } from "preact/hooks";
-import { clientLists, filteredChanges } from "../lib/state.ts";
+import { filteredChanges } from "../lib/state.ts";
 import type { ModelDiff } from "../lib/types.ts";
 import { formatNumber, showPricePerMillion } from "../lib/utils.ts";
 
@@ -163,7 +163,7 @@ export default function ChangeList() {
     <div class="container mx-auto px-4 py-6">
       {/* Filter input removed - now in NavBar */}
 
-      <div class="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
+      <div class="space-y-4">
         {sortedChanges.map((change, index) => (
           <div
             key={`${change.id}-${change.timestamp}-${index}`}
@@ -199,12 +199,6 @@ export default function ChangeList() {
           </div>
         )}
       </div>
-
-      {clientLists.value.changes.length > 0 && (
-        <div class="text-center mt-6 text-sm text-base-content/70">
-          Showing {sortedChanges.length} of {clientLists.value.changes.length} total changes
-        </div>
-      )}
     </div>
   );
 }

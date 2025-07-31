@@ -4,6 +4,7 @@ import {
   clientConfig,
   clientLists,
   clientStatus,
+  filterStatus,
   filterText,
   navBarDurations,
 } from "../lib/state.ts";
@@ -97,6 +98,11 @@ export default function NavBar() {
               class="input input-bordered w-full max-w-xs"
             />
           </div>
+          {filterStatus.value && (
+            <div class="text-center text-xs text-base-content/60 mt-1">
+              {filterStatus.value}
+            </div>
+          )}
         </div>
       </div>
 

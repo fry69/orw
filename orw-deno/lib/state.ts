@@ -90,3 +90,26 @@ export const filteredChanges = computed(() => {
     change.type?.toLowerCase().includes(filter)
   );
 });
+
+/**
+ * Computed value for filter status text based on current page
+ */
+export const filterStatus = computed(() => {
+  const pathname = globalThis.location?.pathname || "";
+
+  if (pathname === "/changes") {
+    const filtered = filteredChanges.value.length;
+    const total = clientLists.value.changes.length;
+    return total > 0 ? `${Math.min(filtered, 500)} of ${total} changes` : "";
+  } else if (pathname === "/removed") {
+    const filtered = filteredRemovedModels.value.length;
+    const total = clientLists.value.removed.length;
+    return total > 0 ? `${filtered} of ${total} models` : "";
+  } else if (pathname === "/list" || pathname === "/" || pathname === "") {
+    const filtered = filteredModels.value.length;
+    const total = clientLists.value.models.length;
+    return total > 0 ? `${filtered} of ${total} models` : "";
+  }
+
+  return "";
+});
