@@ -54,6 +54,7 @@ help:
 	@echo "  nuke       - Reset everything for clean rebuild"
 	@echo "  versions   - Check dependency versions"
 	@echo "  pre        - Pre-commit checks and sanitizing"
+	@echo "  dev        - Start the development server"
 
 # Show current configuration
 config:
@@ -142,3 +143,7 @@ versions:
 # Pre-commit checking and sanitizing
 pre:
 	@cd $(PROJECT_DIR) && deno task pre-commit
+
+# Start the development server
+dev:
+	@cd $(PROJECT_DIR) && deno task dev
