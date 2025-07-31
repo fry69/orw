@@ -7,6 +7,7 @@ services:
       dockerfile: Containerfile
       args:
         GIT_REVISION: ${GIT_REVISION}
+        SEED_DB_FILE: ${SEED_DB_FILE}
     image: ${IMAGE_NAME}:latest
 
     # Working directory inside the container

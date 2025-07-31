@@ -681,7 +681,7 @@ export class OpenRouterAPIWatcher {
     const removed = [...oldSet].filter((item) => !newSet.has(item));
     if (removed.length > 0) {
       changes[`${fieldPath}.removed`] = {
-        old: removed.length === 1 ? removed[0] : removed,
+        old: removed,
         new: null,
       };
     }
@@ -691,7 +691,7 @@ export class OpenRouterAPIWatcher {
     if (added.length > 0) {
       changes[`${fieldPath}.added`] = {
         old: null,
-        new: added.length === 1 ? added[0] : added,
+        new: added,
       };
     }
 

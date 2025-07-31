@@ -5,6 +5,7 @@ PROJECT_DIR := orw-deno
 IMAGE_NAME := orw
 VOLUME_NAME := orw_data
 SEED_IMAGE := orw_seed
+SEED_DB_FILE := orw.new.20250731.db
 
 ## Application configuration
 
@@ -25,6 +26,7 @@ GIT_REVISION=$$(git rev-parse HEAD)
 export IMAGE_NAME
 export VOLUME_NAME
 export SEED_IMAGE
+export SEED_DB_FILE
 export PROJECT_DIR
 export EXTERNAL_PORT
 export GIT_REVISION

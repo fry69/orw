@@ -57,6 +57,7 @@ _fresh/
 # npm + other dependencies
 node_modules/
 vendor/
+tools/
 
 # GitHub Copilot agent just loves to create folders...
 test-*/
