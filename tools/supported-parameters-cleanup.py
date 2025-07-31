@@ -10,8 +10,60 @@ import argparse
 import json
 import sqlite3
 import sys
+import time
 from pathlib import Path
 from typing import Dict, Set, Tuple, Optional, Any
+
+
+def get_database_connection(db_path: Path, timeout: int = 30) -> sqlite3.Connection:
+    """
+    Get a database connection with proper timeout and WAL mode settings.
+
+    Args:
+        db_path: Path to the database file
+        timeout: Connection timeout in seconds
+
+    Returns:
+        SQLite connection object
+    """
+    conn = sqlite3.connect(db_path, timeout=timeout)
+
+    # Enable WAL mode for better concurrent access
+    conn.execute("PRAGMA journal_mode=WAL")
+
+    # Set busy timeout
+    conn.execute(f"PRAGMA busy_timeout={timeout * 1000}")
+
+    # Enable foreign keys if they exist
+    conn.execute("PRAGMA foreign_keys=ON")
+
+    return conn
+
+
+def wait_for_database_unlock(db_path: Path, max_attempts: int = 10, delay: float = 1.0) -> bool:
+    """
+    Wait for database to become available.
+
+    Args:
+        db_path: Path to the database file
+        max_attempts: Maximum number of attempts
+        delay: Delay between attempts in seconds
+
+    Returns:
+        True if database becomes available, False otherwise
+    """
+    for attempt in range(max_attempts):
+        try:
+            conn = sqlite3.connect(db_path, timeout=1)
+            conn.execute("SELECT 1")
+            conn.close()
+            return True
+        except sqlite3.OperationalError:
+            if attempt < max_attempts - 1:
+                print(f"Database locked, waiting... (attempt {attempt + 1}/{max_attempts})")
+                time.sleep(delay)
+            continue
+    return False
 
 
 def extract_supported_parameters(changes_data: Dict[str, Any]) -> Tuple[Set[str], Set[str]]:
@@ -164,11 +216,28 @@ def main():
         action="store_true",
         help="Output raw SQL statements during dry-run (implies dry-run mode)"
     )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=30,
+        help="Database connection timeout in seconds (default: 30)"
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force execution even if database appears to be locked"
+    )
 
     args = parser.parse_args()
 
     if not args.database.exists():
         print(f"Error: Database file {args.database} does not exist", file=sys.stderr)
+        sys.exit(1)
+
+    # Check if database is accessible
+    if not args.force and not wait_for_database_unlock(args.database, max_attempts=3, delay=0.5):
+        print(f"Error: Database appears to be locked by another process", file=sys.stderr)
+        print(f"Make sure no other applications are using the database, or use --force to override", file=sys.stderr)
         sys.exit(1)
 
     dry_run = not args.execute or args.sql  # SQL output forces dry-run mode
@@ -189,7 +258,7 @@ def main():
     print()
 
     try:
-        conn = sqlite3.connect(args.database)
+        conn = get_database_connection(args.database, timeout=args.timeout)
         cursor = conn.cursor()
 
         # Get all rows with changes
@@ -243,20 +312,32 @@ def main():
         if not dry_run and (updates or deletes):
             print(f"\nApplying changes...")
 
-            if updates:
-                cursor.executemany(
-                    "UPDATE changes SET changes = ? WHERE id = ? AND timestamp = ?",
-                    updates
-                )
+            try:
+                # Use a transaction for all changes
+                conn.execute("BEGIN IMMEDIATE")
 
-            if deletes:
-                cursor.executemany(
-                    "DELETE FROM changes WHERE id = ? AND timestamp = ?",
-                    deletes
-                )
+                if updates:
+                    cursor.executemany(
+                        "UPDATE changes SET changes = ? WHERE id = ? AND timestamp = ?",
+                        updates
+                    )
+                    print(f"✅ Updated {len(updates)} rows")
 
-            conn.commit()
-            print("✅ Changes applied successfully")
+                if deletes:
+                    cursor.executemany(
+                        "DELETE FROM changes WHERE id = ? AND timestamp = ?",
+                        deletes
+                    )
+                    print(f"✅ Deleted {len(deletes)} rows")
+
+                conn.commit()
+                print("✅ All changes applied successfully")
+
+            except sqlite3.Error as e:
+                conn.rollback()
+                print(f"❌ Error applying changes: {e}", file=sys.stderr)
+                print("All changes have been rolled back", file=sys.stderr)
+                raise
 
         # Print summary
         if not args.sql:  # Don't show summary in SQL mode
@@ -270,6 +351,14 @@ def main():
             if dry_run and (stats["updated"] > 0 or stats["deleted"] > 0):
                 print(f"\nRun with --execute to apply these changes to the database.")
 
+    except sqlite3.OperationalError as e:
+        if "database is locked" in str(e).lower():
+            print(f"❌ Database is locked by another process", file=sys.stderr)
+            print(f"Please ensure no other applications are using the database and try again", file=sys.stderr)
+            print(f"Or use --force to override the lock check", file=sys.stderr)
+        else:
+            print(f"Database error: {e}", file=sys.stderr)
+        sys.exit(1)
     except sqlite3.Error as e:
         print(f"Database error: {e}", file=sys.stderr)
         sys.exit(1)
