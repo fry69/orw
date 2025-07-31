@@ -42,9 +42,35 @@ export const navBarDurations = computed(() => ({
 }));
 
 /**
- * Filter state for models
+ * Filter state for models with localStorage persistence
  */
-export const filterText = signal<string>("");
+const getInitialFilterText = (): string => {
+  if (typeof globalThis !== "undefined" && globalThis.localStorage) {
+    try {
+      return globalThis.localStorage.getItem("orw_filter_text") || "";
+    } catch {
+      return "";
+    }
+  }
+  return "";
+};
+
+export const filterText = signal<string>(getInitialFilterText());
+
+// Save filter text to localStorage whenever it changes
+filterText.subscribe((value) => {
+  if (typeof globalThis !== "undefined" && globalThis.localStorage) {
+    try {
+      if (value) {
+        globalThis.localStorage.setItem("orw_filter_text", value);
+      } else {
+        globalThis.localStorage.removeItem("orw_filter_text");
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }
+});
 
 /**
  * Computed value for filtered models
@@ -95,7 +121,11 @@ export const filteredChanges = computed(() => {
  * Computed value for filter status text based on current page
  */
 export const filterStatus = computed(() => {
+  const filter = filterText.value.toLowerCase();
   const pathname = globalThis.location?.pathname || "";
+
+  // Only show status when there's text in the filter
+  if (!filter) return "";
 
   if (pathname === "/changes") {
     const filtered = filteredChanges.value.length;
