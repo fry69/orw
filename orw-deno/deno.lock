@@ -3,8 +3,8 @@
   "specifiers": {
     "jsr:@deno/esbuild-plugin@^1.1.1": "1.1.1",
     "jsr:@deno/loader@~0.2.1": "0.2.1",
-    "jsr:@fresh/core@2.0.0-alpha.49": "2.0.0-alpha.49",
-    "jsr:@fresh/core@^2.0.0-alpha.37": "2.0.0-alpha.49",
+    "jsr:@fresh/core@2.0.0-alpha.50": "2.0.0-alpha.50",
+    "jsr:@fresh/core@^2.0.0-alpha.37": "2.0.0-alpha.50",
     "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9": "0.0.1-alpha.9",
     "jsr:@std/assert@1": "1.0.13",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
@@ -54,8 +54,8 @@
     "@deno/loader@0.2.1": {
       "integrity": "c9fcc7309ce6a77306d37a7dc4b886e547aafc5204a4a28b0eafa523ffa5c9fc"
     },
-    "@fresh/core@2.0.0-alpha.49": {
-      "integrity": "a53b8b2907c5fb5ef8a7df2ec9fd69c0a74a09c0f1920b54cf3a058ad4f44c6b",
+    "@fresh/core@2.0.0-alpha.50": {
+      "integrity": "fbc8737f48321c4679b2ec06ea72479a6f2a21fa1cddc34f4f1d50e0a6f0c9ad",
       "dependencies": [
         "jsr:@deno/esbuild-plugin",
         "jsr:@std/encoding@1",
@@ -716,7 +716,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@fresh/core@2.0.0-alpha.49",
+      "jsr:@fresh/core@2.0.0-alpha.50",
       "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9",
       "jsr:@std/assert@1",
       "jsr:@std/fs@1",

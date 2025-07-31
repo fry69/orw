@@ -18,6 +18,7 @@
     "check": "deno check components islands lib routes server static tests main.ts dev.ts",
     "pre-commit": "deno task fmt && deno task lint && deno task check && deno task test",
     "update": "deno run -A -r jsr:@fresh/update .",
+    "check-deps": "deno run -A jsr:@check/deps",
     "compile": "false && deno task build && deno compile --output orw.bin --include static --include _fresh --include deno.json -A main.ts"
   },
   "exclude": [
@@ -28,10 +29,9 @@
     "@std/assert": "jsr:@std/assert@1",
     "@std/path": "jsr:@std/path@1",
     "@std/fs": "jsr:@std/fs@1",
-    "fresh": "jsr:@fresh/core@2.0.0-alpha.49",
+    "fresh": "jsr:@fresh/core@2.0.0-alpha.50",
     "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9",
     "preact": "npm:preact@10.27.0",
-    "preact/hooks": "npm:preact@10.27.0/hooks",
     "@preact/signals": "npm:@preact/signals@2.2.1",
     "tailwindcss": "npm:tailwindcss@^4.1.11",
     "daisyui": "npm:daisyui@^5.0.50",
