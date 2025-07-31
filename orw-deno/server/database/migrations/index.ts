@@ -1,4 +1,4 @@
-import type { DatabaseSync } from "sqlite";
+import type { DatabaseSync } from "node:sqlite";
 
 // JSON migration structure
 export interface JSONMigration {

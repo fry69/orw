@@ -52,19 +52,20 @@ help:
 	@echo "  reset      - Reset volume (destructive)"
 	@echo "  clean      - Remove containers and prune images"
 	@echo "  nuke       - Reset everything for clean rebuild"
+	@echo "  versions   - Check dependency versions"
 
 # Show current configuration
 config:
 	@echo "Current configuration:"
-	@echo "  DOCKER: $(DOCKER)"
-	@echo "  PROJECT_DIR: $(PROJECT_DIR)"
-	@echo "  IMAGE_NAME: $(IMAGE_NAME)"
-	@echo "  VOLUME_NAME: $(VOLUME_NAME)"
-	@echo "  SEED_IMAGE: $(SEED_IMAGE)"
-	@echo "  EXTERNAL_PORT: $(EXTERNAL_PORT)"
-	@echo "  ORW_PUBLIC_URL: $(ORW_PUBLIC_URL)"
+	@echo "  DOCKER:             $(DOCKER)"
+	@echo "  PROJECT_DIR:        $(PROJECT_DIR)"
+	@echo "  IMAGE_NAME:         $(IMAGE_NAME)"
+	@echo "  VOLUME_NAME:        $(VOLUME_NAME)"
+	@echo "  SEED_IMAGE:         $(SEED_DB_FILE)"
+	@echo "  EXTERNAL_PORT:      $(EXTERNAL_PORT)"
+	@echo "  ORW_PUBLIC_URL:     $(ORW_PUBLIC_URL)"
 	@echo "  ORW_REPOSITORY_URL: $(ORW_REPOSITORY_URL)"
-	@echo "  NODE_ENV: $(NODE_ENV)"
+	@echo "  NODE_ENV:           $(NODE_ENV)"
 
 # Build all images
 build:
@@ -132,3 +133,6 @@ nuke: down clean
 	$(DOCKER) volume rm $(VOLUME_NAME) 2>/dev/null || true
 	$(DOCKER) image rm $(SEED_IMAGE) $(IMAGE_NAME) 2>/dev/null || true
 	$(DOCKER) volume create $(VOLUME_NAME)
+
+versions:
+	@cd $(PROJECT_DIR) && deno task check-deps || true

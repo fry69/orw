@@ -3,7 +3,7 @@ export { getMigrationStatus, runMigrations } from "./migrations/index.ts";
 export type { Migration } from "./migrations/index.ts";
 
 // Create database function using node:sqlite (aliased as "sqlite")
-import { DatabaseSync } from "sqlite";
+import { DatabaseSync } from "node:sqlite";
 import { dirname } from "@std/path";
 import { ensureDir } from "@std/fs";
 

@@ -1,5 +1,5 @@
 // watcher.ts - Simplified OpenRouter API watcher for Deno
-import type { DatabaseSync } from "sqlite";
+import type { DatabaseSync } from "node:sqlite";
 import { dirname, join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import deepDiff from "deep-diff";
@@ -463,7 +463,7 @@ export class OpenRouterAPIWatcher {
           return null;
         }
       })
-      .filter((model: Model): model is Model => model !== null);
+      .filter((model: Model | null): model is Model => model !== null);
 
     return removedModels;
   }
