@@ -7,7 +7,6 @@ services:
       dockerfile: Containerfile
       args:
         GIT_REVISION: ${GIT_REVISION}
-        SEED_DB_FILE: ${SEED_DB_FILE}
     image: ${IMAGE_NAME}:latest
 
     # Working directory inside the container
@@ -41,6 +40,8 @@ services:
     build:
       context: .
       dockerfile: Containerfile
+      args:
+        SEED_DB_FILE: ${SEED_DB_FILE}
     image: ${SEED_IMAGE}:latest
     volumes:
       - data_volume:/data

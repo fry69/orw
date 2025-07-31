@@ -1,3 +1,3 @@
 FROM docker.io/alpine:latest
 ARG SEED_DB_FILE
-COPY data/${SEED_DB_FILE} /seed/
+COPY data/${SEED_DB_FILE} /seed/orw.db
