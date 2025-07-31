@@ -1,6 +1,6 @@
 // islands/ModelList.tsx - Interactive model list with search and sorting
 import { useEffect, useState } from "preact/hooks";
-import { clientLists } from "../lib/state.ts";
+import { filteredModels, filteredRemovedModels } from "../lib/state.ts";
 import type { Model } from "../lib/types.ts";
 
 interface ModelListProps {
@@ -104,24 +104,16 @@ const sortModels = (models: Model[], field: string, direction: "asc" | "desc"): 
 };
 
 export default function ModelList({ removed = false }: ModelListProps) {
-  const lists = clientLists.value;
-  const [filteredModels, setFilteredModels] = useState<Model[]>([]);
-  const [filterText, setFilterText] = useState<string>("");
+  // Use shared filter signals instead of local state
+  const baseModels = removed ? filteredRemovedModels.value : filteredModels.value;
+  const [sortedModels, setSortedModels] = useState<Model[]>([]);
   const [sortField, setSortField] = useState<string>("added_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
-  // Update filtered models when lists change or filter changes
+  // Update sorted models when filter or sort changes
   useEffect(() => {
-    const models = removed ? lists.removed : lists.models;
-    const filtered = filterText
-      ? models.filter((model: Model) =>
-        model.id.toLowerCase().includes(filterText.toLowerCase()) ||
-        model.name.toLowerCase().includes(filterText.toLowerCase())
-      )
-      : models;
-
-    setFilteredModels(sortModels(filtered, sortField, sortDirection));
-  }, [lists, filterText, sortField, sortDirection, removed]);
+    setSortedModels(sortModels(baseModels, sortField, sortDirection));
+  }, [baseModels, sortField, sortDirection]);
 
   const handleSort = (field: string) => {
     if (field === sortField) {
@@ -164,16 +156,7 @@ export default function ModelList({ removed = false }: ModelListProps) {
         </div>
       )}
 
-      {/* Filter input */}
-      <div class="form-control w-full max-w-xs mx-auto mb-6">
-        <input
-          type="text"
-          placeholder="Filter models by ID or name..."
-          value={filterText}
-          onInput={(e) => setFilterText((e.target as HTMLInputElement).value)}
-          class="input input-bordered w-full"
-        />
-      </div>
+      {/* Filter input removed - now in NavBar */}
 
       <div class="overflow-x-auto">
         <table class="table">
@@ -239,7 +222,7 @@ export default function ModelList({ removed = false }: ModelListProps) {
             </tr>
           </thead>
           <tbody>
-            {filteredModels.map((model) => (
+            {sortedModels.map((model) => (
               <tr
                 key={model.id}
                 class="hover:bg-base-300"
@@ -306,7 +289,7 @@ export default function ModelList({ removed = false }: ModelListProps) {
           </tbody>
         </table>
 
-        {filteredModels.length === 0 && (
+        {sortedModels.length === 0 && (
           <div class="text-center py-10">
             <div class="text-lg text-base-content/50">No models found</div>
           </div>

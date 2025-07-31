@@ -53,6 +53,7 @@ help:
 	@echo "  clean      - Remove containers and prune images"
 	@echo "  nuke       - Reset everything for clean rebuild"
 	@echo "  versions   - Check dependency versions"
+	@echo "  pre        - Pre-commit checks and sanitizing"
 
 # Show current configuration
 config:
@@ -134,5 +135,10 @@ nuke: down clean
 	$(DOCKER) image rm $(SEED_IMAGE) $(IMAGE_NAME) 2>/dev/null || true
 	$(DOCKER) volume create $(VOLUME_NAME)
 
+# Show depenency versions to alert for outdated packages
 versions:
 	@cd $(PROJECT_DIR) && deno task check-deps || true
+
+# Pre-commit checking and sanitizing
+pre:
+	@cd $(PROJECT_DIR) && deno task pre-commit

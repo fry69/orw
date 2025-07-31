@@ -1,8 +1,15 @@
 // islands/NavBar.tsx - Navigation bar with real-time updates
 import { useEffect } from "preact/hooks";
-import { clientConfig, clientLists, clientStatus, navBarDurations } from "../lib/state.ts";
+import {
+  clientConfig,
+  clientLists,
+  clientStatus,
+  filterText,
+  navBarDurations,
+} from "../lib/state.ts";
 import { DateTime } from "luxon";
 import { UI_REFRESH_MS, VERSION } from "../lib/constants.ts";
+import { ChangeIcon, GitHubIcon, ModelIcon, RemovedIcon, RssIcon } from "../components/Icons.tsx";
 
 export default function NavBar() {
   // Update durations every minute
@@ -35,67 +42,71 @@ export default function NavBar() {
               target="_blank"
               rel="noopener noreferrer"
               class="btn btn-ghost btn-square"
+              title="GitHub repository"
             >
-              <img
-                class="image-link"
-                src="/github.svg"
-                alt="GitHub repository"
-                width="24"
-                height="24"
-              />
+              <GitHubIcon size={24} />
             </a>
           )}
 
           {/* Navigation Menu */}
-          <ul class="menu menu-horizontal px-1 text-xl">
-            <li>
-              <a
-                href="/list"
-                class={`btn btn-ghost ${
-                  globalThis.location?.pathname === "/list" ? "btn-accent" : ""
-                }`}
-              >
-                Models
-              </a>
-            </li>
-            <li>
-              <a
-                href="/changes"
-                class={`btn btn-ghost ${
-                  globalThis.location?.pathname === "/changes" ? "btn-accent" : ""
-                }`}
-              >
-                Changes
-              </a>
-            </li>
-            <li>
-              <a href="/rss" class="btn btn-ghost">
-                <img class="image-link" src="/rss.svg" alt="RSS Feed" width="12" height="12" />
-                RSS
-              </a>
-            </li>
-            <li>
-              <a
-                href="/removed"
-                class={`btn btn-ghost ${
-                  globalThis.location?.pathname === "/removed" ? "btn-accent" : ""
-                }`}
-              >
-                Removed
-              </a>
-            </li>
-          </ul>
+          <div class="flex gap-1">
+            <a
+              href="/list"
+              class={`btn btn-ghost gap-2 ${
+                globalThis.location?.pathname === "/list" ? "btn-accent" : ""
+              }`}
+            >
+              <ModelIcon size={18} />
+              Models
+            </a>
+            <a
+              href="/changes"
+              class={`btn btn-ghost gap-2 ${
+                globalThis.location?.pathname === "/changes" ? "btn-accent" : ""
+              }`}
+            >
+              <ChangeIcon size={18} />
+              Changes
+            </a>
+            <a
+              href="/removed"
+              class={`btn btn-ghost gap-2 ${
+                globalThis.location?.pathname === "/removed" ? "btn-accent" : ""
+              }`}
+            >
+              <RemovedIcon size={18} />
+              Removed
+            </a>
+            <a href="/rss" class="btn btn-ghost gap-2" title="RSS Feed">
+              <RssIcon size={18} />
+              RSS
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Center - Filter input */}
+      <div class="navbar-center">
+        <div class="form-control">
+          <div class="input-group">
+            <input
+              type="text"
+              placeholder="Filter models..."
+              value={filterText.value}
+              onInput={(e) => filterText.value = (e.target as HTMLInputElement).value}
+              class="input input-bordered w-full max-w-xs"
+            />
+          </div>
         </div>
       </div>
 
       {/* Right side - Status information */}
       <div class="navbar-end">
         <div class="hidden lg:flex stats stats-horizontal bg-transparent text-sm">
+          {/* Timers group */}
           <div class="stat px-2">
             <div class="stat-desc">Last DB change</div>
             <div class="stat-value text-warning text-sm">{durations.dbLastChange}</div>
-          </div>
-          <div class="stat px-2">
             <div class="stat-desc">Next API check</div>
             <div
               class={`stat-value text-sm ${
@@ -109,14 +120,16 @@ export default function NavBar() {
               {durations.apiLastCheck}
             </div>
           </div>
+
+          {/* Models count group */}
           <div class="stat px-2">
             <div class="stat-desc">Active models</div>
             <div class="stat-value text-warning text-sm">{lists.models.length}</div>
-          </div>
-          <div class="stat px-2">
             <div class="stat-desc">Removed models</div>
             <div class="stat-value text-warning text-sm">{lists.removed.length}</div>
           </div>
+
+          {/* Changes */}
           <div class="stat px-2">
             <div class="stat-desc">Changes</div>
             <div class="stat-value text-warning text-sm">{lists.changes.length}</div>
@@ -126,6 +139,8 @@ export default function NavBar() {
               </div>
             )}
           </div>
+
+          {/* Version */}
           <div class="stat px-2">
             <div class="stat-desc">Version</div>
             <div class="stat-value text-sm">{VERSION}</div>

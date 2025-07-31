@@ -1,6 +1,6 @@
 // islands/ChangeList.tsx - Interactive change history list
 import { useEffect, useState } from "preact/hooks";
-import { clientLists } from "../lib/state.ts";
+import { clientLists, filteredChanges } from "../lib/state.ts";
 import type { ModelDiff } from "../lib/types.ts";
 import { formatNumber, showPricePerMillion } from "../lib/utils.ts";
 
@@ -121,32 +121,23 @@ const ChangeSnippet = ({ change }: { change: ModelDiff }) => {
 };
 
 export default function ChangeList() {
-  const lists = clientLists.value;
-  const [filteredChanges, setFilteredChanges] = useState<ModelDiff[]>([]);
-  const [filterText, setFilterText] = useState<string>("");
+  // Use shared filter signal instead of local state
+  const baseChanges = filteredChanges.value;
+  const [sortedChanges, setSortedChanges] = useState<ModelDiff[]>([]);
   // const [limit, setLimit] = useState<number>(500);
   const limit = 500;
 
-  // Update filtered changes when lists change or filter changes
+  // Update sorted changes when filter changes
   useEffect(() => {
-    let filtered = lists.changes;
-
-    if (filterText) {
-      filtered = filtered.filter((change: ModelDiff) =>
-        change.id?.toLowerCase().includes(filterText.toLowerCase()) ||
-        change.type?.toLowerCase().includes(filterText.toLowerCase())
-      );
-    }
-
     // Apply limit and sort by timestamp (newest first)
-    filtered = filtered
+    const sorted = baseChanges
       .sort((a: ModelDiff, b: ModelDiff) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       )
       .slice(0, limit);
 
-    setFilteredChanges(filtered);
-  }, [lists.changes, filterText, limit]);
+    setSortedChanges(sorted);
+  }, [baseChanges, limit]);
 
   const handleRowClick = (changeId: string) => {
     // Navigate to model detail page (URL encode to handle slashes in model IDs)
@@ -170,31 +161,10 @@ export default function ChangeList() {
 
   return (
     <div class="container mx-auto px-4 py-6">
-      {/* Controls */}
-      <div class="flex flex-col sm:flex-row gap-4 items-center justify-center mb-6">
-        <input
-          type="text"
-          placeholder="Filter changes by model ID or type..."
-          value={filterText}
-          onInput={(e) => setFilterText((e.target as HTMLInputElement).value)}
-          class="input input-bordered w-full max-w-xs"
-        />
-        {
-          /* <select
-          value={limit}
-          onChange={(e) => setLimit(parseInt((e.target as HTMLSelectElement).value))}
-          class="select select-bordered w-full max-w-xs"
-        >
-          <option value={25}>Show 25</option>
-          <option value={50}>Show 50</option>
-          <option value={100}>Show 100</option>
-          <option value={200}>Show 200</option>
-        </select> */
-        }
-      </div>
+      {/* Filter input removed - now in NavBar */}
 
       <div class="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto">
-        {filteredChanges.map((change, index) => (
+        {sortedChanges.map((change, index) => (
           <div
             key={`${change.id}-${change.timestamp}-${index}`}
             class={`card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-200 ${
@@ -223,16 +193,16 @@ export default function ChangeList() {
           </div>
         ))}
 
-        {filteredChanges.length === 0 && (
+        {sortedChanges.length === 0 && (
           <div class="text-center py-10">
             <div class="text-lg text-base-content/50">No changes found</div>
           </div>
         )}
       </div>
 
-      {lists.changes.length > 0 && (
+      {clientLists.value.changes.length > 0 && (
         <div class="text-center mt-6 text-sm text-base-content/70">
-          Showing {filteredChanges.length} of {lists.changes.length} total changes
+          Showing {sortedChanges.length} of {clientLists.value.changes.length} total changes
         </div>
       )}
     </div>

@@ -42,9 +42,51 @@ export const navBarDurations = computed(() => ({
 }));
 
 /**
- * Computed value for filtered models (to be used in ModelList island)
+ * Filter state for models
+ */
+export const filterText = signal<string>("");
+
+/**
+ * Computed value for filtered models
  */
 export const filteredModels = computed(() => {
-  // This will be implemented in the ModelList island
-  return clientLists.value.models;
+  const models = clientLists.value.models;
+  const filter = filterText.value.toLowerCase();
+
+  if (!filter) return models;
+
+  return models.filter((model) =>
+    model.id.toLowerCase().includes(filter) ||
+    model.name.toLowerCase().includes(filter)
+  );
+});
+
+/**
+ * Computed value for filtered removed models
+ */
+export const filteredRemovedModels = computed(() => {
+  const models = clientLists.value.removed;
+  const filter = filterText.value.toLowerCase();
+
+  if (!filter) return models;
+
+  return models.filter((model) =>
+    model.id.toLowerCase().includes(filter) ||
+    model.name.toLowerCase().includes(filter)
+  );
+});
+
+/**
+ * Computed value for filtered changes
+ */
+export const filteredChanges = computed(() => {
+  const changes = clientLists.value.changes;
+  const filter = filterText.value.toLowerCase();
+
+  if (!filter) return changes;
+
+  return changes.filter((change) =>
+    change.id?.toLowerCase().includes(filter) ||
+    change.type?.toLowerCase().includes(filter)
+  );
 });
