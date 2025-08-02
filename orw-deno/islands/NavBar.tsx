@@ -86,8 +86,42 @@ export default function NavBar() {
               </a>
             </div>
 
-            {/* Mobile dropdown menu - under 1024px */}
-            <div class="lg:hidden">
+            {/* Icon-only links on medium screens - 768px to 1023px */}
+            <div class="hidden md:flex lg:hidden gap-1">
+              <a
+                href="/list"
+                class={`btn btn-ghost btn-square btn-sm ${
+                  globalThis.location?.pathname === "/list" ? "btn-accent" : ""
+                }`}
+                title="Models"
+              >
+                <ModelIcon size={16} />
+              </a>
+              <a
+                href="/changes"
+                class={`btn btn-ghost btn-square btn-sm ${
+                  globalThis.location?.pathname === "/changes" ? "btn-accent" : ""
+                }`}
+                title="Changes"
+              >
+                <ChangeIcon size={16} />
+              </a>
+              <a
+                href="/removed"
+                class={`btn btn-ghost btn-square btn-sm ${
+                  globalThis.location?.pathname === "/removed" ? "btn-accent" : ""
+                }`}
+                title="Removed"
+              >
+                <RemovedIcon size={16} />
+              </a>
+              <a href="/rss" class="btn btn-ghost btn-square btn-sm" title="RSS Feed">
+                <RssIcon size={16} />
+              </a>
+            </div>
+
+            {/* Mobile dropdown menu - under 768px */}
+            <div class="md:hidden">
               <div class="dropdown">
                 <div tabindex={0} role="button" class="btn btn-ghost btn-sm">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,8 +221,45 @@ export default function NavBar() {
           </div>
         </div>
 
-        {/* Mobile status - dropdown for small screens - under 1024px */}
-        <div class="lg:hidden">
+        {/* Medium screen status - compact 2-column format - 768px to 1023px */}
+        <div class="hidden md:grid lg:hidden grid-cols-2 gap-x-4 text-xs items-start">
+          {/* Column 1: DB/API + Models/Removed */}
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60 shrink-0">DB:</span>
+              <span class="text-warning font-medium truncate">{durations.dbLastChange}</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60 shrink-0">Models:</span>
+              <span class="text-warning font-medium">{lists.models.length}</span>
+            </div>
+          </div>
+
+          {/* Column 2: API + Changes */}
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60 shrink-0">API:</span>
+              <span
+                class={`font-medium truncate ${
+                  status.apiLastCheckStatus === "success"
+                    ? "text-success"
+                    : status.apiLastCheckStatus === "failure"
+                    ? "text-error"
+                    : "text-info"
+                }`}
+              >
+                {durations.apiLastCheck}
+              </span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60 shrink-0">Changes:</span>
+              <span class="text-warning font-medium">{lists.changes.length}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile status - dropdown for small screens - under 768px */}
+        <div class="md:hidden">
           <div class="dropdown dropdown-end">
             <div tabindex={0} role="button" class="btn btn-ghost btn-sm">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
