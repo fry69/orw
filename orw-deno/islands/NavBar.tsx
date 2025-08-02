@@ -169,52 +169,40 @@ export default function NavBar() {
       {/* Right side - Status information */}
       <div class="navbar-end">
         {/* Desktop status - compact 2-line format */}
-        <div class="hidden xl:flex flex-col text-xs gap-1">
-          <div class="flex gap-4">
-            <div class="text-center">
-              <div class="text-base-content/60">Last DB</div>
-              <div class="text-warning font-medium">{durations.dbLastChange}</div>
-            </div>
-            <div class="text-center">
-              <div class="text-base-content/60">API Check</div>
-              <div
-                class={`font-medium ${
-                  status.apiLastCheckStatus === "success"
-                    ? "text-success"
-                    : status.apiLastCheckStatus === "failure"
-                    ? "text-error"
-                    : "text-info"
-                }`}
-              >
-                {durations.apiLastCheck}
-              </div>
-            </div>
-            <div class="text-center">
-              <div class="text-base-content/60">Models</div>
-              <div class="text-warning font-medium">{lists.models.length}</div>
-            </div>
-            <div class="text-center">
-              <div class="text-base-content/60">Changes</div>
-              <div class="text-warning font-medium">{lists.changes.length}</div>
-            </div>
+        <div class="hidden xl:flex flex-col text-xs gap-0.5">
+          <div class="flex gap-3 items-center">
+            <span class="text-base-content/60">DB:</span>
+            <span class="text-warning font-medium">{durations.dbLastChange}</span>
+
+            <span class="text-base-content/60">Models:</span>
+            <span class="text-warning font-medium">{lists.models.length}</span>
+            <span class="text-base-content/60">Changes:</span>
+            <span class="text-warning font-medium">{lists.changes.length}</span>
           </div>
-          <div class="flex gap-4 justify-center">
-            <div class="text-center">
-              <div class="text-base-content/60">Removed</div>
-              <div class="text-warning font-medium">{lists.removed.length}</div>
-            </div>
+          <div class="flex gap-3 items-center">
+            <span class="text-base-content/60">API:</span>
+            <span
+              class={`font-medium ${
+                status.apiLastCheckStatus === "success"
+                  ? "text-success"
+                  : status.apiLastCheckStatus === "failure"
+                  ? "text-error"
+                  : "text-info"
+              }`}
+            >
+              {durations.apiLastCheck}
+            </span>
+            <span class="text-base-content/60">Removed:</span>
+            <span class="text-warning font-medium">{lists.removed.length}</span>
             {dbFirstChangeTimestamp && (
-              <div class="text-center">
-                <div class="text-base-content/60">Since</div>
-                <div class="text-base-content/80 font-medium">
+              <>
+                <span class="text-base-content/60">Since:</span>
+                <span class="text-base-content/80 font-medium">
                   {DateTime.fromISO(dbFirstChangeTimestamp).toISODate()}
-                </div>
-              </div>
+                </span>
+              </>
             )}
-            <div class="text-center">
-              <div class="text-base-content/60">Version</div>
-              <div class="text-base-content font-medium">{VERSION}</div>
-            </div>
+            {/* <span class="text-base-content/60">v{VERSION}</span> */}
           </div>
         </div>
 
@@ -264,18 +252,18 @@ export default function NavBar() {
                   <div class="text-base-content/60">Changes</div>
                   <div class="text-warning font-medium">{lists.changes.length}</div>
                 </div>
-                <div class="text-center">
-                  <div class="text-base-content/60">Version</div>
-                  <div class="text-base-content font-medium">{VERSION}</div>
-                </div>
                 {dbFirstChangeTimestamp && (
-                  <div class="col-span-2 text-center">
+                  <div class="text-center">
                     <div class="text-base-content/60">Since</div>
                     <div class="text-base-content/80 font-medium">
                       {DateTime.fromISO(dbFirstChangeTimestamp).toISODate()}
                     </div>
                   </div>
                 )}
+                <div class="col-span-2 text-center">
+                  <div class="text-base-content/60">Version</div>
+                  <div class="text-base-content font-medium">{VERSION}</div>
+                </div>
               </div>
             </div>
           </div>
