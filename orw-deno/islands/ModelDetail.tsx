@@ -2,11 +2,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { clientLists } from "../lib/state.ts";
 import type { Model, ModelDiff } from "../lib/types.ts";
-import {
-  durationAgo,
-  formatDateTime,
-  showPricePerMillion,
-} from "../lib/utils.ts";
+import { durationAgo, formatDateTime, showPricePerMillion } from "../lib/utils.ts";
 import { ChangeView } from "../components/ChangeView.tsx";
 
 interface ModelDetailProps {

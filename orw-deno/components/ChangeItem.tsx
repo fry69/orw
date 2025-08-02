@@ -1,8 +1,5 @@
 // components/ChangeItem.tsx - Renders a single attribute change
-import {
-  calculatePercentageChange,
-  formatChangeValue,
-} from "../lib/utils.ts";
+import { calculatePercentageChange, formatChangeValue } from "../lib/utils.ts";
 
 interface ChangeItemProps {
   path: string;
@@ -21,9 +18,7 @@ export function ChangeItem({ path, oldValue, newValue }: ChangeItemProps) {
       <span class="text-error ml-1">{oldFormatted}</span>
       <span class="mx-1">→</span>
       <span class="text-info">{newFormatted}</span>
-      {percentageChange && (
-        <span class="text-warning font-semibold">{percentageChange}</span>
-      )}
+      {percentageChange && <span class="text-warning font-semibold">{percentageChange}</span>}
     </div>
   );
 }

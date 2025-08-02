@@ -36,7 +36,7 @@ export default function ChangeList() {
         return "badge-success";
       case "removed":
         return "badge-error";
-      case "modified":
+      case "changed":
         return "badge-warning";
       default:
         return "badge-neutral";

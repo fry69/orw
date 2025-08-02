@@ -4,10 +4,7 @@ import { getWatcher } from "../server/index.ts";
 import RSS from "rss";
 import type { ModelDiff } from "../lib/types.ts";
 import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
-import {
-  calculatePercentageChange,
-  formatChangeValue,
-} from "../lib/utils.ts";
+import { calculatePercentageChange, formatChangeValue } from "../lib/utils.ts";
 
 // Cache for RSS feed to avoid regenerating on every request
 let rssCache: {
@@ -30,7 +27,7 @@ function renderChangeSnippetHTML(change: ModelDiff): string {
             <pre><code>${JSON.stringify(change.model, null, 2)}</code></pre>`;
   }
 
-  if (change.type === "modified" && change.changes) {
+  if (change.type === "changed" && change.changes) {
     const changeEntries = Object.entries(change.changes);
     const changesHTML = changeEntries
       .slice(0, 5) // Show first 5 changes in RSS

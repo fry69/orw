@@ -10,7 +10,14 @@ import {
 } from "../lib/state.ts";
 import { DateTime } from "luxon";
 import { UI_REFRESH_MS, VERSION } from "../lib/constants.ts";
-import { ChangeIcon, ClearIcon, GitHubIcon, ModelIcon, RemovedIcon, RssIcon } from "../components/Icons.tsx";
+import {
+  ChangeIcon,
+  ClearIcon,
+  GitHubIcon,
+  ModelIcon,
+  RemovedIcon,
+  RssIcon,
+} from "../components/Icons.tsx";
 
 export default function NavBar() {
   // Update durations every minute
@@ -125,22 +132,47 @@ export default function NavBar() {
               <div class="dropdown">
                 <div tabindex={0} role="button" class="btn btn-ghost btn-sm">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   </svg>
                 </div>
-                <ul tabindex={0} class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-                  <li><a href="/list" class={globalThis.location?.pathname === "/list" ? "active" : ""}>
-                    <ModelIcon size={16} />Models
-                  </a></li>
-                  <li><a href="/changes" class={globalThis.location?.pathname === "/changes" ? "active" : ""}>
-                    <ChangeIcon size={16} />Changes
-                  </a></li>
-                  <li><a href="/removed" class={globalThis.location?.pathname === "/removed" ? "active" : ""}>
-                    <RemovedIcon size={16} />Removed
-                  </a></li>
-                  <li><a href="/rss">
-                    <RssIcon size={16} />RSS
-                  </a></li>
+                <ul
+                  tabindex={0}
+                  class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+                >
+                  <li>
+                    <a
+                      href="/list"
+                      class={globalThis.location?.pathname === "/list" ? "active" : ""}
+                    >
+                      <ModelIcon size={16} />Models
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/changes"
+                      class={globalThis.location?.pathname === "/changes" ? "active" : ""}
+                    >
+                      <ChangeIcon size={16} />Changes
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/removed"
+                      class={globalThis.location?.pathname === "/removed" ? "active" : ""}
+                    >
+                      <RemovedIcon size={16} />Removed
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/rss">
+                      <RssIcon size={16} />RSS
+                    </a>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -316,13 +348,16 @@ export default function NavBar() {
                   <div class="stat-title">Timers</div>
                   <div class="stat-value text-sm">{durations.dbLastChange}</div>
                   <div class="stat-desc">
-                    API: <span class={
-                      status.apiLastCheckStatus === "success"
+                    API:{" "}
+                    <span
+                      class={status.apiLastCheckStatus === "success"
                         ? "text-success"
                         : status.apiLastCheckStatus === "failure"
                         ? "text-error"
-                        : "text-info"
-                    }>{durations.apiLastCheck}</span>
+                        : "text-info"}
+                    >
+                      {durations.apiLastCheck}
+                    </span>
                   </div>
                 </div>
                 <div class="stat">
