@@ -1,11 +1,6 @@
 // islands/NavBar.tsx - Navigation bar with real-time updates
 import { useEffect } from "preact/hooks";
-import {
-  clientConfig,
-  clientLists,
-  clientStatus,
-  navBarDurations,
-} from "../lib/state.ts";
+import { clientConfig, clientLists, clientStatus, navBarDurations } from "../lib/state.ts";
 import { UI_REFRESH_MS } from "../lib/constants.ts";
 import { GitHubIcon } from "../components/Icons.tsx";
 import NavLinks from "../components/navbar/NavLinks.tsx";

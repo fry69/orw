@@ -19,12 +19,16 @@ let rssCache: {
 function renderChangeSnippetHTML(change: ModelDiff): string {
   if (change.type === "added") {
     return `<p><strong>New model added:</strong> ${change.id}</p>
-            <pre style="white-space: pre-wrap; word-wrap: break-word;"><code>${JSON.stringify(change.model, null, 2)}</code></pre>`;
+            <pre style="white-space: pre-wrap; word-wrap: break-word;"><code>${
+      JSON.stringify(change.model, null, 2)
+    }</code></pre>`;
   }
 
   if (change.type === "removed") {
     return `<p><strong>Model removed:</strong> ${change.id}</p>
-            <pre style="white-space: pre-wrap; word-wrap: break-word;"><code>${JSON.stringify(change.model, null, 2)}</code></pre>`;
+            <pre style="white-space: pre-wrap; word-wrap: break-word;"><code>${
+      JSON.stringify(change.model, null, 2)
+    }</code></pre>`;
   }
 
   if (change.type === "changed" && change.changes) {

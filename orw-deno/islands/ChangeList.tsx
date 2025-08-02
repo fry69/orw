@@ -70,7 +70,7 @@ export default function ChangeList() {
                 </div>
               </div>
 
-              <ChangeView change={change}/>
+              <ChangeView change={change} />
             </div>
           </div>
         ))}

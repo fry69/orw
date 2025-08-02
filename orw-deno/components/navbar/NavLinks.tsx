@@ -1,10 +1,5 @@
 // orw-deno/components/navbar/NavLinks.tsx
-import {
-  ChangeIcon,
-  ModelIcon,
-  RemovedIcon,
-  RssIcon,
-} from "../Icons.tsx";
+import { ChangeIcon, ModelIcon, RemovedIcon, RssIcon } from "../Icons.tsx";
 
 const navLinks = [
   {
@@ -39,9 +34,7 @@ export default function NavLinks() {
         {navLinks.map(({ href, title, Icon }) => (
           <a
             href={href}
-            class={`btn btn-ghost btn-sm gap-2 ${
-              currentPath === href ? "btn-accent" : ""
-            }`}
+            class={`btn btn-ghost btn-sm gap-2 ${currentPath === href ? "btn-accent" : ""}`}
             title={title}
           >
             <Icon size={16} />
@@ -55,9 +48,7 @@ export default function NavLinks() {
         {navLinks.map(({ href, title, Icon }) => (
           <a
             href={href}
-            class={`btn btn-ghost btn-square btn-sm ${
-              currentPath === href ? "btn-accent" : ""
-            }`}
+            class={`btn btn-ghost btn-square btn-sm ${currentPath === href ? "btn-accent" : ""}`}
             title={title}
           >
             <Icon size={16} />

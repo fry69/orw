@@ -2,11 +2,11 @@
 
 import { DateTime } from "luxon";
 import { VERSION } from "../../lib/constants.ts";
-import type { ClientStatus, ClientLists } from "../../lib/types.ts";
+import type { Lists, WatcherStatus } from "../../lib/types.ts";
 
 interface StatusInfoProps {
-  status: ClientStatus;
-  lists: ClientLists;
+  status: WatcherStatus;
+  lists: Lists;
   durations: {
     dbLastChange: string;
     apiLastCheck: string;
@@ -122,7 +122,9 @@ export default function StatusInfo(
               <div class="stat">
                 <div class="stat-title">Timers</div>
                 <div class="stat-value text-sm">{durations.dbLastChange}</div>
-                <div class="stat-desc">API: <span class={apiStatusClass}>{durations.apiLastCheck}</span></div>
+                <div class="stat-desc">
+                  API: <span class={apiStatusClass}>{durations.apiLastCheck}</span>
+                </div>
               </div>
               <div class="stat">
                 <div class="stat-title">Version</div>
