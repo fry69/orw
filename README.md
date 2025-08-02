@@ -2,92 +2,49 @@
 
 The OpenRouter API Watcher is a tool that monitors changes in OpenRouter models and stores those changes in a SQLite database. It queries the model list via the API every hour and includes a modern web interface for viewing the changes.
 
+**Important Note:** The main application has been rewritten in [Fresh](https://fresh.deno.dev/) / [Deno](https://deno.land/) and is now located in the `orw-deno/` directory. All commands should be run from within that directory.
+
 ## Installation
 
 To run the OpenRouter API Watcher, you'll need [Deno](https://deno.land) runtime (version 1.40+).
 
-No package installation is required - Deno will automatically download dependencies on first run.
+No package installation is required - Deno will automatically download dependencies on first run. For detailed installation instructions, please see [INSTALL.md](INSTALL.md).
 
 ## Usage
 
+All commands should be executed from within the `orw-deno` directory.
+
 ### Recommended: Start Both Server and Watcher
 
-Start both the HTTP server and background watcher (recommended for most users):
+To start the HTTP server and the background watcher, run:
 
 ```bash
-# Using the CLI
-deno run --allow-all cli.ts --serve
-
-# Or using the convenience script
-deno run --allow-all start.ts
-
-# Or directly via main.ts
-deno run --allow-all main.ts
+cd orw-deno
+deno task serve
 ```
 
 This will start:
-
-- HTTP server on http://localhost:3100 (configurable)
+- HTTP server on http://localhost:8000 (configurable via `.env` file)
 - Background watcher that checks for API changes every hour
-
-### Advanced Usage
-
-The tool supports several modes via the CLI:
-
-#### 1. Background Mode Only (no HTTP server)
-
-```bash
-deno run --allow-all cli.ts --background
-```
-
-#### 2. HTTP Server Only (no background watcher)
-
-```bash
-deno run --allow-all cli.ts --serve --no-watcher
-```
-
-#### 3. Query Mode (view recent changes)
-
-```bash
-deno run --allow-all cli.ts --query 20
-```
-
-#### 4. One-Time Check
-
-```bash
-deno run --allow-all cli.ts --run-once
-```
-
-### Configuration Options
-
-```bash
-# Custom port and hostname
-deno run --allow-all cli.ts --serve --port 8080 --hostname 0.0.0.0
-
-# Custom data directory
-deno run --allow-all cli.ts --serve --data-dir /path/to/data
-
-# Environment variables
-ORW_PORT=8080 ORW_HOSTNAME=0.0.0.0 ORW_DATA_PATH=/data deno run --allow-all cli.ts --serve
-```
 
 ### Development
 
 For development with hot-reloading:
 
 ```bash
-deno run -A --watch=components/,islands/,lib,/routes/,server/,shared/,static/ dev.ts
+cd orw-deno
+deno task dev
 ```
 
 ## Web Interface
 
-The OpenRouter API Watcher includes a modern web interface built with Fresh framework that allows you to:
+The OpenRouter API Watcher includes a modern web interface built with the Fresh framework that allows you to:
 
 - View the complete list of OpenRouter models
 - Browse change history and see what models were added/removed/modified
 - Real-time updates when changes are detected
 
-By default, the web interface is available at http://localhost:3100.
+By default, the web interface is available at http://localhost:8000.
 
 ## RSS feed
 
@@ -101,11 +58,17 @@ The RSS feed uses **intelligent caching** - instead of a fixed cache time, it dy
 
 ## Testing
 
-You can run a set of simple test cases with the following command:
+The project includes a dummy test to ensure the test runner is configured correctly. You can run it with:
 
 ```bash
-bun test
+cd orw-deno
+deno task test
 ```
+
+## Database
+
+- **Seeding:** The public seed database is currently unavailable. You will need to start with a fresh database or provide your own.
+- **Backup:** The automated database backup mechanism is not functional at the moment.
 
 ## License
 
