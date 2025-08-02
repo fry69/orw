@@ -27,7 +27,7 @@ export default function NavBar() {
   const dbFirstChangeTimestamp = lists.changes.at(-1)?.timestamp ?? "";
 
   return (
-    <div class="navbar bg-base-300 px-4 min-h-12">
+    <div class="navbar bg-base-300 px-4 min-h-18">
       {/* Left side - GitHub link and navigation */}
       <div class="navbar-start">
         <div class="flex items-center gap-2">
