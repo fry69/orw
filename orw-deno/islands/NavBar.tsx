@@ -51,8 +51,8 @@ export default function NavBar() {
 
           {/* Navigation Menu - responsive design */}
           <div class="flex gap-1">
-            {/* Full links on larger screens */}
-            <div class="hidden xl:flex gap-1">
+            {/* Full links on larger screens - 1024px+ */}
+            <div class="hidden lg:flex gap-1">
               <a
                 href="/list"
                 class={`btn btn-ghost btn-sm gap-2 ${
@@ -86,41 +86,7 @@ export default function NavBar() {
               </a>
             </div>
 
-            {/* Icon-only links on medium screens */}
-            <div class="hidden lg:flex xl:hidden gap-1">
-              <a
-                href="/list"
-                class={`btn btn-ghost btn-square btn-sm ${
-                  globalThis.location?.pathname === "/list" ? "btn-accent" : ""
-                }`}
-                title="Models"
-              >
-                <ModelIcon size={16} />
-              </a>
-              <a
-                href="/changes"
-                class={`btn btn-ghost btn-square btn-sm ${
-                  globalThis.location?.pathname === "/changes" ? "btn-accent" : ""
-                }`}
-                title="Changes"
-              >
-                <ChangeIcon size={16} />
-              </a>
-              <a
-                href="/removed"
-                class={`btn btn-ghost btn-square btn-sm ${
-                  globalThis.location?.pathname === "/removed" ? "btn-accent" : ""
-                }`}
-                title="Removed"
-              >
-                <RemovedIcon size={16} />
-              </a>
-              <a href="/rss" class="btn btn-ghost btn-square btn-sm" title="RSS Feed">
-                <RssIcon size={16} />
-              </a>
-            </div>
-
-            {/* Mobile dropdown menu */}
+            {/* Mobile dropdown menu - under 1024px */}
             <div class="lg:hidden">
               <div class="dropdown">
                 <div tabindex={0} role="button" class="btn btn-ghost btn-sm">
@@ -168,108 +134,60 @@ export default function NavBar() {
 
       {/* Right side - Status information */}
       <div class="navbar-end">
-        {/* Desktop status - compact 2-line format */}
-        <div class="hidden xl:flex flex-col text-xs gap-0.5">
-          <div class="flex gap-3 items-center">
-            <span class="text-base-content/60">DB:</span>
-            <span class="text-warning font-medium">{durations.dbLastChange}</span>
-
-            <span class="text-base-content/60">Models:</span>
-            <span class="text-warning font-medium">{lists.models.length}</span>
-            <span class="text-base-content/60">Changes:</span>
-            <span class="text-warning font-medium">{lists.changes.length}</span>
+        {/* Desktop status - compact 2-line format with proper alignment - 1024px+ */}
+        <div class="hidden lg:grid grid-cols-3 gap-x-6 text-xs items-start">
+          {/* Column 1: DB/API */}
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60 shrink-0">DB:</span>
+              <span class="text-warning font-medium truncate">{durations.dbLastChange}</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60 shrink-0">API:</span>
+              <span
+                class={`font-medium truncate ${
+                  status.apiLastCheckStatus === "success"
+                    ? "text-success"
+                    : status.apiLastCheckStatus === "failure"
+                    ? "text-error"
+                    : "text-info"
+                }`}
+              >
+                {durations.apiLastCheck}
+              </span>
+            </div>
           </div>
-          <div class="flex gap-3 items-center">
-            <span class="text-base-content/60">API:</span>
-            <span
-              class={`font-medium ${
-                status.apiLastCheckStatus === "success"
-                  ? "text-success"
-                  : status.apiLastCheckStatus === "failure"
-                  ? "text-error"
-                  : "text-info"
-              }`}
-            >
-              {durations.apiLastCheck}
-            </span>
-            <span class="text-base-content/60">Removed:</span>
-            <span class="text-warning font-medium">{lists.removed.length}</span>
+
+          {/* Column 2: Models/Removed */}
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60 shrink-0">Models:</span>
+              <span class="text-warning font-medium">{lists.models.length}</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60 shrink-0">Removed:</span>
+              <span class="text-warning font-medium">{lists.removed.length}</span>
+            </div>
+          </div>
+
+          {/* Column 3: Changes/Since */}
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <div class="flex items-center gap-1">
+              <span class="text-base-content/60 shrink-0">Changes:</span>
+              <span class="text-warning font-medium">{lists.changes.length}</span>
+            </div>
             {dbFirstChangeTimestamp && (
-              <>
-                <span class="text-base-content/60">Since:</span>
-                <span class="text-base-content/80 font-medium">
+              <div class="flex items-center gap-1">
+                <span class="text-base-content/60 shrink-0">Since:</span>
+                <span class="text-base-content/80 font-medium truncate">
                   {DateTime.fromISO(dbFirstChangeTimestamp).toISODate()}
                 </span>
-              </>
-            )}
-            {/* <span class="text-base-content/60">v{VERSION}</span> */}
-          </div>
-        </div>
-
-        {/* Tablet status - hover dropdown */}
-        <div class="hidden lg:flex xl:hidden">
-          <div class="dropdown dropdown-end dropdown-hover">
-            <div tabindex={0} role="button" class="btn btn-ghost btn-sm gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-              <span class="text-xs">{lists.models.length}M</span>
-            </div>
-            <div tabindex={0} class="dropdown-content bg-base-100 rounded-box z-[1] w-72 p-4 shadow">
-              <div class="grid grid-cols-2 gap-4 text-xs">
-                <div class="text-center">
-                  <div class="text-base-content/60">Last DB change</div>
-                  <div class="text-warning font-medium">{durations.dbLastChange}</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-base-content/60">Next API check</div>
-                  <div
-                    class={`font-medium ${
-                      status.apiLastCheckStatus === "success"
-                        ? "text-success"
-                        : status.apiLastCheckStatus === "failure"
-                        ? "text-error"
-                        : "text-info"
-                    }`}
-                  >
-                    {durations.apiLastCheck}
-                  </div>
-                </div>
-                <div class="text-center">
-                  <div class="text-base-content/60">Active models</div>
-                  <div class="text-warning font-medium">{lists.models.length}</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-base-content/60">Removed models</div>
-                  <div class="text-warning font-medium">{lists.removed.length}</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-base-content/60">Changes</div>
-                  <div class="text-warning font-medium">{lists.changes.length}</div>
-                </div>
-                {dbFirstChangeTimestamp && (
-                  <div class="text-center">
-                    <div class="text-base-content/60">Since</div>
-                    <div class="text-base-content/80 font-medium">
-                      {DateTime.fromISO(dbFirstChangeTimestamp).toISODate()}
-                    </div>
-                  </div>
-                )}
-                <div class="col-span-2 text-center">
-                  <div class="text-base-content/60">Version</div>
-                  <div class="text-base-content font-medium">{VERSION}</div>
-                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Mobile status - click dropdown */}
+        {/* Mobile status - dropdown for small screens - under 1024px */}
         <div class="lg:hidden">
           <div class="dropdown dropdown-end">
             <div tabindex={0} role="button" class="btn btn-ghost btn-sm">
