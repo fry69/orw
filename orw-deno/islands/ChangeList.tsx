@@ -70,7 +70,7 @@ export default function ChangeList() {
                 </div>
               </div>
 
-              <ChangeView change={change} summaryLimit={3} />
+              <ChangeView change={change}/>
             </div>
           </div>
         ))}
