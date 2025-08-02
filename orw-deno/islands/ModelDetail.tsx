@@ -2,45 +2,16 @@
 import { useEffect, useState } from "preact/hooks";
 import { clientLists } from "../lib/state.ts";
 import type { Model, ModelDiff } from "../lib/types.ts";
+import {
+  durationAgo,
+  formatDateTime,
+  showPricePerMillion,
+} from "../lib/utils.ts";
+import { ChangeView } from "../components/ChangeView.tsx";
 
 interface ModelDetailProps {
   modelId: string;
 }
-
-// Utility functions
-const showPricePerMillion = (floatString: string): string => {
-  const cost = Math.round(parseFloat(floatString) * 1_000_000 * 100) / 100;
-  return cost > 0 ? "$" + cost.toFixed(2) : "[free]";
-};
-
-const durationAgo = (timestamp: string): string => {
-  if (!timestamp) return "";
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-
-  if (diffMinutes < 60) return `${diffMinutes} min ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 0) return "today";
-  if (diffDays === 1) return "1 day ago";
-  if (diffDays < 30) return `${diffDays} days ago`;
-
-  const diffMonths = Math.floor(diffDays / 30);
-  if (diffMonths === 1) return "1 month ago";
-  if (diffMonths < 12) return `${diffMonths} months ago`;
-
-  const diffYears = Math.floor(diffDays / 365);
-  return diffYears === 1 ? "1 year ago" : `${diffYears} years ago`;
-};
-
-const formatDateTime = (timestamp: string): string => {
-  if (!timestamp) return "";
-  const date = new Date(timestamp);
-  return date.toLocaleString();
-};
 
 // JSON Syntax Highlighter Component with manual highlighting
 function JsonHighlighter({ json }: { json: object }) {
@@ -80,7 +51,7 @@ function JsonHighlighter({ json }: { json: object }) {
             <span
               key={`${lineIndex}-${i}`}
               style={{
-                color: isProperty ? "var(--color-primary)" : "var(--color-info)", // Primary for properties, success for strings
+                color: isProperty ? "var(--color-primary)" : "var(--color-info)",
                 fontWeight: isProperty ? "700" : "500",
               }}
             >
@@ -103,7 +74,7 @@ function JsonHighlighter({ json }: { json: object }) {
             tokens.push(
               <span
                 key={`${lineIndex}-${i}`}
-                style={{ color: "var(--color-warning)", fontWeight: "700" }} // Warning for keywords
+                style={{ color: "var(--color-warning)", fontWeight: "700" }}
               >
                 {word}
               </span>,
@@ -126,7 +97,7 @@ function JsonHighlighter({ json }: { json: object }) {
           tokens.push(
             <span
               key={`${lineIndex}-${i}`}
-              style={{ color: "var(--color-info)", fontWeight: "600" }} // Info for numbers
+              style={{ color: "var(--color-info)", fontWeight: "600" }}
             >
               {number}
             </span>,
@@ -140,7 +111,7 @@ function JsonHighlighter({ json }: { json: object }) {
           tokens.push(
             <span
               key={`${lineIndex}-${i}`}
-              style={{ color: "var(--color-accent)", fontWeight: "600" }} // Accent for punctuation
+              style={{ color: "var(--color-accent)", fontWeight: "600" }}
             >
               {char}
             </span>,
@@ -180,13 +151,11 @@ export default function ModelDetail({ modelId }: ModelDetailProps) {
       return;
     }
 
-    // Look for model in active models first
     let foundModel: Model | undefined = lists.models.find(
       (model: Model) => model.id === modelId,
     );
 
     if (!foundModel) {
-      // Look in removed models
       const removedModel: Model | undefined = lists.removed.find(
         (model: Model) => model.id === modelId,
       );
@@ -202,7 +171,6 @@ export default function ModelDetail({ modelId }: ModelDetailProps) {
     setModel(foundModel);
     setError("");
 
-    // Find all changes for this model
     const foundChanges: ModelDiff[] = lists.changes.filter((change: ModelDiff) =>
       change.id === modelId
     );
@@ -343,7 +311,7 @@ export default function ModelDetail({ modelId }: ModelDetailProps) {
         <div class="card-body">
           <h2 class="card-title">Description</h2>
           <pre class="whitespace-pre-wrap text-sm bg-base-200 p-4 rounded-lg overflow-x-auto">
-            {model.description || "No description available."}
+            {model.description || ""}
           </pre>
         </div>
       </div>
@@ -383,21 +351,7 @@ export default function ModelDetail({ modelId }: ModelDetailProps) {
                       ({formatDateTime(change.timestamp)})
                     </span>
                   </div>
-
-                  {change.changes && Object.keys(change.changes).length > 0 && (
-                    <div class="text-xs space-y-1">
-                      {Object.entries(change.changes).map(([path, changeItem], idx) => (
-                        <div key={idx} class="bg-base-200 p-2 rounded">
-                          <div class="font-mono font-bold text-primary">{path}:</div>
-                          <div class="ml-2">
-                            <span class="text-error">- {JSON.stringify(changeItem.old)}</span>
-                            <br />
-                            <span class="text-info">+ {JSON.stringify(changeItem.new)}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <ChangeView change={change} />
                 </div>
               ))}
             </div>

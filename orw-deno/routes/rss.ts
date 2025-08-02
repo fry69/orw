@@ -4,7 +4,10 @@ import { getWatcher } from "../server/index.ts";
 import RSS from "rss";
 import type { ModelDiff } from "../lib/types.ts";
 import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
-import { formatNumber, showPricePerMillion } from "../lib/utils.ts";
+import {
+  calculatePercentageChange,
+  formatChangeValue,
+} from "../lib/utils.ts";
 
 // Cache for RSS feed to avoid regenerating on every request
 let rssCache: {
@@ -12,48 +15,6 @@ let rssCache: {
   lastGenerated: Date;
   dbLastChange: Date;
 } | null = null;
-
-/**
- * Formats a single change value for RSS display
- */
-function formatChangeValue(value: unknown, path: string): string {
-  if (value === null) return "[null]";
-  if (value === undefined) return "[undefined]";
-
-  // Handle pricing fields with proper formatting
-  if (path.includes("pricing.")) {
-    if (typeof value === "string") {
-      return `${showPricePerMillion(value)} per million tokens`;
-    }
-  }
-
-  // Handle numbers with locale formatting
-  if (typeof value === "number") {
-    return formatNumber(value);
-  }
-
-  // Handle arrays
-  if (Array.isArray(value)) {
-    if (value.length === 0) return "[]";
-    return `[${value.join(", ")}]`;
-  }
-
-  // Default: JSON stringify but without quotes for simple values
-  if (typeof value === "string") return value;
-  return JSON.stringify(value);
-}
-
-/**
- * Calculates percentage change for numeric values
- */
-function calculatePercentageChange(oldVal: unknown, newVal: unknown): string {
-  if (typeof oldVal !== "number" || typeof newVal !== "number") return "";
-  if (oldVal === 0) return "";
-
-  const change = ((newVal - oldVal) / oldVal) * 100;
-  const sign = change >= 0 ? "+" : "";
-  return ` (${sign}${Math.round(change)}%)`;
-}
 
 /**
  * Renders a change snippet as HTML for RSS feed description
@@ -69,26 +30,17 @@ function renderChangeSnippetHTML(change: ModelDiff): string {
             <pre><code>${JSON.stringify(change.model, null, 2)}</code></pre>`;
   }
 
-  if (change.type === "changed" && change.changes) {
+  if (change.type === "modified" && change.changes) {
     const changeEntries = Object.entries(change.changes);
     const changesHTML = changeEntries
       .slice(0, 5) // Show first 5 changes in RSS
       .map(([path, changeItem]) => {
         const oldFormatted = formatChangeValue(changeItem.old, path);
         const newFormatted = formatChangeValue(changeItem.new, path);
-
-        // Calculate percentage change for pricing fields
-        let percentageChange = "";
-        if (
-          path.includes("pricing.") && typeof changeItem.old === "string" &&
-          typeof changeItem.new === "string"
-        ) {
-          const oldPrice = parseFloat(changeItem.old);
-          const newPrice = parseFloat(changeItem.new);
-          if (!isNaN(oldPrice) && !isNaN(newPrice)) {
-            percentageChange = calculatePercentageChange(oldPrice, newPrice);
-          }
-        }
+        const percentageChange = calculatePercentageChange(
+          changeItem.old,
+          changeItem.new,
+        );
 
         return `<li><strong>${path}:</strong> ${oldFormatted} → ${newFormatted}${percentageChange}</li>`;
       })
@@ -114,13 +66,17 @@ function calculateCacheMaxAge(watcherStatus: { apiLastCheck: Date }): number {
   const timeUntilNextCheck = WATCHER_INTERVAL_MS - timeSinceLastCheck;
 
   // Ensure we have at least 60 seconds cache time, but not more than 1 hour
-  const maxAgeSeconds = Math.max(60, Math.min(Math.floor(timeUntilNextCheck / 1000), 3600));
+  const maxAgeSeconds = Math.max(
+    60,
+    Math.min(Math.floor(timeUntilNextCheck / 1000), 3600),
+  );
 
   return maxAgeSeconds;
-} /**
+}
+
+/**
  * Generates RSS feed XML
  */
-
 async function generateRSSFeed(): Promise<string> {
   const watcher = await getWatcher();
   const watcherStatus = watcher.watcherStatus;
