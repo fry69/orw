@@ -118,7 +118,9 @@ This method uses `docker-compose` to build and run the application in a containe
     The public seed database is no longer available. To seed the database from a local file:
 
     a. Place your SQLite database file (e.g., `orw.db`) in a `data/` directory in the root of the repository.
+
     b. Set `SEED_DB_FILE=orw.db` in your `.env` file.
+
     c. Run the seed service once using a specific profile:
     ```shell
     docker-compose --profile seed up
