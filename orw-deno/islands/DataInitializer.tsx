@@ -15,7 +15,7 @@ interface DataInitializerProps {
 export default function DataInitializer({ initialData }: DataInitializerProps) {
   useEffect(() => {
     if (initialData) {
-      // ✅ Initialize global state with server-rendered data
+      // ✅ Initialize client state with server-rendered data
       clientConfig.value = initialData.config;
       clientStatus.value = initialData.status;
       clientLists.value = initialData.lists;
@@ -29,10 +29,10 @@ export default function DataInitializer({ initialData }: DataInitializerProps) {
       const timeUntilRefresh = timeUntilNextCheck + 60_000; // 1 minute buffer
 
       if (timeUntilRefresh > 0) {
-        console.log(`Auto-refresh scheduled in ${Math.round(timeUntilRefresh / 60_000)} minutes`);
+        // console.log(`Auto-refresh scheduled in ${Math.round(timeUntilRefresh / 60_000)} minutes`);
 
         const timeout = setTimeout(() => {
-          console.log("Auto-refreshing page to get latest data...");
+          // console.log("Auto-refreshing page to get latest data...");
           globalThis.location.reload();
         }, timeUntilRefresh);
 

@@ -23,53 +23,31 @@ export default define.middleware(async (ctx) => {
     return ctx.next();
   }
 
-  try {
-    // ✅ Load configuration and common data once for all routes
-    const config = getAppConfig();
-    const watcher = await getWatcher();
-    const watcherStatus = watcher.watcherStatus;
+  // ✅ Load configuration and common data once for all routes
+  const config = getAppConfig();
+  const watcher = await getWatcher();
+  const watcherStatus = watcher.watcherStatus;
 
-    ctx.state.commonData = {
-      config,
-      status: {
-        isDevelopment: Deno.env.get("NODE_ENV") === "development" || false,
-        apiLastCheck: watcherStatus.apiLastCheck.toISOString(),
-        apiLastCheckStatus: watcherStatus.apiLastCheckStatus,
-        dbLastChange: watcherStatus.dbLastChange.toISOString(),
-      },
-      lists: watcher.allLists,
-    };
+  ctx.state.commonData = {
+    config,
+    status: {
+      isDevelopment: Deno.env.get("NODE_ENV") === "development" || false,
+      apiLastCheck: watcherStatus.apiLastCheck.toISOString(),
+      apiLastCheckStatus: watcherStatus.apiLastCheckStatus,
+      dbLastChange: watcherStatus.dbLastChange.toISOString(),
+    },
+    lists: watcher.allLists,
+  };
 
-    // ✅ Add intelligent caching headers - simpler approach without ETag complexity
-    const response = await ctx.next();
+  // ✅ Add intelligent caching headers - simpler approach without ETag complexity
+  const response = await ctx.next();
 
-    // Only add cache headers for successful HTML responses
-    if (response.status === 200 && response.headers.get("content-type")?.includes("text/html")) {
-      const cacheMaxAge = calculateCacheMaxAge(watcherStatus);
-      response.headers.set("Cache-Control", `public, max-age=${cacheMaxAge}`);
-      // Skip ETag for now - the auto-refresh handles data freshness
-    }
-
-    return response;
-  } catch (error) {
-    console.error("Failed to load common data:", error);
-    // Continue with empty data rather than failing
-    const config = getAppConfig(); // Still get config even if data loading fails
-    ctx.state.commonData = {
-      config,
-      status: {
-        isDevelopment: false,
-        apiLastCheck: "",
-        apiLastCheckStatus: "",
-        dbLastChange: "",
-      },
-      lists: {
-        models: [],
-        removed: [],
-        changes: [],
-      },
-    };
-
-    return ctx.next();
+  // Only add cache headers for successful HTML responses
+  if (response.status === 200 && response.headers.get("content-type")?.includes("text/html")) {
+    const cacheMaxAge = calculateCacheMaxAge(watcherStatus);
+    response.headers.set("Cache-Control", `public, max-age=${cacheMaxAge}`);
+    // Skip ETag for now - the auto-refresh handles data freshness
   }
+
+  return response;
 });
