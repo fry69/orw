@@ -136,9 +136,17 @@ nuke: down clean
 	$(DOCKER) image rm $(SEED_IMAGE) $(IMAGE_NAME) 2>/dev/null || true
 	$(DOCKER) volume create $(VOLUME_NAME)
 
+# Helper function for printing lastest version from jsr.io for a package
+define get_latest_version
+	@printf "Latest $(1) version: "
+	@curl -s 'https://jsr.io/$(1)/meta.json' | jq -r '.versions | keys[]' | sort -V | tail -n1
+endef
+
 # Show depenency versions to alert for outdated packages
 versions:
 	@cd $(PROJECT_DIR) && deno task check-deps || true
+	$(call get_latest_version,@fresh/core)
+	$(call get_latest_version,@fresh/plugin-tailwind)
 
 # Pre-commit checking and sanitizing
 pre:
@@ -146,4 +154,4 @@ pre:
 
 # Start the development server
 dev:
-	@cd $(PROJECT_DIR) && deno task dev
+	@cd $(PROJECT_DIR) && ORW_PUBLIC_URL=http://localhost:8000 deno task dev
