@@ -1,5 +1,6 @@
 // islands/NavBar.tsx - Navigation bar with real-time updates
 import { useEffect } from "preact/hooks";
+import { batch } from "@preact/signals";
 import {
   clientConfig,
   clientLists,
@@ -10,7 +11,7 @@ import {
 } from "../lib/state.ts";
 import { DateTime } from "luxon";
 import { UI_REFRESH_MS, VERSION } from "../lib/constants.ts";
-import { ChangeIcon, GitHubIcon, ModelIcon, RemovedIcon, RssIcon } from "../components/Icons.tsx";
+import { ChangeIcon, ClearIcon, GitHubIcon, ModelIcon, RemovedIcon, RssIcon } from "../components/Icons.tsx";
 
 export default function NavBar() {
   // Update durations every minute
@@ -22,6 +23,14 @@ export default function NavBar() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Clear filter function using batch to avoid race conditions
+  const clearFilter = () => {
+    // Use batch to ensure all signal updates happen atomically
+    batch(() => {
+      filterText.value = "";
+    });
+  };
 
   const config = clientConfig.value;
   const status = clientStatus.value;
@@ -151,13 +160,35 @@ export default function NavBar() {
       {/* Center - Filter input */}
       <div class="navbar-center">
         <div class="form-control">
-          <input
-            type="text"
-            placeholder="Filter models..."
-            value={filterText.value}
-            onInput={(e) => filterText.value = (e.target as HTMLInputElement).value}
-            class="input input-bordered input-sm w-full max-w-xs"
-          />
+          <div class="relative">
+            <input
+              type="text"
+              placeholder="Filter models..."
+              value={filterText.value}
+              onInput={(e) => filterText.value = (e.target as HTMLInputElement).value}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  clearFilter();
+                  (e.target as HTMLInputElement).blur();
+                }
+              }}
+              class="input input-bordered input-sm w-full max-w-xs pr-10"
+            />
+            {filterText.value && (              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  clearFilter();
+                }}
+                class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-ghost btn-xs p-1 min-h-0 h-6 w-6 z-10"
+                title="Clear filter"
+                aria-label="Clear filter"
+              >
+                <ClearIcon size={12} />
+              </button>
+            )}
+          </div>
           {filterStatus.value && (
             <div class="text-center text-xs text-base-content/60 mt-1">
               {filterStatus.value}
