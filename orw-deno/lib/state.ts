@@ -38,7 +38,7 @@ export const navBarDurations = computed(() => ({
   dbLastChange: durationAgo(clientStatus.value.dbLastChange),
   apiLastCheck: clientStatus.value.isDevelopment
     ? "[dev mode]"
-    : durationAgo(clientStatus.value.apiLastCheck, true),
+    : durationAgo(clientStatus.value.apiLastCheck),
 }));
 
 /**
