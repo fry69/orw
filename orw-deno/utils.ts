@@ -6,7 +6,6 @@ export interface State {
     config: AppConfig;
     status: WatcherStatus;
     lists: Lists;
-    pathname: string;
   };
 }
 
