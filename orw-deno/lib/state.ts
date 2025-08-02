@@ -99,6 +99,8 @@ showOnlyAddRemove.subscribe((value) => {
   }
 });
 
+export const currentRoute = signal<string>("");
+
 /**
  * Computed value for filtered models
  */

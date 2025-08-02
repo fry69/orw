@@ -1,24 +1,24 @@
 // orw-deno/islands/ChangesToggle.tsx
 import { showOnlyAddRemove } from "../lib/state.ts";
+import { FilterIcon } from "../components/Icons.tsx";
 
 export default function ChangesToggle() {
-  const isChecked = showOnlyAddRemove.value;
+  const isFiltered = showOnlyAddRemove.value;
 
-  const handleChange = () => {
+  const handleClick = () => {
     showOnlyAddRemove.value = !showOnlyAddRemove.value;
   };
 
+  const iconClass = isFiltered ? "text-primary transform scale-110" : "text-base-content/70";
+
   return (
-    <div class="flex items-center gap-2">
-      <label class="label cursor-pointer">
-        <span class="label-text text-xs mr-2">Show only Add/Remove</span>
-        <input
-          type="checkbox"
-          class="toggle toggle-sm"
-          checked={isChecked}
-          onChange={handleChange}
-        />
-      </label>
-    </div>
+    <button
+      type="button"
+      onClick={handleClick}
+      class="btn btn-ghost btn-square btn-sm"
+      title={isFiltered ? "Show all changes" : "Show only added/removed"}
+    >
+      <FilterIcon class={iconClass} size={20} />
+    </button>
   );
 }
