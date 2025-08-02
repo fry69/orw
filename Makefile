@@ -118,7 +118,8 @@ clean:
 
 # Remove generated files (should not be necessary with .dockerignore)
 prune:
-	rm -rf $(PROJECT_DIR)/node_modules $(PROJECT_DIR)/_fresh $(PROJECT_DIR)/data
+# 	rm -rf $(PROJECT_DIR)/node_modules $(PROJECT_DIR)/_fresh $(PROJECT_DIR)/data
+	rm -rf $(PROJECT_DIR)/node_modules $(PROJECT_DIR)/_fresh
 
 # Reset volume (destructive)
 reset: down
@@ -155,3 +156,7 @@ pre:
 # Start the development server
 dev:
 	@cd $(PROJECT_DIR) && ORW_PUBLIC_URL=http://localhost:8000 deno task dev
+
+# Find all emojis using ripgrep
+emoji:
+	@rg "[\p{Emoji_Presentation}\p{Extended_Pictographic}]" --type-add 'code:*.{py,js,ts,tsx,java,cpp,c,h}' -t code
