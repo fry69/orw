@@ -1,67 +1,140 @@
-## TLS/HTTPS frontend
+# Installation Guide
 
-It is strongly recommended to use a HTTPS proxy like [Caddy](https://caddyserver.com/) for serving `orw` on a public host, also some RSS feed reader may require HTTPS for communication. Setting up a reverse proxy with `Caddy` with a Caddyfile is [extremely simple](https://caddyserver.com/docs/caddyfile/patterns#reverse-proxy), apart from setting up your DNS record, `Caddy` will then take care for getting TLS certificates and serving HTTPS to the outside world.
+> [!WARNING]
+> This project is under heavy development. Parts of the documentation, such as environment variable names, may be out of date.
 
-## How to install the OpenRouter API Watcher as a systemd user service
+There are two primary methods for installing the OpenRouter API Watcher: using a **systemd service** on a dedicated Linux host, or using **containers** with `docker-compose`.
 
-1. As `superuser` create a fresh user (e.g. `orw`) with
+---
 
-```shell
-adduser orw
-```
+## Method 1: Systemd User Service
 
-2. Enable lingering for the `orw` user, so that the service will keep running when the `orw` user logs out
+This method is suitable for a dedicated Linux server. The provided service file uses **hardcoded paths** and assumes the application will be run by a user named `orw` from its home directory.
 
-```shell
-loginctl enable-linger orw
-```
+1.  **Create a dedicated user**
 
-3. As `orw` install orw with git and cd into the cloned repository
+    As `superuser`, create a new user (e.g., `orw`):
+    ```shell
+    adduser orw
+    ```
 
-```shell
-git clone https://github.com/fry69/orw
-cd orw
-```
+2.  **Enable user lingering**
 
-4. Create a production environment and edit it (make sure `PORT` and `ORW_PUBLIC_URL` match reverse proxy settings)
+    Enable lingering for the `orw` user, so the service continues to run after the user logs out:
+    ```shell
+    loginctl enable-linger orw
+    ```
 
-```shell
-cp .env.example .env.production
-vim .env.production
-```
+3.  **Clone the repository**
 
-5. (optional) Download a seed database from `orw.karleo.net`
+    As the `orw` user, clone the repository into the home directory:
+    ```shell
+    su - orw
+    git clone https://github.com/fry69/orw
+    cd orw
+    ```
 
-```shell
-curl -o orw.db.gz https://orw.karleo.net/orw.db.gz
-gzip -d orw.db.gz
-```
+4.  **Configure the environment**
 
-6. Install the systemd service
+    Navigate to the application directory and create an environment file.
+    ```shell
+    cd orw-deno
+    cp .env.example .env
+    ```
+    You can edit `.env` to change the port, hostname, and other settings.
 
-```shell
-sh ./tools/install_service.sh
-```
+5.  **Build the application**
 
-7. After successfull installation, start the service and check the status (the service will automatically install/update `bun`, install/update modules and build the web client)
+    The systemd service serves pre-built application files. You must build them first:
+    ```shell
+    deno task build
+    ```
 
-```shell
-systemctl --user start orw
-systemctl --user status orw
-```
+6.  **(Optional) Provide a seed database**
 
-8. (optional) Check log file and the systemd journal later
+    The public seed database is no longer available. If you have a local database file (e.g., `orw.db`), place it in the `orw-deno/data/` directory.
 
-```shell
-tail orw.log
-journalctl --user -u orw -f
-```
+7.  **Install the systemd service**
 
-9. (optional) Update the `orm` repository at later time and restart the watcher
+    From the root of the repository, run the installation script:
+    ```shell
+    cd ~/orw
+    sh ./service/install_service.sh
+    ```
 
-```shell
-cd orw
-git pull --rebase
-systemctl --user restart orw
-journalctl --user -u orw -f
-```
+8.  **Start and check the service**
+
+    After successful installation, you can start and manage the service:
+    ```shell
+    # Start the service
+    systemctl --user start orw-deno
+
+    # Check its status
+    systemctl --user status orw-deno
+
+    # View logs
+    journalctl --user -u orw-deno -f
+    ```
+
+9.  **Updating the application**
+
+    To update the application later:
+    ```shell
+    cd ~/orw
+    git pull --rebase
+    cd orw-deno
+    deno task build
+    systemctl --user restart orw-deno
+    ```
+
+---
+
+## Method 2: Container-based Installation (Recommended)
+
+This method uses `docker-compose` to build and run the application in a container. It is the recommended approach for most users.
+
+1.  **Clone the repository**
+    ```shell
+    git clone https://github.com/fry69/orw
+    cd orw
+    ```
+
+2.  **Configure the environment**
+
+    Create a `.env` file in the root of the repository to configure the container setup.
+    ```shell
+    cp .env.example .env
+    ```
+    You will need to edit this file. Here is an explanation of the variables:
+    - `PROJECT_DIR=orw-deno`: The directory containing the Deno application.
+    - `IMAGE_NAME=orw-deno`: The name for the built Docker image.
+    - `VOLUME_NAME=orw-data`: The name of the Docker volume used to persist the database. It is recommended to use a static name.
+    - `EXTERNAL_PORT=8000`: The host port that will map to the container's port 8000.
+    - `ORW_PUBLIC_URL`: The public URL where the application will be accessible (e.g., `http://localhost:8000` or `https://orw.example.com`).
+    - `ORW_REPOSITORY_URL`: An optional URL to your repository for display in the UI.
+
+3.  **(Optional) Provide a seed database**
+
+    The public seed database is no longer available. To seed the database from a local file:
+
+    a. Place your SQLite database file (e.g., `orw.db`) in a `data/` directory in the root of the repository.
+
+    b. Set `SEED_DB_FILE=orw.db` in your `.env` file.
+
+    c. Run the seed service once using a specific profile:
+    ```shell
+    docker-compose --profile seed up
+    ```
+    This will copy the database into the named volume.
+
+4.  **Build and run the application**
+    ```shell
+    docker-compose up --build -d
+    ```
+    The application will be built and started in the background. You can view logs with `docker-compose logs -f`.
+
+---
+
+## TLS/HTTPS Frontend
+
+Regardless of the installation method, it is strongly recommended to use a reverse proxy like [Caddy](https://caddyserver.com/) or Nginx to provide a TLS/HTTPS frontend, especially for a public-facing instance. Some RSS feed readers also require HTTPS. Setting up a reverse proxy is straightforward and will handle TLS certificate acquisition and renewal automatically.
