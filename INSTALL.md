@@ -1,5 +1,8 @@
 # Installation Guide
 
+> [!WARNING]
+> This project is under heavy development. Parts of the documentation, such as environment variable names, may be out of date.
+
 There are two primary methods for installing the OpenRouter API Watcher: using a **systemd service** on a dedicated Linux host, or using **containers** with `docker-compose`.
 
 ---
@@ -113,8 +116,8 @@ This method uses `docker-compose` to build and run the application in a containe
 3.  **(Optional) Provide a seed database**
 
     The public seed database is no longer available. To seed the database from a local file:
-    a. Place your gzipped database file (e.g., `orw.db.gz`) in a `data/` directory in the root of the repository.
-    b. Set `SEED_DB_FILE=orw.db.gz` in your `.env` file.
+    a. Place your SQLite database file (e.g., `orw.db`) in a `data/` directory in the root of the repository.
+    b. Set `SEED_DB_FILE=orw.db` in your `.env` file.
     c. Run the seed service once using a specific profile:
     ```shell
     docker-compose --profile seed up

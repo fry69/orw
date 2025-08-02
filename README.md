@@ -1,5 +1,8 @@
 # orw: OpenRouter API Watcher
 
+> [!WARNING]
+> This project is under heavy development. Parts of the documentation, such as environment variable names, may be out of date.
+
 The OpenRouter API Watcher is a tool that monitors changes in OpenRouter models and stores those changes in a SQLite database. It queries the model list via the API every hour and includes a modern web interface for viewing the changes.
 
 **Important Note:** The main application has been rewritten in [Fresh](https://fresh.deno.dev/) / [Deno](https://deno.land/) and is now located in the `orw-deno/` directory. All commands should be run from within that directory.
