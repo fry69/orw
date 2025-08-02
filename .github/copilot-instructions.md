@@ -55,3 +55,14 @@ NOTE: Please consult online documentation for updated information, if not provid
 - The main content block below the navigation bar contains either:
   - Model list as a large, responsive table view (latest model first by default).
   - Paginated list of changes (newest first).
+
+## Tool use
+
+Use playwright MCP server to access the application via browser and test implementations, also check the browser console log for errors.
+
+Use filesystem MCP server to move and delete files if needed. Do not forget to remove backup files you created.
+
+## Development server
+
+Assume that a development server is always running and accessible via http://localhost:8000/
+Do not try to start a server on your own.
