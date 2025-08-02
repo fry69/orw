@@ -1,7 +1,6 @@
 // routes/_middleware.ts - Load common data for all pages
 import { define, getAppConfig } from "../utils.ts";
 import { getWatcher } from "../server/index.ts";
-import { currentRoute } from "../lib/state.ts";
 import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
 
 /**
@@ -19,8 +18,6 @@ function calculateCacheMaxAge(watcherStatus: { apiLastCheck: Date }): number {
 }
 
 export default define.middleware(async (ctx) => {
-  currentRoute.value = ctx.url.pathname;
-
   // Skip API routes and health check
   if (ctx.url.pathname.startsWith("/api/") || ctx.url.pathname === "/health") {
     return ctx.next();
@@ -40,6 +37,7 @@ export default define.middleware(async (ctx) => {
       dbLastChange: watcherStatus.dbLastChange.toISOString(),
     },
     lists: watcher.allLists,
+    pathname: ctx.url.pathname,
   };
 
   // ✅ Add intelligent caching headers - simpler approach without ETag complexity
