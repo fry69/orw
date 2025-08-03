@@ -1,6 +1,6 @@
 // islands/DataInitializer.tsx - Initialize global state with server data
 import { useEffect } from "preact/hooks";
-import { clientConfig, clientLists, clientStatus } from "../lib/state.ts";
+import { clientConfig, clientLists, clientStatus, currentRoute } from "../lib/state.ts";
 import type { AppConfig, Lists, WatcherStatus } from "../lib/types.ts";
 import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
 
@@ -9,6 +9,7 @@ interface DataInitializerProps {
     config: AppConfig;
     status: WatcherStatus;
     lists: Lists;
+    pathname: string;
   };
 }
 
@@ -19,6 +20,7 @@ export default function DataInitializer({ initialData }: DataInitializerProps) {
       clientConfig.value = initialData.config;
       clientStatus.value = initialData.status;
       clientLists.value = initialData.lists;
+      currentRoute.value = initialData.pathname;
 
       // ✅ Set up auto-refresh timer like the React version
       const apiLastCheck = new Date(initialData.status.apiLastCheck);
