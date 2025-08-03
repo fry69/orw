@@ -10,27 +10,12 @@ repos:
       - id: check-added-large-files
   - repo: "local"
     hooks:
-      - id: deno-fmt
-        name: deno fmt
-        description: Auto-format all JavaScript, TypeScript, Markdown and JSON files.
-        entry: cd orw-deno && deno fmt
+      - id: make-pre
+        name: make pre
+        description: Deno checks via Makefile
+        entry: make pre
         types_or: [javascript, jsx, ts, tsx, json]
         pass_filenames: false
         language: system
         always_run: true
-      - id: deno-lint
-        name: deno lint
-        description: Lint all JavaScript and TypeScript source code files.
-        entry: cd orw-deno && deno lint
-        types_or: [javascript, jsx, ts, tsx]
-        pass_filenames: false
-        language: system
-        always_run: true
-      - id: deno-check
-        name: deno check
-        description: Type check all JavaScript and TypeScript source code files.
-        entry: cd orw-deno && deno check
-        types_or: [javascript, jsx, ts, tsx]
-        pass_filenames: false
-        language: system
-        always_run: true
+        verbose: false
