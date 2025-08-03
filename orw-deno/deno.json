@@ -1,54 +1,7 @@
 {
-  "name": "orw-deno",
-  "exports": {
-    ".": "./server/main.ts"
-  },
-  "version": "0.6.0",
-  "nodeModulesDir": "auto",
-  "tasks": {
-    "dev": "deno run --allow-all --watch=components/,islands/,lib/,routes/,server/,static/,main.ts dev.ts",
-    "serve": "deno task build && deno serve --allow-all --env-file=.env _fresh/server.js",
-    "serve-prod": "deno serve --allow-all _fresh/server.js",
-    "build": "deno run --allow-all dev.ts build",
-    "test": "deno test --allow-all --reporter=dot tests/",
-    "test-cov": "deno test --allow-all --reporter=dot --coverage --coverage-raw-data-only tests/",
-    "coverage": "deno coverage --include=\"routes/\" --include=\"server/\"",
-    "lint": "deno lint",
-    "fmt": "deno fmt",
-    "check": "deno check components islands lib routes server static tests main.ts dev.ts",
-    "pre-commit": "deno task fmt && deno task lint && deno task check && deno task test",
-    "update": "deno run -A -r jsr:@fresh/update .",
-    "check-deps": "deno run -A jsr:@check/deps --allow-unused",
-    "compile": "false && deno task build && deno compile --output orw.bin --include static --include _fresh --include deno.json -A main.ts"
-  },
-  "exclude": [
-    "**/_fresh/*",
-    "**/data/*"
-  ],
-  "imports": {
-    "@std/assert": "jsr:@std/assert@1",
-    "@std/path": "jsr:@std/path@1",
-    "@std/fs": "jsr:@std/fs@1",
-    "fresh": "jsr:@fresh/core@2.0.0-alpha.52",
-    "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9",
-    "preact": "npm:preact@10.27.0",
-    "@preact/signals": "npm:@preact/signals@2.2.1",
-    "tailwindcss": "npm:tailwindcss@^4.1.11",
-    "daisyui": "npm:daisyui@^5.0.50",
-    "luxon": "npm:luxon@3.7.1",
-    "@kitsuyui/luxon-ext": "npm:@kitsuyui/luxon-ext@0.2.1",
-    "rss": "npm:rss@1.2.2",
-    "deep-diff": "npm:deep-diff@1.0.2"
-  },
   "compilerOptions": {
     "jsx": "precompile",
     "jsxImportSource": "preact",
-    "lib": [
-      "dom",
-      "dom.asynciterable",
-      "dom.iterable",
-      "deno.ns"
-    ],
     "jsxPrecompileSkipElements": [
       "a",
       "img",
@@ -56,15 +9,43 @@
       "body",
       "html",
       "head"
+    ],
+    "lib": [
+      "dom",
+      "dom.asynciterable",
+      "dom.iterable",
+      "deno.ns"
     ]
   },
+  "exclude": [
+    "**/_fresh/*",
+    "**/data/*"
+  ],
+  "exports": {
+    ".": "./server/main.ts"
+  },
   "fmt": {
-    "useTabs": false,
-    "lineWidth": 100,
     "indentWidth": 2,
+    "lineWidth": 100,
+    "proseWrap": "preserve",
     "semiColons": true,
     "singleQuote": false,
-    "proseWrap": "preserve"
+    "useTabs": false
+  },
+  "imports": {
+    "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9",
+    "@kitsuyui/luxon-ext": "npm:@kitsuyui/luxon-ext@0.2.1",
+    "@preact/signals": "npm:@preact/signals@2.2.1",
+    "@std/assert": "jsr:@std/assert@1",
+    "@std/fs": "jsr:@std/fs@1",
+    "@std/path": "jsr:@std/path@1",
+    "daisyui": "npm:daisyui@^5.0.50",
+    "deep-diff": "npm:deep-diff@1.0.2",
+    "fresh": "jsr:@fresh/core@2.0.0-alpha.52",
+    "luxon": "npm:luxon@3.7.1",
+    "preact": "npm:preact@10.27.0",
+    "rss": "npm:rss@1.2.2",
+    "tailwindcss": "npm:tailwindcss@^4.1.11"
   },
   "lint": {
     "rules": {
@@ -73,5 +54,24 @@
         "recommended"
       ]
     }
-  }
+  },
+  "name": "orw-deno",
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "build": "deno run --allow-all dev.ts build",
+    "check": "deno check components islands lib routes server static tests main.ts dev.ts",
+    "check-deps": "deno run -A jsr:@check/deps --allow-unused",
+    "compile": "false && deno task build && deno compile --output orw.bin --include static --include _fresh --include deno.json -A main.ts",
+    "coverage": "deno coverage --include=\"routes/\" --include=\"server/\"",
+    "dev": "deno run --allow-all --watch=components/,islands/,lib/,routes/,server/,static/,main.ts dev.ts",
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "pre-commit": "deno task fmt && deno task lint && deno task check && deno task test",
+    "serve": "deno task build && deno serve --allow-all --env-file=.env _fresh/server.js",
+    "serve-prod": "deno serve --allow-all _fresh/server.js",
+    "test": "deno test --allow-all --reporter=dot tests/",
+    "test-cov": "deno test --allow-all --reporter=dot --coverage --coverage-raw-data-only tests/",
+    "update": "deno run -A -r jsr:@fresh/update ."
+  },
+  "version": "0.6.0"
 }

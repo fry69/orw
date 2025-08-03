@@ -1,22 +1,22 @@
 {
-  "version": 3,
   "description": "Create added_models and removed_models tables, fix empty changes",
   "statements": [
     {
-      "sql": "UPDATE changes SET changes = (SELECT data FROM models WHERE changes.id = models.id) WHERE changes = '{}'",
-      "description": "Fix changes entries that have empty data"
+      "description": "Fix changes entries that have empty data",
+      "sql": "UPDATE changes SET changes = (SELECT data FROM models WHERE changes.id = models.id) WHERE changes = '{}'"
     },
     {
-      "sql": "CREATE TABLE IF NOT EXISTS removed_models (id TEXT, data TEXT, timestamp TEXT, PRIMARY KEY (id, timestamp))",
-      "description": "Create table for tracking removed models (allows multiple removals)"
+      "description": "Create table for tracking removed models (allows multiple removals)",
+      "sql": "CREATE TABLE IF NOT EXISTS removed_models (id TEXT, data TEXT, timestamp TEXT, PRIMARY KEY (id, timestamp))"
     },
     {
-      "sql": "CREATE TABLE IF NOT EXISTS added_models (id TEXT, data TEXT, timestamp TEXT, PRIMARY KEY (id, timestamp))",
-      "description": "Create table for tracking added models (allows multiple additions)"
+      "description": "Create table for tracking added models (allows multiple additions)",
+      "sql": "CREATE TABLE IF NOT EXISTS added_models (id TEXT, data TEXT, timestamp TEXT, PRIMARY KEY (id, timestamp))"
     },
     {
-      "sql": "INSERT INTO added_models (id, data, timestamp) SELECT id, changes, timestamp FROM changes WHERE type = 'added'",
-      "description": "Populate added_models table with existing added model changes"
+      "description": "Populate added_models table with existing added model changes",
+      "sql": "INSERT INTO added_models (id, data, timestamp) SELECT id, changes, timestamp FROM changes WHERE type = 'added'"
     }
-  ]
+  ],
+  "version": 3
 }

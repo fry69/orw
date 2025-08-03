@@ -1,22 +1,22 @@
 {
-  "version": 2,
   "description": "Add type column to changes table with proper constraints",
   "statements": [
     {
-      "sql": "CREATE TABLE changes_new (id TEXT, changes TEXT, timestamp TEXT, type TEXT, PRIMARY KEY (id, timestamp))",
-      "description": "Create new changes table with type column and proper primary key"
+      "description": "Create new changes table with type column and proper primary key",
+      "sql": "CREATE TABLE changes_new (id TEXT, changes TEXT, timestamp TEXT, type TEXT, PRIMARY KEY (id, timestamp))"
     },
     {
-      "sql": "INSERT INTO changes_new (id, changes, timestamp, type) SELECT id, changes, timestamp, 'changed' FROM changes",
-      "description": "Copy existing data to new table, marking all as 'changed'"
+      "description": "Copy existing data to new table, marking all as 'changed'",
+      "sql": "INSERT INTO changes_new (id, changes, timestamp, type) SELECT id, changes, timestamp, 'changed' FROM changes"
     },
     {
-      "sql": "DROP TABLE changes",
-      "description": "Remove old changes table"
+      "description": "Remove old changes table",
+      "sql": "DROP TABLE changes"
     },
     {
-      "sql": "ALTER TABLE changes_new RENAME TO changes",
-      "description": "Rename new table to replace old one"
+      "description": "Rename new table to replace old one",
+      "sql": "ALTER TABLE changes_new RENAME TO changes"
     }
-  ]
+  ],
+  "version": 2
 }

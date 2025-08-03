@@ -1,10 +1,10 @@
 {
-  "version": 5,
   "description": "Add status column to last_api_check table",
   "statements": [
     {
-      "sql": "ALTER TABLE last_api_check ADD last_status TEXT",
-      "description": "Add column to store the result status of API checks"
+      "description": "Add column to store the result status of API checks",
+      "sql": "ALTER TABLE last_api_check ADD last_status TEXT"
     }
-  ]
+  ],
+  "version": 5
 }
