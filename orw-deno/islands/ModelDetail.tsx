@@ -94,13 +94,21 @@ export default function ModelDetail({ modelId }: ModelDetailProps) {
             <div class="space-y-2">
               <div class="flex justify-between">
                 <span class="text-2xl">Input:</span>
-                <span class={`text-2xl font-bold ${model.pricing.prompt === "0" ? "text-primary" : "text-info"}`}>
+                <span
+                  class={`text-2xl font-bold ${
+                    model.pricing.prompt === "0" ? "text-primary" : "text-info"
+                  }`}
+                >
                   {showPricePerMillion(model.pricing.prompt)}
                 </span>
               </div>
               <div class="flex justify-between">
                 <span class="text-2xl">Output:</span>
-                <span class={`text-2xl font-bold ${model.pricing.completion === "0" ? "text-primary" : "text-info"}`}>
+                <span
+                  class={`text-2xl font-bold ${
+                    model.pricing.completion === "0" ? "text-primary" : "text-info"
+                  }`}
+                >
                   {showPricePerMillion(model.pricing.completion)}
                 </span>
               </div>
