@@ -33,7 +33,7 @@ export const durationAgo = (timestamp: string): string => {
   const humanReadable = toHumanDurationExtended(diff, {
     human: { unitDisplay: "short" },
     rounding: { numOfUnits: 1, minUnit: "minutes" },
-  })
+  });
 
   // Handle cases where the duration is less than a minute
   if (diff.as("minutes") < 1) {

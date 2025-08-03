@@ -159,7 +159,9 @@ export function GitHubIcon({ class: className = "", size = 20 }: IconProps): JSX
   );
 }
 
-export function InfoIcon({ class: className = "stroke-current shrink-0 w-6 h-6", size = 20 }: IconProps): JSX.Element {
+export function InfoIcon(
+  { class: className = "stroke-current shrink-0 w-6 h-6", size = 20 }: IconProps,
+): JSX.Element {
   return (
     <svg
       width={size}

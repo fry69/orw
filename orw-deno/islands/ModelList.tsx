@@ -43,11 +43,11 @@ const sortModels = (models: Model[], field: string, direction: "asc" | "desc"): 
         // aValue = a.pricing.completion;
         // bValue = b.pricing.completion;
         aValue = a.id === "openrouter/auto"
-                      ? Number.MAX_SAFE_INTEGER.toString()
-                      : a.pricing.completion;
+          ? Number.MAX_SAFE_INTEGER.toString()
+          : a.pricing.completion;
         bValue = b.id === "openrouter/auto"
-                      ? Number.MAX_SAFE_INTEGER.toString()
-                      : b.pricing.completion;
+          ? Number.MAX_SAFE_INTEGER.toString()
+          : b.pricing.completion;
         break;
       case "max_completion_tokens":
         aValue = a.top_provider.max_completion_tokens ?? 0;
