@@ -93,21 +93,21 @@ export default function ModelDetail({ modelId }: ModelDetailProps) {
             <h2 class="card-title text-info">Price per Million Tokens</h2>
             <div class="space-y-2">
               <div class="flex justify-between">
-                <span>Input:</span>
-                <span class="badge badge-info">
+                <span class="text-2xl">Input:</span>
+                <span class={`text-2xl font-bold ${model.pricing.prompt === "0" ? "text-primary" : "text-info"}`}>
                   {showPricePerMillion(model.pricing.prompt)}
                 </span>
               </div>
               <div class="flex justify-between">
-                <span>Output:</span>
-                <span class="badge badge-info">
+                <span class="text-2xl">Output:</span>
+                <span class={`text-2xl font-bold ${model.pricing.completion === "0" ? "text-primary" : "text-info"}`}>
                   {showPricePerMillion(model.pricing.completion)}
                 </span>
               </div>
               {model.pricing.request !== "0" && (
                 <div class="flex justify-between">
-                  <span>Per Request:</span>
-                  <span class="badge badge-info">
+                  <span class="text-2xl">Per Request:</span>
+                  <span class="text-2xl font-bold text-info">
                     {showPricePerMillion(model.pricing.request)}
                   </span>
                 </div>
