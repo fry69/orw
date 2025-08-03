@@ -1,11 +1,18 @@
 // islands/NavBar.tsx - Navigation bar with real-time updates
 import { useEffect } from "preact/hooks";
-import { clientConfig, clientLists, clientStatus, navBarDurations } from "../lib/state.ts";
+import {
+  clientConfig,
+  clientLists,
+  clientStatus,
+  currentRoute,
+  navBarDurations,
+} from "../lib/state.ts";
 import { UI_REFRESH_MS } from "../lib/constants.ts";
 import { GitHubIcon } from "../components/Icons.tsx";
 import NavLinks from "../components/navbar/NavLinks.tsx";
 import StatusInfo from "../components/navbar/StatusInfo.tsx";
 import Filter from "../components/navbar/Filter.tsx";
+import ChangesToggle from "./ChangesToggle.tsx";
 
 export default function NavBar() {
   // Update durations every minute
@@ -22,6 +29,7 @@ export default function NavBar() {
   const status = clientStatus.value;
   const lists = clientLists.value;
   const durations = navBarDurations.value;
+  const isChangesPage = currentRoute.value === "/changes";
 
   // Calculate first change timestamp for display
   const dbFirstChangeTimestamp = lists.changes.at(-1)?.timestamp ?? "";
@@ -46,9 +54,12 @@ export default function NavBar() {
         </div>
       </div>
 
-      {/* Center - Filter input */}
+      {/* Center - Filter input and Changes toggle */}
       <div class="navbar-center">
-        <Filter />
+        <div class="flex items-center gap-4">
+          <Filter />
+          {isChangesPage && <ChangesToggle />}
+        </div>
       </div>
 
       {/* Right side - Status information */}

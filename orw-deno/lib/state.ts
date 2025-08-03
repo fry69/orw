@@ -73,6 +73,35 @@ filterText.subscribe((value) => {
 });
 
 /**
+ * Toggle state for showing only add/remove changes with localStorage persistence
+ */
+const getInitialShowOnlyAddRemove = (): boolean => {
+  if (typeof globalThis !== "undefined" && globalThis.localStorage) {
+    try {
+      return globalThis.localStorage.getItem("orw_show_only_add_remove") === "true";
+    } catch {
+      return false;
+    }
+  }
+  return false;
+};
+
+export const showOnlyAddRemove = signal<boolean>(getInitialShowOnlyAddRemove());
+
+// Save toggle state to localStorage whenever it changes
+showOnlyAddRemove.subscribe((value) => {
+  if (typeof globalThis !== "undefined" && globalThis.localStorage) {
+    try {
+      globalThis.localStorage.setItem("orw_show_only_add_remove", String(value));
+    } catch {
+      // Ignore localStorage errors
+    }
+  }
+});
+
+export const currentRoute = signal<string>("");
+
+/**
  * Computed value for filtered models
  */
 export const filteredModels = computed(() => {
@@ -108,13 +137,16 @@ export const filteredRemovedModels = computed(() => {
 export const filteredChanges = computed(() => {
   const changes = clientLists.value.changes;
   const filter = filterText.value.toLowerCase();
+  const onlyAddRemove = showOnlyAddRemove.value;
 
-  if (!filter) return changes;
-
-  return changes.filter((change) =>
-    change.id?.toLowerCase().includes(filter) ||
-    change.type?.toLowerCase().includes(filter)
-  );
+  return changes.filter((change) => {
+    const typeMatch = !onlyAddRemove || change.type === "added" ||
+      change.type === "removed";
+    const textMatch = !filter ||
+      (change.id?.toLowerCase().includes(filter) ||
+        change.type?.toLowerCase().includes(filter));
+    return typeMatch && textMatch;
+  });
 });
 
 /**

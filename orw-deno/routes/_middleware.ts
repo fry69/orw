@@ -37,6 +37,7 @@ export default define.middleware(async (ctx) => {
       dbLastChange: watcherStatus.dbLastChange.toISOString(),
     },
     lists: watcher.allLists,
+    pathname: ctx.url.pathname,
   };
 
   // ✅ Add intelligent caching headers - simpler approach without ETag complexity

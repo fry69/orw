@@ -69,6 +69,24 @@ export function RemovedIcon({ class: className = "", size = 20 }: IconProps): JS
   );
 }
 
+export function FilterIcon({ class: className = "", size = 20 }: IconProps): JSX.Element {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class={className}
+    >
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </svg>
+  );
+}
+
 // export function SearchIcon({ class: className = "", size = 20 }: IconProps): JSX.Element {
 //   return (
 //     <svg
