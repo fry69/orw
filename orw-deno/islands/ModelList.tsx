@@ -2,6 +2,8 @@
 import { useEffect, useState } from "preact/hooks";
 import { filteredModels, filteredRemovedModels } from "../lib/state.ts";
 import type { Model } from "../lib/types.ts";
+import { durationAgo, showPricePerMillion } from "../lib/utils.ts";
+import { InfoIcon } from "../components/Icons.tsx";
 
 interface ModelListProps {
   removed?: boolean;
@@ -13,30 +15,6 @@ const roundKb = (num: number): string => {
     return num.toString();
   }
   return `${Math.ceil(num / 1024)}k`;
-};
-
-const showPricePerMillion = (floatString: string): string => {
-  const cost = Math.round(parseFloat(floatString) * 1_000_000 * 100) / 100;
-  return cost > 0 ? "$" + cost.toFixed(2) : "[free]";
-};
-
-const durationAgo = (timestamp: string): string => {
-  if (!timestamp) return "";
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return "today";
-  if (diffDays === 1) return "1 day";
-  if (diffDays < 30) return `${diffDays} days`;
-
-  const diffMonths = Math.floor(diffDays / 30);
-  if (diffMonths === 1) return "1 mo";
-  if (diffMonths < 12) return `${diffMonths} mos`;
-
-  const diffYears = Math.floor(diffDays / 365);
-  return diffYears === 1 ? "1 yr" : `${diffYears} yrs`;
 };
 
 const sortModels = (models: Model[], field: string, direction: "asc" | "desc"): Model[] => {
@@ -62,8 +40,14 @@ const sortModels = (models: Model[], field: string, direction: "asc" | "desc"): 
         bValue = b.context_length;
         break;
       case "pricing":
-        aValue = a.pricing.completion;
-        bValue = b.pricing.completion;
+        // aValue = a.pricing.completion;
+        // bValue = b.pricing.completion;
+        aValue = a.id === "openrouter/auto"
+                      ? Number.MAX_SAFE_INTEGER.toString()
+                      : a.pricing.completion;
+        bValue = b.id === "openrouter/auto"
+                      ? Number.MAX_SAFE_INTEGER.toString()
+                      : b.pricing.completion;
         break;
       case "max_completion_tokens":
         aValue = a.top_provider.max_completion_tokens ?? 0;
@@ -138,20 +122,7 @@ export default function ModelList({ removed = false }: ModelListProps) {
     <div class="container mx-auto px-4 py-6">
       {removed && (
         <div class="alert alert-info mb-6">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            class="stroke-current shrink-0 w-6 h-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            >
-            </path>
-          </svg>
+          <InfoIcon />
           <span>Models no longer available on OpenRouter or renamed</span>
         </div>
       )}
@@ -248,9 +219,7 @@ export default function ModelList({ removed = false }: ModelListProps) {
                 </td>
                 <td class="text-right">
                   <span
-                    class={`badge badge-sm ${
-                      model.id === "openrouter/auto" ? "badge-ghost" : "badge-info"
-                    }`}
+                    class={model.pricing.completion === "0" ? "text-primary" : "text-info"}
                   >
                     {model.id === "openrouter/auto"
                       ? "[N/A]"

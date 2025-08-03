@@ -26,20 +26,21 @@ export const durationAgo = (timestamp: string): string => {
   const pastDate = DateTime.fromISO(timestamp);
   if (!pastDate.isValid) return "";
 
-  const now = DateTime.now();
+  const now = DateTime.now().setLocale("en-US");
   const diff = now.diff(pastDate);
 
   // Use a library to get a human-readable, single-unit duration
   const humanReadable = toHumanDurationExtended(diff, {
+    human: { unitDisplay: "short" },
     rounding: { numOfUnits: 1, minUnit: "minutes" },
-  });
+  })
 
   // Handle cases where the duration is less than a minute
   if (diff.as("minutes") < 1) {
-    return "just now";
+    return "now";
   }
 
-  return `${humanReadable} ago`;
+  return humanReadable;
 };
 
 /**
