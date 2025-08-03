@@ -1,68 +1,76 @@
-# Migration Roadmap: `f-partial` Adoption
+# Migration Roadmap: `f-partial` Adoption (Revised)
 
-## Phase 1: Foundational Setup (1-2 hours)
+This roadmap provides a clear, step-by-step plan for implementing the `f-partial` optimization strategy, tailored to the specific architecture of this project.
 
-This phase lays the groundwork for the entire migration.
+## Phase 1: Foundational Setup (0.5 hours)
 
-1.  **[ ] Wrap the App in a Partial:**
-    *   **Task:** Modify `routes/_app.tsx` to wrap the `<Component />` in a `<Partial name="main-content">`.
-    *   **File:** `routes/_app.tsx`
-    *   **Purpose:** This defines the primary content area that will be dynamically updated.
+This phase is now much shorter as the foundational elements are mostly in place.
 
-2.  **[ ] Enable Client-Side Navigation:**
-    *   **Task:** Add the `f-client-nav` attribute to the `<body>` tag in `routes/_app.tsx`.
-    *   **File:** `routes/_app.tsx`
-    *   **Purpose:** This enables Fresh's partial navigation system for the entire application.
+1.  **[x] Confirm Partial Wrapper:**
+    *   **Task:** Verify that `routes/_app.tsx` wraps the main component in `<Partial name="body">`.
+    *   **Status:** **Already complete.**
+
+2.  **[x] Confirm Client-Side Navigation:**
+    *   **Task:** Verify that the `<body>` tag in `routes/_app.tsx` has the `f-client-nav` attribute.
+    *   **Status:** **Already complete.**
 
 3.  **[ ] Create Partials Directory:**
-    *   **Task:** Create a new directory `routes/partials/`.
-    *   **Purpose:** This will house all the new dedicated partial-rendering routes, keeping the project organized.
+    *   **Task:** Create a new directory: `orw-deno/routes/partials/`.
+    *   **Purpose:** To house the new, dedicated partial-rendering routes.
 
-## Phase 2: Pilot Implementation - The Model View (2-4 hours)
+## Phase 2: Pilot Implementation - The Model View (2-3 hours)
 
-This phase focuses on implementing the `f-partial` strategy on the most critical workflow: navigating from the model list to the model detail view.
+This phase focuses on the highest-impact workflow: navigating from the model list to a model detail view.
 
 1.  **[ ] Create the Model Detail Partial Route:**
-    *   **Task:** Create the new file `routes/partials/model-detail/[id].tsx`.
-    *   **Details:** Implement the handler to fetch model data, generate an ETag, and render the `islands/ModelDetail.tsx` component within a `<Partial>`.
-    *   **Reference:** Use the code from the Design Document.
+    *   **Task:** Create the new file `orw-deno/routes/partials/model/[id].tsx`.
+    *   **Details:** Implement the handler as specified in the revised Design Document. It must fetch its own data and have `skipAppWrapper: true` in its config.
+    *   **Reference:** Use the code from the **Revised Design Document**.
 
 2.  **[ ] Update Links in `ModelList`:**
-    *   **Task:** Modify the `<a>` tags in `islands/ModelList.tsx` to include the `f-partial` attribute, pointing to the new partial route.
-    *   **File:** `islands/ModelList.tsx`
+    *   **Task:** Modify the `<a>` tags in `orw-deno/islands/ModelList.tsx` to include the `f-partial` attribute.
+    *   **Example:** `f-partial="/partials/model/{model.id}"`
 
 3.  **[ ] Test the Workflow:**
-    *   **Task:** Run the application and verify that navigating from the home page to a model detail page updates the content without a full page reload.
-    *   **Verification:** Use your browser's developer tools to inspect the network requests. You should see `fetch` requests to `/partials/model-detail/...` and the payload should be small HTML fragments, not the full page. On second click to the same model, you should see a `304 Not Modified` response.
+    *   **Task:** Run the application and navigate from the home page to a model detail page.
+    *   **Verification:** Use browser dev tools to inspect the network request.
+        *   It should be a `fetch` request to `/partials/model/...`.
+        *   The response payload should be a small HTML fragment, not a full page.
+        *   The response should **not** contain the `DataInitializer` island or the `commonData` prop.
+        *   Clicking the same link again should result in a `304 Not Modified` response.
 
 ## Phase 3: Expansion to Other Routes (3-5 hours)
 
-Once the pilot is successful, apply the same pattern to the other main navigation paths.
+Apply the same pattern to the main navigation links in the navbar.
 
 1.  **[ ] Implement the "Changes" View Partial:**
-    *   **Task:** Create `routes/partials/changes-list.tsx`.
-    *   **Task:** Update the "Changes" link in `islands/NavBar.tsx` to use `f-partial`.
+    *   **Task:** Create a new route `orw-deno/routes/partials/changes.tsx`.
+    *   **Details:** This route's handler will fetch the changes list and render the `islands/ChangeList.tsx` component inside a `<Partial name="body">`. Remember to include the `skipAppWrapper: true` config.
+    *   **Task:** Update the "Changes" link in `orw-deno/islands/NavBar.tsx` to use `f-partial="/partials/changes"`.
 
 2.  **[ ] Implement the "Removed" View Partial:**
-    *   **Task:** Create `routes/partials/removed-list.tsx`.
-    *   **Task:** Update the "Removed" link in `islands/NavBar.tsx` to use `f-partial`.
+    *   **Task:** Create `orw-deno/routes/partials/removed.tsx`.
+    *   **Details:** Similar to the "Changes" partial, this will render the `islands/ModelList.tsx` (or a dedicated "removed list" component) with the list of removed models.
+    *   **Task:** Update the "Removed" link in `orw-deno/islands/NavBar.tsx` to use `f-partial="/partials/removed"`.
 
-3.  **[ ] Implement the "List" View Partial (if applicable):**
-    *   **Task:** If `routes/list.tsx` is a distinct and frequently used view, create a corresponding partial route for it and update its navigation link.
+3.  **[ ] Implement the "Home/List" View Partial:**
+    *   **Task:** Create `orw-deno/routes/partials/home.tsx`.
+    *   **Details:** This will render the `islands/ModelList.tsx` with the main list of models.
+    *   **Task:** Update the main "Home" or "Model List" link in `orw-deno/islands/NavBar.tsx` to use `f-partial="/partials/home"`.
 
 4.  **[ ] Regression Test:**
-    *   **Task:** After each implementation, click through the site to ensure all navigation works as expected and that partials are loading correctly.
+    *   **Task:** After implementing each partial, thoroughly test the navigation to ensure the correct content is loaded and the URL is updated properly.
 
 ## Phase 4: Verification and Monitoring
 
-This final phase is about confirming the success of the migration.
+Confirm the success of the migration.
 
 1.  **[ ] Full End-to-End Testing:**
-    *   **Task:** Thoroughly test all navigation paths and user interactions related to the new partials.
+    *   **Task:** Test all navigation paths, including browser back/forward buttons, to ensure a seamless experience.
 
 2.  **[ ] Performance Measurement:**
-    *   **Task:** Re-evaluate the network payload size for the optimized routes.
-    *   **Expected Outcome:** The data transfer for partial navigations should be reduced from ~2MB to a few kilobytes.
+    *   **Task:** Re-evaluate the network payload size for all optimized routes.
+    *   **Expected Outcome:** The data transfer for all partial navigations should be dramatically reduced from ~2MB to just a few kilobytes.
 
-3.  **[ ] Documentation:**
-    *   **Task:** Briefly document the new `f-partial` pattern in your project's `README.md` or a similar location, so that all developers on the team understand how to use it for future development.
+3.  **[ ] Code Cleanup (Optional):**
+    *   **Task:** The original `routes/model/[id].tsx`, `routes/changes.tsx`, etc., are now only used for full page loads (e.g., when a user navigates directly to the URL). You can potentially simplify the data loading in these routes if desired, as the heavy lifting for navigation is now done by the partials. This is not essential but can be a good cleanup step.
