@@ -113,11 +113,6 @@ export default function ModelList({ removed = false }: ModelListProps) {
     return sortDirection === "asc" ? " ↑" : " ↓";
   };
 
-  const handleRowClick = (modelId: string) => {
-    // Navigate to model detail page (URL encode to handle slashes in model IDs)
-    globalThis.location.href = `/model/${encodeURIComponent(modelId)}`;
-  };
-
   return (
     <div class="container mx-auto px-4 py-6">
       {removed && (
@@ -197,12 +192,13 @@ export default function ModelList({ removed = false }: ModelListProps) {
               <tr
                 key={`${model.id}-${index}`}
                 class="hover:bg-base-300"
-                onClick={() => handleRowClick(model.id)}
               >
                 <td>
                   <span class="model-id">{model.id}</span>
                 </td>
-                <td class="font-medium">{model.name}</td>
+                <td class="font-medium">
+                  <a href={`/model/${encodeURIComponent(model.id)}`}>{model.name}</a>
+                </td>
                 <td>
                   <span class="text-warning">
                     {model.removed_at
