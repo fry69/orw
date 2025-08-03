@@ -1,4 +1,5 @@
-// components/JsonHighlighter.tsx - A stateless JSON syntax highlighter component
+// components/JsonHighlighter.tsx - A stateless JSON syntax highlighter component.
+// This component provides syntax highlighting for JSON objects.
 import type { ComponentChild } from "preact";
 
 function highlightJson(json: object): ComponentChild[] {
