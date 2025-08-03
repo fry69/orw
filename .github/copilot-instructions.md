@@ -44,7 +44,7 @@ NOTE: Documentation `*.md` files in the folder `docs/` need to be treated carefu
 
 NOTE: Please consult online documentation for updated information, if not provided inside this prompt, do not trust your knowledge about those tools mentioned above, it is very likely out-of-date and obsolete.
 
-## UI guidelines
+## UI Guidelines
 
 - Application should have a modern and clean design.
 - Use DaisyUI for styling (it uses TailwindCSS internally).
@@ -54,15 +54,21 @@ NOTE: Please consult online documentation for updated information, if not provid
   - Right: Status information like last db change, last API check, number of models, version.
 - The main content block below the navigation bar contains either:
   - Model list as a large, responsive table view (latest model first by default).
-  - Paginated list of changes (newest first).
+  - List of changes (newest first).
 
-## Tool use
+## Tool Use
 
 Use playwright MCP server to access the application via browser and test implementations, also check the browser console log for errors.
 
 Use filesystem MCP server to move and delete files if needed. Do not forget to remove backup files you created.
 
-## Development server
+## Development Server
 
 Assume that a development server is always running and accessible via http://localhost:8000/
 Do not try to start a server on your own.
+
+## Linting and Testing
+
+Run `make pre` in the repository root to check for type errors, lint and format source code. A successful `make pre` run is a requirement before committing to the repository.
+
+Assume your code works. There are currently no automated test scripts available. I will test manually and give you useful feedback to cover integration testing.
