@@ -113,6 +113,14 @@ export default function ModelList({ removed = false }: ModelListProps) {
     return sortDirection === "asc" ? " ↑" : " ↓";
   };
 
+  const handleRowClick = (e: MouseEvent) => {
+    // Navigate to model detail page
+    const link = (e.currentTarget as HTMLElement).querySelector("a");
+    if (link) {
+      link.click();
+    }
+  };
+
   return (
     <div class="container mx-auto px-4 py-6">
       {removed && (
@@ -192,13 +200,14 @@ export default function ModelList({ removed = false }: ModelListProps) {
               <tr
                 key={`${model.id}-${index}`}
                 class="hover:bg-base-300"
+                onClick={handleRowClick}
               >
                 <td>
-                  <span class="model-id">{model.id}</span>
+                  <a class="model-id" href={`/model/${encodeURIComponent(model.id)}`}>
+                    {model.id}
+                  </a>
                 </td>
-                <td class="font-medium">
-                  <a href={`/model/${encodeURIComponent(model.id)}`}>{model.name}</a>
-                </td>
+                <td class="font-medium">{model.name}</td>
                 <td>
                   <span class="text-warning">
                     {model.removed_at
