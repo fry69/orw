@@ -115,6 +115,34 @@ export class OpenRouterAPIWatcher {
     }
   }
 
+  /**
+   * Create a backup of the current database file.
+   * This method uses the 'VACUUM INTO' command, which creates a clean,
+   * compact copy of the database. It will lock the database for the
+   * duration of the backup.
+   */
+  private backupDatabase() {
+    if (!this.config.db || !this.config.dbFilePath || !this.config.backupDir) {
+      this.error("Backup impossible, database or backup path not configured.");
+      return;
+    }
+
+    const backupFilename = this.config.dbFilePath.split("/").pop() || "orw.db";
+    const backupFilepath = join(this.config.backupDir, `${backupFilename}.backup`);
+
+    this.log(`starting database backup to ${backupFilepath}`);
+    try {
+      this.config.db.prepare(`VACUUM INTO ?`).run(backupFilepath);
+      this.log("database backup completed");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        this.error(`database backup failed: ${err.message}`);
+      } else {
+        this.error(`database backup failed with an unknown error: ${err}`);
+      }
+    }
+  }
+
   // =============================================================================
   // Private Database Helper Methods
   // =============================================================================
@@ -783,6 +811,7 @@ export class OpenRouterAPIWatcher {
       this.updateAPILastCheck();
 
       if (changes.length > 0) {
+        this.backupDatabase();
         const timestamp = new Date();
         this.storeModelList(newModels, timestamp);
         this.storeChanges(changes);
