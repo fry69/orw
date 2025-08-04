@@ -117,12 +117,14 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Create a backup of the current database file.
-   * This method uses the 'VACUUM INTO' command, which creates a clean,
-   * compact copy of the database. It will lock the database for the
-   * duration of the backup.
+   * This method uses a direct file copy. This is not ideal for live databases
+   * as it can lead to corruption if a write is in progress. However, given
+   * that the database writes in this application are very infrequent and of
+   * short duration, and that we are performing the backup at a moment where
+   * no writes are happening, this is an acceptable risk.
    */
-  private backupDatabase() {
-    if (!this.config.db || !this.config.dbFilePath || !this.config.backupDir) {
+  private async backupDatabase() {
+    if (!this.config.dbFilePath || !this.config.backupDir) {
       this.error("Backup impossible, database or backup path not configured.");
       return;
     }
@@ -132,7 +134,7 @@ export class OpenRouterAPIWatcher {
 
     this.log(`starting database backup to ${backupFilepath}`);
     try {
-      this.config.db.prepare(`VACUUM INTO ?`).run(backupFilepath);
+      await Deno.copyFile(this.config.dbFilePath, backupFilepath);
       this.log("database backup completed");
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -805,13 +807,13 @@ export class OpenRouterAPIWatcher {
       this.status.apiLastCheckStatus = "failed";
       this.error("empty model list from API after retry, skipping check");
     } else {
+      await this.backupDatabase();
       const oldModels = this.lists.models;
       const changes = this.findChanges(newModels, oldModels);
       this.status.apiLastCheckStatus = "success";
       this.updateAPILastCheck();
 
       if (changes.length > 0) {
-        this.backupDatabase();
         const timestamp = new Date();
         this.storeModelList(newModels, timestamp);
         this.storeChanges(changes);
