@@ -115,6 +115,36 @@ export class OpenRouterAPIWatcher {
     }
   }
 
+  /**
+   * Create a backup of the current database file.
+   * This method uses the online backup API of SQLite, which allows the database
+   * to be read and written while the backup is in progress.
+   */
+  private async backupDatabase() {
+    if (!this.config.db || !this.config.dbFilePath || !this.config.backupDir) {
+      this.error("Backup impossible, database or backup path not configured.");
+      return;
+    }
+
+    const backupFilename = this.config.dbFilePath.split("/").pop() || "orw.db";
+    const backupFilepath = join(this.config.backupDir, `${backupFilename}.backup`);
+
+    this.log(`starting database backup to ${backupFilepath}`);
+    try {
+      // HACK: The 'backup' method is not defined in the 'DatabaseSync' type from "node:sqlite",
+      // but it exists at runtime. We cast to 'any' to bypass the type checker.
+      // deno-lint-ignore no-explicit-any
+      await (this.config.db as any).backup(backupFilepath);
+      this.log("database backup completed");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        this.error(`database backup failed: ${err.message}`);
+      } else {
+        this.error(`database backup failed with an unknown error: ${err}`);
+      }
+    }
+  }
+
   // =============================================================================
   // Private Database Helper Methods
   // =============================================================================
@@ -783,6 +813,7 @@ export class OpenRouterAPIWatcher {
       this.updateAPILastCheck();
 
       if (changes.length > 0) {
+        await this.backupDatabase();
         const timestamp = new Date();
         this.storeModelList(newModels, timestamp);
         this.storeChanges(changes);
