@@ -59,6 +59,9 @@ node_modules/
 vendor/
 tools/
 
+# Screenshot should not be in the respository
+orw-deno/static/screenshot.png
+
 # GitHub Copilot agent just loves to create folders...
 test-*/
 cov_*/

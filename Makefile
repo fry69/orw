@@ -160,3 +160,7 @@ dev:
 # Find all emojis using ripgrep
 emoji:
 	@rg "[\p{Emoji_Presentation}\p{Extended_Pictographic}]" --type-add 'code:*.{py,js,ts,tsx,java,cpp,c,h}' -t code
+
+# Create screenhot for Twitter card
+screenshot:
+	shot-scraper shot -h 630 -w 1280 ${ORW_PUBLIC_URL}/list -o ${PROJECT_DIR}/static/screenshot.png
