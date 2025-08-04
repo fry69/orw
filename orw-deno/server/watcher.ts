@@ -117,10 +117,11 @@ export class OpenRouterAPIWatcher {
 
   /**
    * Create a backup of the current database file.
-   * This method uses the online backup API of SQLite, which allows the database
-   * to be read and written while the backup is in progress.
+   * This method uses the 'VACUUM INTO' command, which creates a clean,
+   * compact copy of the database. It will lock the database for the
+   * duration of the backup.
    */
-  private async backupDatabase() {
+  private backupDatabase() {
     if (!this.config.db || !this.config.dbFilePath || !this.config.backupDir) {
       this.error("Backup impossible, database or backup path not configured.");
       return;
@@ -131,10 +132,7 @@ export class OpenRouterAPIWatcher {
 
     this.log(`starting database backup to ${backupFilepath}`);
     try {
-      // HACK: The 'backup' method is not defined in the 'DatabaseSync' type from "node:sqlite",
-      // but it exists at runtime. We cast to 'any' to bypass the type checker.
-      // deno-lint-ignore no-explicit-any
-      await (this.config.db as any).backup(backupFilepath);
+      this.config.db.prepare(`VACUUM INTO ?`).run(backupFilepath);
       this.log("database backup completed");
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -813,7 +811,7 @@ export class OpenRouterAPIWatcher {
       this.updateAPILastCheck();
 
       if (changes.length > 0) {
-        await this.backupDatabase();
+        this.backupDatabase();
         const timestamp = new Date();
         this.storeModelList(newModels, timestamp);
         this.storeChanges(changes);
