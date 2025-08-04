@@ -1,8 +1,14 @@
 // routes/_app.tsx - Fresh 2 root layout (replaces App.tsx)
 import type { PageProps } from "fresh";
 import { Partial } from "fresh/runtime";
+import { URL } from "node:url";
 
 export default function App({ Component }: PageProps) {
+  const parsedURL = new URL(Deno.env.get("ORW_PUBLIC_URL") || "http://localhost:8000/");
+  const url = parsedURL.toString();
+  const screenshot = `${url}screenshot`;
+  const domain = parsedURL.hostname;
+
   return (
     <html lang="en">
       <head>
@@ -12,27 +18,27 @@ export default function App({ Component }: PageProps) {
           name="description"
           content="Explore OpenRouter's model list and recorded changes. Updates every hour."
         />
-        <meta property="og:url" content="https://orw.karleo.net" />
+        <meta property="og:url" content={url} />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="OpenRouter API Watcher" />
         <meta
           property="og:description"
           content="Explore OpenRouter's model list and recorded changes. Updates every hour."
         />
-        <meta property="og:image" content="https://orw.karleo.net/screenshot.png" />
+        <meta property="og:image" content={screenshot} />
         <meta property="og:image:type" content="image/png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta property="twitter:title" content="OpenRouter API Watcher" />
-        <meta property="twitter:domain" content="orw.karleo.net" />
-        <meta property="twitter:url" content="https://orw.karleo.net" />
+        <meta property="twitter:domain" content={domain} />
+        <meta property="twitter:url" content={url} />
         <meta name="twitter:title" content="OpenRouter API Watcher" />
         <meta
           name="twitter:description"
           content="Explore OpenRouter's model list and recorded changes. Updates every hour."
         />
-        <meta name="twitter:image" content="https://orw.karleo.net/screenshot.png" />
+        <meta name="twitter:image" content={screenshot} />
         <meta name="theme-color" content="#444" />
         <link
           rel="alternate"
