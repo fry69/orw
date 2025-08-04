@@ -54,10 +54,14 @@ orw
 
 # Fresh build directory
 _fresh/
+
 # npm + other dependencies
 node_modules/
 vendor/
 tools/
+
+# Temporary directory
+temp/
 
 # Screenshot should not be in the respository
 orw-deno/static/screenshot.png
@@ -65,6 +69,9 @@ orw-deno/static/screenshot.png
 # GitHub Copilot agent just loves to create folders...
 test-*/
 cov_*/
+
+# Cloudflare
+.wrangler/
 
 # Includes
 !lib

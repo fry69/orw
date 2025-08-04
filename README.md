@@ -7,6 +7,10 @@ The OpenRouter API Watcher is a tool that monitors changes in OpenRouter models 
 
 **Important Note:** The main application has been rewritten in [Fresh](https://fresh.deno.dev/) / [Deno](https://deno.land/) and is now located in the `orw-deno/` directory. All commands should be run from within that directory.
 
+## Screenshot
+
+![OpenRouter API Watcher Screenshot](https://dev-orw-assets.fry69.dev/screenshot.png)
+
 ## Installation
 
 To run the OpenRouter API Watcher, you'll need [Deno](https://deno.land) runtime (version 1.40+).

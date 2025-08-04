@@ -7,6 +7,10 @@ VOLUME_NAME := orw_data
 SEED_IMAGE := orw_seed
 SEED_DB_FILE := orw.new.20250731.db
 
+# S3/R2 configuration
+ORW_STORAGE_BUCKET := dev-orw-all
+ORW_STORAGE_PUBLIC_URL := https://dev-orw-assets.fry69.dev/
+
 ## Application configuration
 
 # Note that this port is external from the view of the container
@@ -33,6 +37,7 @@ export GIT_REVISION
 export ORW_PUBLIC_URL
 export ORW_REPOSITORY_URL
 export NODE_ENV
+export ORW_STORAGE_PUBLIC_URL
 
 # Default target
 all: help
@@ -163,4 +168,8 @@ emoji:
 
 # Create screenhot for Twitter card
 screenshot:
-	shot-scraper shot -h 630 -w 1280 ${ORW_PUBLIC_URL}/list -o ${PROJECT_DIR}/static/screenshot.png
+	shot-scraper shot -h 630 -w 1280 ${ORW_PUBLIC_URL}/list -o temp/screenshot.png
+
+# Upload screenshot to S3/R2 bucket
+upload:
+	wrangler r2 object put $(ORW_STORAGE_BUCKET)/screenshot.png -f temp/screenshot.png --remote

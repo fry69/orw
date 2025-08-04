@@ -4,10 +4,12 @@ import { Partial } from "fresh/runtime";
 import { URL } from "node:url";
 
 export default function App({ Component }: PageProps) {
-  const parsedURL = new URL(Deno.env.get("ORW_PUBLIC_URL") || "http://localhost:8000/");
-  const url = parsedURL.toString();
-  const screenshot = `${url}screenshot`;
-  const domain = parsedURL.hostname;
+  const publicURL = new URL(Deno.env.get("ORW_PUBLIC_URL") || "http://localhost:8000/");
+  const url = publicURL.toString();
+  const domain = publicURL.hostname;
+
+  const storageURL = new URL(Deno.env.get("ORW_STORAGE_PUBLIC_URL") || "http://localhost:8000/");
+  const screenshot = `${storageURL}screenshot.png`;
 
   return (
     <html lang="en">
