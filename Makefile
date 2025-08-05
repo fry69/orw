@@ -27,7 +27,7 @@ NODE_ENV ?= production
 GIT_REVISION=$(shell git rev-parse HEAD)
 
 # Build version including timestamp
-ORW_BUILD_STRING := Build $(shell date '+%Y%m%d-%H%M%S') (git $(shell git rev-parse --short HEAD))
+ORW_BUILD_STRING := ORW $(shell date '+%Y%m%d-%H%M%S') (git $(shell git rev-parse --short HEAD))
 
 # Export variables for docker-compose
 export IMAGE_NAME

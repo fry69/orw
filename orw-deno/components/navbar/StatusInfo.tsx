@@ -130,12 +130,9 @@ export default function StatusInfo(
                 </div>
               </div>
               <div class="stat">
-                <div class="stat-title">ORW Version</div>
+                <div class="stat-title">Version</div>
                 <div class="stat-value text-lg text-info">{VERSION}</div>
-              </div>
-              <div class="stat">
-                <div class="stat-title">ORW Build</div>
-                <div class="stat-value text-lg text-info">{buildString}</div>
+                <div class="stat-desc">{buildString}</div>
               </div>
             </div>
           </div>
