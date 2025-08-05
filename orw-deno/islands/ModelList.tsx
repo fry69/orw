@@ -114,10 +114,16 @@ export default function ModelList({ removed = false }: ModelListProps) {
   };
 
   const handleRowClick = (e: MouseEvent) => {
-    // Navigate to model detail page
-    const link = (e.currentTarget as HTMLElement).querySelector("a");
+    // Prevent double-clicking if user clicks directly on the link
+    if ((e.target as HTMLElement).tagName === "A") {
+      return;
+    }
+
+    // Find and click the link to trigger Fresh Partials
+    const row = e.currentTarget as HTMLElement;
+    const link = row.querySelector("a[data-model-link]");
     if (link) {
-      link.click();
+      (link as HTMLAnchorElement).click();
     }
   };
 
@@ -203,7 +209,11 @@ export default function ModelList({ removed = false }: ModelListProps) {
                 onClick={handleRowClick}
               >
                 <td>
-                  <a class="model-id" href={`/model/${encodeURIComponent(model.id)}`}>
+                  <a
+                    class="model-id link link-hover"
+                    href={`/model/${encodeURIComponent(model.id)}`}
+                    data-model-link
+                  >
                     {model.id}
                   </a>
                 </td>
