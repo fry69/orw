@@ -4,43 +4,29 @@ import type { AppConfig, Lists, WatcherStatus } from "./types.ts";
 import { durationAgo } from "./utils.ts";
 
 /**
- * Default values for client state
+ * Client signals for state management - no default values to avoid flicker
  */
-const defaultConfig: AppConfig = {
-  publicUrl: "http://localhost:8000",
-  repositoryUrl: null,
-  buildString: "(unknown)",
-};
-
-const defaultStatus: WatcherStatus = {
-  isDevelopment: false,
-  apiLastCheck: "",
-  apiLastCheckStatus: "",
-  dbLastChange: "",
-};
-
-const defaultLists: Lists = {
-  models: [],
-  removed: [],
-  changes: [],
-};
+export const clientConfig = signal<AppConfig | undefined>(undefined);
+export const clientStatus = signal<WatcherStatus | undefined>(undefined);
+export const clientLists = signal<Lists | undefined>(undefined);
 
 /**
- * Client signals for state management
+ * Computed values for derived state - null-safe
  */
-export const clientConfig = signal<AppConfig>(defaultConfig);
-export const clientStatus = signal<WatcherStatus>(defaultStatus);
-export const clientLists = signal<Lists>(defaultLists);
+export const navBarDurations = computed(() => {
+  const status = clientStatus.value;
+  if (!status) {
+    return {
+      dbLastChange: "",
+      apiLastCheck: "",
+    };
+  }
 
-/**
- * Computed values for derived state
- */
-export const navBarDurations = computed(() => ({
-  dbLastChange: durationAgo(clientStatus.value.dbLastChange),
-  apiLastCheck: clientStatus.value.isDevelopment
-    ? "[dev mode]"
-    : durationAgo(clientStatus.value.apiLastCheck),
-}));
+  return {
+    dbLastChange: durationAgo(status.dbLastChange),
+    apiLastCheck: status.isDevelopment ? "[dev mode]" : durationAgo(status.apiLastCheck),
+  };
+});
 
 /**
  * Filter state for models with localStorage persistence
@@ -103,10 +89,13 @@ showOnlyAddRemove.subscribe((value) => {
 export const currentRoute = signal<string>("");
 
 /**
- * Computed value for filtered models
+ * Computed value for filtered models - null-safe
  */
 export const filteredModels = computed(() => {
-  const models = clientLists.value.models;
+  const lists = clientLists.value;
+  if (!lists) return [];
+
+  const models = lists.models;
   const filter = filterText.value.toLowerCase();
 
   if (!filter) return models;
@@ -118,10 +107,13 @@ export const filteredModels = computed(() => {
 });
 
 /**
- * Computed value for filtered removed models
+ * Computed value for filtered removed models - null-safe
  */
 export const filteredRemovedModels = computed(() => {
-  const models = clientLists.value.removed;
+  const lists = clientLists.value;
+  if (!lists) return [];
+
+  const models = lists.removed;
   const filter = filterText.value.toLowerCase();
 
   if (!filter) return models;
@@ -133,10 +125,13 @@ export const filteredRemovedModels = computed(() => {
 });
 
 /**
- * Computed value for filtered changes
+ * Computed value for filtered changes - null-safe
  */
 export const filteredChanges = computed(() => {
-  const changes = clientLists.value.changes;
+  const lists = clientLists.value;
+  if (!lists) return [];
+
+  const changes = lists.changes;
   const filter = filterText.value.toLowerCase();
   const onlyAddRemove = showOnlyAddRemove.value;
 
@@ -151,9 +146,12 @@ export const filteredChanges = computed(() => {
 });
 
 /**
- * Computed value for filter status text based on current page
+ * Computed value for filter status text based on current page - null-safe
  */
 export const filterStatus = computed(() => {
+  const lists = clientLists.value;
+  if (!lists) return "";
+
   const filter = filterText.value.toLowerCase();
   const pathname = globalThis.location?.pathname || "";
 
@@ -162,15 +160,15 @@ export const filterStatus = computed(() => {
 
   if (pathname === "/changes") {
     const filtered = filteredChanges.value.length;
-    const total = clientLists.value.changes.length;
+    const total = lists.changes.length;
     return total > 0 ? `${Math.min(filtered, 500)} of ${total} changes` : "";
   } else if (pathname === "/removed") {
     const filtered = filteredRemovedModels.value.length;
-    const total = clientLists.value.removed.length;
+    const total = lists.removed.length;
     return total > 0 ? `${filtered} of ${total} models` : "";
   } else if (pathname === "/list" || pathname === "/" || pathname === "") {
     const filtered = filteredModels.value.length;
-    const total = clientLists.value.models.length;
+    const total = lists.models.length;
     return total > 0 ? `${filtered} of ${total} models` : "";
   }
 

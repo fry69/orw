@@ -1,27 +1,23 @@
 // islands/ChangeList.tsx - Interactive change history list
-import { useEffect, useState } from "preact/hooks";
-import { filteredChanges } from "../lib/state.ts";
+import { clientLists, filteredChanges } from "../lib/state.ts";
 import type { ModelDiff } from "../lib/types.ts";
 import { durationAgo, formatDateTime } from "../lib/utils.ts";
 import { ChangeView } from "../components/ChangeView.tsx";
 
 export default function ChangeList() {
-  // Use shared filter signal instead of local state
+  // Don't render anything until data is available
+  if (!clientLists.value) {
+    return null;
+  }
+
+  // Derive sorted changes directly from computed value to avoid state delays
   const baseChanges = filteredChanges.value;
-  const [sortedChanges, setSortedChanges] = useState<ModelDiff[]>([]);
   const limit = 500;
-
-  // Update sorted changes when filter changes
-  useEffect(() => {
-    // Apply limit and sort by timestamp (newest first)
-    const sorted = baseChanges
-      .sort((a: ModelDiff, b: ModelDiff) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      )
-      .slice(0, limit);
-
-    setSortedChanges(sorted);
-  }, [baseChanges, limit]);
+  const sortedChanges = baseChanges
+    .sort((a: ModelDiff, b: ModelDiff) =>
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )
+    .slice(0, limit);
 
   const handleRowClick = (changeId: string, event: Event) => {
     // Prevent double-clicking if user clicks directly on the link

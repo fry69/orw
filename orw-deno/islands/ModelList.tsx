@@ -1,6 +1,6 @@
 // islands/ModelList.tsx - Interactive model list with search and sorting
-import { useEffect, useState } from "preact/hooks";
-import { filteredModels, filteredRemovedModels } from "../lib/state.ts";
+import { useState } from "preact/hooks";
+import { clientLists, filteredModels, filteredRemovedModels } from "../lib/state.ts";
 import type { Model } from "../lib/types.ts";
 import { durationAgo, showPricePerMillion } from "../lib/utils.ts";
 import { InfoIcon } from "../components/Icons.tsx";
@@ -88,16 +88,18 @@ const sortModels = (models: Model[], field: string, direction: "asc" | "desc"): 
 };
 
 export default function ModelList({ removed = false }: ModelListProps) {
-  // Use shared filter signals instead of local state
-  const baseModels = removed ? filteredRemovedModels.value : filteredModels.value;
-  const [sortedModels, setSortedModels] = useState<Model[]>([]);
+  // Hooks must be called before any conditional returns
   const [sortField, setSortField] = useState<string>("added_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
-  // Update sorted models when filter or sort changes
-  useEffect(() => {
-    setSortedModels(sortModels(baseModels, sortField, sortDirection));
-  }, [baseModels, sortField, sortDirection]);
+  // Don't render anything until data is available
+  if (!clientLists.value) {
+    return null;
+  }
+
+  // Use shared filter signals and derive sorted models directly
+  const baseModels = removed ? filteredRemovedModels.value : filteredModels.value;
+  const sortedModels = sortModels(baseModels, sortField, sortDirection);
 
   const handleSort = (field: string) => {
     if (field === sortField) {

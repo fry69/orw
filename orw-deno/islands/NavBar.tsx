@@ -19,12 +19,18 @@ export default function NavBar() {
   useEffect(() => {
     const interval = setInterval(() => {
       // This will trigger computed signal updates
-      clientStatus.value = { ...clientStatus.value };
+      const currentStatus = clientStatus.value;
+      if (currentStatus) {
+        clientStatus.value = { ...currentStatus };
+      }
     }, UI_REFRESH_MS);
 
     return () => clearInterval(interval);
   }, []);
 
+  if (clientLists.value?.models.length == 0) {
+    return;
+  }
   const config = clientConfig.value;
   const status = clientStatus.value;
   const lists = clientLists.value;
@@ -32,14 +38,14 @@ export default function NavBar() {
   const isChangesPage = currentRoute.value === "/changes";
 
   // Calculate first change timestamp for display
-  const dbFirstChangeTimestamp = lists.changes.at(-1)?.timestamp ?? "";
+  const dbFirstChangeTimestamp = lists?.changes.at(-1)?.timestamp ?? "";
 
   return (
     <div class="navbar bg-base-300 px-4 min-h-18">
       {/* Left side - GitHub link and navigation */}
       <div class="navbar-start">
         <div class="flex items-center gap-2">
-          {config.repositoryUrl && (
+          {config?.repositoryUrl && (
             <a
               href={config.repositoryUrl}
               target="_blank"
@@ -64,13 +70,15 @@ export default function NavBar() {
 
       {/* Right side - Status information */}
       <div class="navbar-end">
-        <StatusInfo
-          status={status}
-          lists={lists}
-          durations={durations}
-          dbFirstChangeTimestamp={dbFirstChangeTimestamp}
-          buildString={config.buildString}
-        />
+        {status && lists && config && (
+          <StatusInfo
+            status={status}
+            lists={lists}
+            durations={durations}
+            dbFirstChangeTimestamp={dbFirstChangeTimestamp}
+            buildString={config.buildString}
+          />
+        )}
       </div>
     </div>
   );

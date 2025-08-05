@@ -24,6 +24,11 @@ export default function ModelDetail({ modelId }: ModelDetailProps) {
       return;
     }
 
+    if (!lists) {
+      // Don't set error - just wait for data to load
+      return;
+    }
+
     let foundModel: Model | undefined = lists.models.find(
       (model: Model) => model.id === modelId,
     );
@@ -61,14 +66,9 @@ export default function ModelDetail({ modelId }: ModelDetailProps) {
     );
   }
 
-  if (!model) {
-    return (
-      <div class="container mx-auto px-4 py-6">
-        <div class="flex justify-center">
-          <span class="loading loading-spinner loading-lg"></span>
-        </div>
-      </div>
-    );
+  // Don't render anything until data is available
+  if (!lists || !model) {
+    return null;
   }
 
   const modelDetailsForDisplay = { ...model };
