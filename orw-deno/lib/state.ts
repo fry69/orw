@@ -9,6 +9,7 @@ import { durationAgo } from "./utils.ts";
 const defaultConfig: AppConfig = {
   publicUrl: "http://localhost:8000",
   repositoryUrl: null,
+  buildString: "(unknown)",
 };
 
 const defaultStatus: WatcherStatus = {

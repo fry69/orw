@@ -24,7 +24,10 @@ NODE_ENV ?= production
 
 # Semi-random value for DENO_DEPLOYMENT_ID, to enable proper client caching
 # see -> https://fresh.deno.dev/docs/concepts/deployment#-docker
-GIT_REVISION=$$(git rev-parse HEAD)
+GIT_REVISION=$(shell git rev-parse HEAD)
+
+# Build version including timestamp
+ORW_BUILD_STRING := Build $(shell date '+%Y%m%d-%H%M%S') (git $(shell git rev-parse --short HEAD))
 
 # Export variables for docker-compose
 export IMAGE_NAME
@@ -38,6 +41,7 @@ export ORW_PUBLIC_URL
 export ORW_REPOSITORY_URL
 export NODE_ENV
 export ORW_STORAGE_PUBLIC_URL
+export ORW_BUILD_STRING
 
 # Default target
 all: help

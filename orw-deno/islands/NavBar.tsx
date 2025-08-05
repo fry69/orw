@@ -69,6 +69,7 @@ export default function NavBar() {
           lists={lists}
           durations={durations}
           dbFirstChangeTimestamp={dbFirstChangeTimestamp}
+          buildString={config.buildString}
         />
       </div>
     </div>

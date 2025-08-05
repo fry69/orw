@@ -31,6 +31,7 @@ services:
       - ORW_PUBLIC_URL=${ORW_PUBLIC_URL:-http://localhost:8000}
       - ORW_REPOSITORY_URL=${ORW_REPOSITORY_URL:-}
       - ORW_STORAGE_PUBLIC_URL
+      - ORW_BUILD_STRING
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=8000
 

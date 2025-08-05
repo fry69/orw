@@ -81,4 +81,5 @@ export type Lists = {
 export interface AppConfig {
   publicUrl: string;
   repositoryUrl: string | null;
+  buildString: string;
 }

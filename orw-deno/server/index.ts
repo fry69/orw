@@ -30,7 +30,9 @@ export async function initializeWatcher(): Promise<void> {
   const backupDir = Deno.env.get("ORW_BACKUP_PATH") || join(dataDir, "backup");
   const enableWatcher = Deno.env.get("ORW_DISABLE_WATCHER") !== "true";
   const seedDatabase = Deno.env.get("ORW_SEED_DATABASE") !== "false";
+  const buildString = Deno.env.get("ORW_BUILD_STRING") || "(unknown)";
 
+  console.log(`Build: ${buildString}`);
   console.log(`Data directory: ${dataDir}`);
   console.log(`Database: ${dbPath}`);
   console.log(`Watcher enabled: ${enableWatcher}`);

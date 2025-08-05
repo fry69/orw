@@ -39,9 +39,11 @@ function initializeAppConfig(): AppConfig {
     console.warn("⚠️  ORW_REPOSITORY_URL not set, GitHub link will be hidden");
   }
 
+  const buildString = Deno.env.get("ORW_BUILD_STRING") || "(unknown)";
   _cachedConfig = {
     publicUrl,
     repositoryUrl,
+    buildString,
   };
   _configInitialized = true;
 
