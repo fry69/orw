@@ -1,8 +1,8 @@
 // routes/changes.tsx - Changes page (Fresh 2 with server-side data loading)
-import { define } from "../utils.ts";
-import NavBar from "../islands/NavBar.tsx";
-import ChangeList from "../islands/ChangeList.tsx";
-import DataInitializer from "../islands/DataInitializer.tsx";
+import { define } from "../../utils.ts";
+import NavBar from "../../islands/NavBar.tsx";
+import ChangeList from "../../islands/ChangeList.tsx";
+import DataInitializer from "../../islands/DataInitializer.tsx";
 
 export default define.page((props) => {
   return (
