@@ -11,9 +11,12 @@ interface DataInitializerProps {
     lists: Lists;
     pathname: string;
   };
+  children: preact.ComponentChildren;
 }
 
-export default function DataInitializer({ initialData }: DataInitializerProps) {
+export default function DataInitializer(
+  { initialData, children }: DataInitializerProps,
+): preact.ComponentChildren {
   useEffect(() => {
     if (initialData) {
       // ✅ Initialize client state with server-rendered data
@@ -44,5 +47,5 @@ export default function DataInitializer({ initialData }: DataInitializerProps) {
   }, [initialData]);
 
   // This island is invisible - it just initializes state
-  return null;
+  return <>{children}</>;
 }
