@@ -23,10 +23,19 @@ export default function ChangeList() {
     setSortedChanges(sorted);
   }, [baseChanges, limit]);
 
-  const handleRowClick = (changeId: string) => {
-    // Navigate to model detail page (URL encode to handle slashes in model IDs)
+  const handleRowClick = (changeId: string, event: Event) => {
+    // Prevent double-clicking if user clicks directly on the link
+    if ((event.target as HTMLElement).tagName === "A") {
+      return;
+    }
+
+    // Find and click the link to trigger Fresh Partials
     if (changeId) {
-      globalThis.location.href = `/model/${encodeURIComponent(changeId)}`;
+      const card = event.currentTarget as HTMLElement;
+      const link = card.querySelector("a[data-model-link]");
+      if (link) {
+        (link as HTMLAnchorElement).click();
+      }
     }
   };
 
@@ -52,14 +61,22 @@ export default function ChangeList() {
             class={`card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-200 ${
               change.id ? "cursor-pointer hover:bg-base-200" : ""
             }`}
-            onClick={() => change.id && handleRowClick(change.id)}
+            onClick={(e) => change.id && handleRowClick(change.id, e)}
           >
             <div class="card-body">
               <div class="flex justify-between items-start mb-2">
                 <div>
-                  <h3 class={`card-title text-lg ${change.id ? "link" : ""}`}>
-                    {change.id || "Unknown Model"}
-                  </h3>
+                  {change.id
+                    ? (
+                      <a
+                        href={`/model/${encodeURIComponent(change.id)}`}
+                        class="card-title text-lg link link-hover"
+                        data-model-link
+                      >
+                        {change.id}
+                      </a>
+                    )
+                    : <h3 class="card-title text-lg">Unknown Model</h3>}
                   <div class={`badge ${getChangeTypeBadge(change.type)} badge-sm mt-1`}>
                     {change.type.toUpperCase()}
                   </div>
