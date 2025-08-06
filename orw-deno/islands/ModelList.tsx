@@ -2,7 +2,7 @@
 import { useState } from "preact/hooks";
 import { clientLists, filteredModels, filteredRemovedModels } from "../lib/state.ts";
 import type { Model } from "../lib/types.ts";
-import { durationAgo, showPricePerMillion } from "../lib/utils.ts";
+import { duration, showPricePerMillion } from "../lib/utils.ts";
 import { InfoIcon } from "../components/Icons.tsx";
 
 interface ModelListProps {
@@ -223,9 +223,9 @@ export default function ModelList({ removed = false }: ModelListProps) {
                 <td>
                   <span class="text-warning">
                     {model.removed_at
-                      ? durationAgo(model.removed_at)
+                      ? duration(model.removed_at)
                       : model.added_at
-                      ? durationAgo(model.added_at)
+                      ? duration(model.added_at)
                       : ""}
                   </span>
                 </td>

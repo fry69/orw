@@ -1,7 +1,7 @@
 // islands/ChangeList.tsx - Interactive change history list
 import { clientLists, filteredChanges } from "../lib/state.ts";
 import type { ModelDiff } from "../lib/types.ts";
-import { durationAgo, formatDateTime } from "../lib/utils.ts";
+import { duration, formatDateTime } from "../lib/utils.ts";
 import { ChangeView } from "../components/ChangeView.tsx";
 
 export default function ChangeList() {
@@ -81,7 +81,7 @@ export default function ChangeList() {
                 </div>
                 <div class="text-right text-sm text-base-content/70">
                   <div>{formatDateTime(change.timestamp)}</div>
-                  <div class="font-bold text-warning">{durationAgo(change.timestamp)}</div>
+                  <div class="font-bold text-warning">{duration(change.timestamp)}</div>
                 </div>
               </div>
 

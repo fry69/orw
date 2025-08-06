@@ -1,6 +1,7 @@
 // lib/utils.ts - Centralized utility functions
 import { DateTime } from "luxon";
 import { toHumanDurationExtended } from "@kitsuyui/luxon-ext";
+import { WATCHER_INTERVAL_MS } from "./constants.ts";
 
 /**
  * Converts a timestamp string to a formatted, locale-specific date and time string.
@@ -16,29 +17,40 @@ export const formatDateTime = (timestamp: string): string => {
 
 /**
  * Calculates a human-readable duration from a timestamp to now.
- * e.g., "5 minutes ago", "2 hours ago", "3 days ago"
+ * e.g., "5 min", "2 hrs", "3 days"
  * @param timestamp - The ISO timestamp to calculate the duration from.
  * @returns The formatted duration string.
  */
-export const durationAgo = (timestamp: string): string => {
+export const duration = (timestamp: string, nextAPICheck?: boolean): string => {
   if (!timestamp) return "";
 
-  const pastDate = DateTime.fromISO(timestamp);
+  let pastDate;
+  if (nextAPICheck) {
+    pastDate = DateTime.fromISO(timestamp).plus({ milliseconds: WATCHER_INTERVAL_MS });
+  } else {
+    pastDate = DateTime.fromISO(timestamp);
+  }
+
   if (!pastDate.isValid) return "";
 
   const now = DateTime.now().setLocale("en-US");
   const diff = now.diff(pastDate);
+
+  // Report if the API check time has passed
+  if (nextAPICheck && diff.as("milliseconds") > 0) {
+    return "due";
+  }
+
+  // Handle cases where the duration is less than a minute
+  if (Math.abs(diff.as("minutes")) < 1) {
+    return "now";
+  }
 
   // Use a library to get a human-readable, single-unit duration
   const humanReadable = toHumanDurationExtended(diff, {
     human: { unitDisplay: "short" },
     rounding: { numOfUnits: 1, minUnit: "minutes" },
   });
-
-  // Handle cases where the duration is less than a minute
-  if (diff.as("minutes") < 1) {
-    return "now";
-  }
 
   return humanReadable;
 };

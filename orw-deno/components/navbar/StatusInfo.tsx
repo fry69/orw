@@ -10,7 +10,7 @@ interface StatusInfoProps {
   lists: Lists;
   durations: {
     dbLastChange: string;
-    apiLastCheck: string;
+    apiNextCheck: string;
   };
   dbFirstChangeTimestamp: string;
   buildString: string;
@@ -32,7 +32,7 @@ export default function StatusInfo(
         <div class="flex flex-col gap-0.5 min-w-0">
           <div class="flex items-center gap-1">
             <span class="text-base-content/60 shrink-0">Next API check:</span>
-            <span class={`font-medium truncate ${apiStatusClass}`}>{durations.apiLastCheck}</span>
+            <span class={`font-medium truncate ${apiStatusClass}`}>{durations.apiNextCheck}</span>
           </div>
           <div class="flex items-center gap-1">
             <span class="text-base-content/60 shrink-0">Last DB change:</span>
@@ -70,7 +70,7 @@ export default function StatusInfo(
         <div class="flex flex-col gap-0.5 min-w-0">
           <div class="flex items-center gap-1">
             <span class="text-base-content/60 shrink-0">API:</span>
-            <span class={`font-medium truncate ${apiStatusClass}`}>{durations.apiLastCheck}</span>
+            <span class={`font-medium truncate ${apiStatusClass}`}>{durations.apiNextCheck}</span>
           </div>
           <div class="flex items-center gap-1">
             <span class="text-base-content/60 shrink-0">DB:</span>
@@ -125,7 +125,7 @@ export default function StatusInfo(
                 <div class="stat-desc">
                   Next API check:{" "}
                   <span class={`stat-value text-sm  ${apiStatusClass}`}>
-                    {durations.apiLastCheck}
+                    {durations.apiNextCheck}
                   </span>
                 </div>
               </div>

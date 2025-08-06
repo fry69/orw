@@ -19,13 +19,13 @@ export default function DataInitializer(
 ): preact.ComponentChildren {
   useEffect(() => {
     if (initialData) {
-      // ✅ Initialize client state with server-rendered data
+      // Initialize client state with server-rendered data
       clientConfig.value = initialData.config;
       clientStatus.value = initialData.status;
       clientLists.value = initialData.lists;
       currentRoute.value = initialData.pathname;
 
-      // ✅ Set up auto-refresh timer like the React version
+      // Set up auto-refresh timer
       const apiLastCheck = new Date(initialData.status.apiLastCheck);
       const timeSinceLastCheck = Date.now() - apiLastCheck.getTime();
       const timeUntilNextCheck = WATCHER_INTERVAL_MS - timeSinceLastCheck;
@@ -46,6 +46,5 @@ export default function DataInitializer(
     }
   }, [initialData]);
 
-  // This island is invisible - it just initializes state
   return <>{children}</>;
 }

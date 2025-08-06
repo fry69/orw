@@ -2,7 +2,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { clientLists } from "../lib/state.ts";
 import type { Model, ModelDiff } from "../lib/types.ts";
-import { durationAgo, formatDateTime, showPricePerMillion } from "../lib/utils.ts";
+import { duration, formatDateTime, showPricePerMillion } from "../lib/utils.ts";
 import { ChangeView } from "../components/ChangeView.tsx";
 import JsonHighlighter from "../components/JsonHighlighter.tsx";
 import { ErrorIcon } from "../components/Icons.tsx";
@@ -214,7 +214,7 @@ export default function ModelDetail({ modelId }: ModelDetailProps) {
                       {change.type}
                     </span>
                     <span class="text-sm text-base-content/70">
-                      {durationAgo(change.timestamp)}
+                      {duration(change.timestamp)}
                     </span>
                     <span class="text-xs text-base-content/50">
                       ({formatDateTime(change.timestamp)})

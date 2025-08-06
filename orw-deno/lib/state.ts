@@ -1,7 +1,7 @@
 // lib/state.ts - Fresh 2 client state management using signals
 import { computed, signal } from "@preact/signals";
 import type { AppConfig, Lists, WatcherStatus } from "./types.ts";
-import { durationAgo } from "./utils.ts";
+import { duration } from "./utils.ts";
 
 /**
  * Client signals for state management - no default values to avoid flicker
@@ -18,13 +18,13 @@ export const navBarDurations = computed(() => {
   if (!status) {
     return {
       dbLastChange: "",
-      apiLastCheck: "",
+      apiNextCheck: "",
     };
   }
 
   return {
-    dbLastChange: durationAgo(status.dbLastChange),
-    apiLastCheck: status.isDevelopment ? "[dev mode]" : durationAgo(status.apiLastCheck),
+    dbLastChange: duration(status.dbLastChange),
+    apiNextCheck: status.isDevelopment ? "[dev mode]" : duration(status.apiLastCheck, true),
   };
 });
 
