@@ -24,7 +24,7 @@ export const formatDateTime = (timestamp: string): string => {
 export const duration = (timestamp: string, nextAPICheck?: boolean): string => {
   if (!timestamp) return "";
 
-  let pastDate;
+  let pastDate: DateTime;
   if (nextAPICheck) {
     pastDate = DateTime.fromISO(timestamp).plus({ milliseconds: WATCHER_INTERVAL_MS });
   } else {
