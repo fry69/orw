@@ -55,13 +55,18 @@ export default function ChangeList() {
           <div
             key={`${change.id}-${change.timestamp}-${index}`}
             class={`card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-200 ${
-              change.id ? "cursor-pointer hover:bg-base-200" : ""
+              change.id ? "cursor-pointer hover:bg-accent/10 hover:border-accent/50" : ""
             }`}
             onClick={(e) => change.id && handleRowClick(change.id, e)}
           >
             <div class="card-body">
               <div class="flex justify-between items-start mb-2">
-                <div>
+                <div class="flex items-center gap-2">
+                  <span
+                    class={`badge ${getChangeTypeBadge(change.type)} badge-sm w-18 justify-center`}
+                  >
+                    {change.type.toUpperCase()}
+                  </span>
                   {change.id
                     ? (
                       <a
@@ -73,9 +78,6 @@ export default function ChangeList() {
                       </a>
                     )
                     : <h3 class="card-title text-lg">Unknown Model</h3>}
-                  <div class={`badge ${getChangeTypeBadge(change.type)} badge-sm mt-1`}>
-                    {change.type.toUpperCase()}
-                  </div>
                 </div>
                 <div class="text-right text-sm text-base-content/70">
                   <div>{formatDateTime(change.timestamp)}</div>
