@@ -44,7 +44,7 @@
     "@std/path": "jsr:@std/path@1",
     "daisyui": "npm:daisyui@^5.0.50",
     "deep-diff": "npm:deep-diff@1.0.2",
-    "fresh": "jsr:@fresh/core@2.0.0-alpha.56",
+    "fresh": "jsr:@fresh/core@2.0.0-alpha.57",
     "luxon": "npm:luxon@3.7.1",
     "preact": "npm:preact@10.27.0",
     "rss": "npm:rss@1.2.2",
