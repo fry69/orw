@@ -33,7 +33,7 @@ NOTE: Documentation `*.md` files in the folder `docs/` need to be treated carefu
 - `orw-deno/deno.json`: Contains Deno configuration, tasks, import aliases, etc.
 - `orw-deno/.env`: Contains environment variable settings for production, do not touch this file if it exists.
 - `orw-deno/.env.example`: Contains example environment variable settings.
-- `orw-deno/Congtainerfile`: Main Dockerfile for building the containerized app.
+- `orw-deno/Containerfile`: Main Dockerfile for building the containerized app.
 
 ## Libraries and Frameworks
 
