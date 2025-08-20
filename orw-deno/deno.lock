@@ -1,7 +1,6 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@deno/esbuild-plugin@^1.1.5": "1.1.5",
     "jsr:@deno/esbuild-plugin@^1.2.0": "1.2.0",
     "jsr:@deno/loader@~0.3.3": "0.3.4",
     "jsr:@fresh/build-id@1": "1.0.0",
@@ -17,7 +16,6 @@
     "jsr:@std/html@1": "1.0.4",
     "jsr:@std/http@^1.0.15": "1.0.20",
     "jsr:@std/internal@^1.0.10": "1.0.10",
-    "jsr:@std/internal@^1.0.6": "1.0.10",
     "jsr:@std/internal@^1.0.9": "1.0.10",
     "jsr:@std/json@^1.0.2": "1.0.2",
     "jsr:@std/jsonc@1": "1.0.2",
@@ -28,8 +26,8 @@
     "jsr:@std/uuid@^1.0.7": "1.0.9",
     "npm:@kitsuyui/luxon-ext@0.2.1": "0.2.1_luxon@3.7.1",
     "npm:@opentelemetry/api@^1.9.0": "1.9.0",
-    "npm:@preact/signals@2.2.1": "2.2.1_preact@10.27.0",
-    "npm:@preact/signals@^2.2.1": "2.2.1_preact@10.27.0",
+    "npm:@preact/signals@2.3.0": "2.3.0_preact@10.27.1",
+    "npm:@preact/signals@^2.2.1": "2.3.0_preact@10.27.1",
     "npm:@tailwindcss/postcss@^4.1.10": "4.1.11",
     "npm:@types/luxon@3.7.1": "3.7.1",
     "npm:@types/node@*": "22.15.15",
@@ -40,21 +38,13 @@
     "npm:esbuild@~0.25.5": "0.25.8",
     "npm:luxon@3.7.1": "3.7.1",
     "npm:postcss@8.5.6": "8.5.6",
-    "npm:preact-render-to-string@^6.5.11": "6.5.13_preact@10.27.0",
-    "npm:preact@10.27.0": "10.27.0",
-    "npm:preact@^10.27.0": "10.27.0",
+    "npm:preact-render-to-string@^6.5.11": "6.5.13_preact@10.27.1",
+    "npm:preact@10.27.1": "10.27.1",
+    "npm:preact@^10.27.0": "10.27.1",
     "npm:rss@1.2.2": "1.2.2",
-    "npm:tailwindcss@^4.1.11": "4.1.11"
+    "npm:tailwindcss@^4.1.11": "4.1.12"
   },
   "jsr": {
-    "@deno/esbuild-plugin@1.1.5": {
-      "integrity": "c9cde95990b97802a0da6c73c26ab4a48f30d286818845e365dddcd8297abd7d",
-      "dependencies": [
-        "jsr:@deno/loader",
-        "jsr:@std/path@^1.1.1",
-        "npm:esbuild@~0.25.5"
-      ]
-    },
     "@deno/esbuild-plugin@1.2.0": {
       "integrity": "04ddd0fca9416d8a2866263928a53b9d5ed08dfca064d64504a0aaf9800c709e",
       "dependencies": [
@@ -72,33 +62,10 @@
         "jsr:@std/encoding@^1.0.10"
       ]
     },
-    "@fresh/core@2.0.0-alpha.57": {
-      "integrity": "2de0656d32fe327482138a2b585d4560db05ed979bf20c071da2969a4a759550",
-      "dependencies": [
-        "jsr:@deno/esbuild-plugin@^1.1.5",
-        "jsr:@fresh/build-id",
-        "jsr:@std/encoding@1",
-        "jsr:@std/fmt",
-        "jsr:@std/fs",
-        "jsr:@std/html",
-        "jsr:@std/http",
-        "jsr:@std/jsonc",
-        "jsr:@std/media-types",
-        "jsr:@std/path@1",
-        "jsr:@std/semver",
-        "jsr:@std/uuid",
-        "npm:@opentelemetry/api",
-        "npm:@preact/signals@^2.2.1",
-        "npm:esbuild-wasm",
-        "npm:esbuild@0.25.7",
-        "npm:preact-render-to-string",
-        "npm:preact@^10.27.0"
-      ]
-    },
     "@fresh/core@2.0.0-alpha.58": {
       "integrity": "368b579ff0da5badd232916f021a458c9c9ccb35ffe4247df6ff5757cffedc82",
       "dependencies": [
-        "jsr:@deno/esbuild-plugin@^1.2.0",
+        "jsr:@deno/esbuild-plugin",
         "jsr:@fresh/build-id",
         "jsr:@std/encoding@1",
         "jsr:@std/fmt",
@@ -124,12 +91,6 @@
         "jsr:@fresh/core@^2.0.0-alpha.37",
         "npm:@tailwindcss/postcss",
         "npm:postcss"
-      ]
-    },
-    "@std/assert@1.0.13": {
-      "integrity": "ae0d31e41919b12c656c742b22522c32fb26ed0cba32975cb0de2a273cb68b29",
-      "dependencies": [
-        "jsr:@std/internal@^1.0.6"
       ]
     },
     "@std/assert@1.0.14": {
@@ -177,12 +138,6 @@
     },
     "@std/media-types@1.1.0": {
       "integrity": "c9d093f0c05c3512932b330e3cc1fe1d627b301db33a4c2c2185c02471d6eaa4"
-    },
-    "@std/path@1.1.1": {
-      "integrity": "fe00026bd3a7e6a27f73709b83c607798be40e20c81dde655ce34052fd82ec76",
-      "dependencies": [
-        "jsr:@std/internal@^1.0.9"
-      ]
     },
     "@std/path@1.1.2": {
       "integrity": "c0b13b97dfe06546d5e16bf3966b1cadf92e1cc83e56ba5476ad8b498d9e3038",
@@ -533,11 +488,11 @@
     "@opentelemetry/api@1.9.0": {
       "integrity": "sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg=="
     },
-    "@preact/signals-core@1.11.0": {
-      "integrity": "sha512-jglbibeWHuFRzEWVFY/TT7wB1PppJxmcSfUHcK+2J9vBRtiooMfw6tAPttojNYrrpdGViqAYCbPpmWYlMm+eMQ=="
+    "@preact/signals-core@1.12.0": {
+      "integrity": "sha512-etWpENXm469RHMWIZGblgWrapbIGcRcbccEGGaLkFez3PjlI3XkBrUtSiNFsIfV/DN16PxMOxbWAZUIaLFyJDg=="
     },
-    "@preact/signals@2.2.1_preact@10.27.0": {
-      "integrity": "sha512-cX3mijdjHbbz3dBoJ6z687CGYEOp9ifj3uFnm4UKW+DxXKPMvE2y/VSdm0PXhXmHnr6F0iSnDJ+dLwmV7CYT5A==",
+    "@preact/signals@2.3.0_preact@10.27.1": {
+      "integrity": "sha512-jy11p5XHtm9/3NdpUC9PvZrzGVRWTI+9Wo1Fcv0D8Sb5sNvKvft6zQ5cIO7NVgvSgKLfnkhg6sKygi+Q/QHe5A==",
       "dependencies": [
         "@preact/signals-core",
         "preact"
@@ -552,7 +507,7 @@
         "lightningcss",
         "magic-string",
         "source-map-js",
-        "tailwindcss"
+        "tailwindcss@4.1.11"
       ]
     },
     "@tailwindcss/oxide-android-arm64@4.1.11": {
@@ -651,7 +606,7 @@
         "@tailwindcss/node",
         "@tailwindcss/oxide",
         "postcss",
-        "tailwindcss"
+        "tailwindcss@4.1.11"
       ]
     },
     "@tybys/wasm-util@0.10.0": {
@@ -885,14 +840,14 @@
         "source-map-js"
       ]
     },
-    "preact-render-to-string@6.5.13_preact@10.27.0": {
+    "preact-render-to-string@6.5.13_preact@10.27.1": {
       "integrity": "sha512-iGPd+hKPMFKsfpR2vL4kJ6ZPcFIoWZEcBf0Dpm3zOpdVvj77aY8RlLiQji5OMrngEyaxGogeakTb54uS2FvA6w==",
       "dependencies": [
         "preact"
       ]
     },
-    "preact@10.27.0": {
-      "integrity": "sha512-/DTYoB6mwwgPytiqQTh/7SFRL98ZdiD8Sk8zIUVOxtwq4oWcwrcd1uno9fE/zZmUaUrFNYzbH14CPebOz9tZQw=="
+    "preact@10.27.1": {
+      "integrity": "sha512-V79raXEWch/rbqoNc7nT9E4ep7lu+mI3+sBmfRD4i1M73R3WLYcCtdI0ibxGVf4eQL8ZIz2nFacqEC+rmnOORQ=="
     },
     "rss@1.2.2": {
       "integrity": "sha512-xUhRTgslHeCBeHAqaWSbOYTydN2f0tAzNXvzh3stjz7QDhQMzdgHf3pfgNIngeytQflrFPfy6axHilTETr6gDg==",
@@ -906,6 +861,9 @@
     },
     "tailwindcss@4.1.11": {
       "integrity": "sha512-2E9TBm6MDD/xKYe+dvJZAmg3yxIEDNRc0jwlNyDg/4Fil2QcSLjFKGVff0lAf1jjeaArlG/M75Ey/EYr/OJtBA=="
+    },
+    "tailwindcss@4.1.12": {
+      "integrity": "sha512-DzFtxOi+7NsFf7DBtI3BJsynR+0Yp6etH+nRPTbpWnS2pZBaSksv/JGctNwSWzbFjp0vxSqknaUylseZqMDGrA=="
     },
     "tapable@2.2.2": {
       "integrity": "sha512-Re10+NauLTMCudc7T5WLFLAwDhQ0JWdrMK+9B2M8zR5hRExKmsRDCBA7/aV/pNJFltmBFO5BAMlQFi/vq3nKOg=="
@@ -942,12 +900,12 @@
       "jsr:@std/fs@1",
       "jsr:@std/path@1",
       "npm:@kitsuyui/luxon-ext@0.2.1",
-      "npm:@preact/signals@2.2.1",
+      "npm:@preact/signals@2.3.0",
       "npm:@types/luxon@3.7.1",
       "npm:daisyui@^5.0.50",
       "npm:deep-diff@1.0.2",
       "npm:luxon@3.7.1",
-      "npm:preact@10.27.0",
+      "npm:preact@10.27.1",
       "npm:rss@1.2.2",
       "npm:tailwindcss@^4.1.11"
     ]
