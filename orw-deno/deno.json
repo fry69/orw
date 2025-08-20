@@ -2,28 +2,11 @@
   "compilerOptions": {
     "jsx": "precompile",
     "jsxImportSource": "preact",
-    "jsxPrecompileSkipElements": [
-      "a",
-      "img",
-      "source",
-      "body",
-      "html",
-      "head"
-    ],
-    "lib": [
-      "dom",
-      "dom.asynciterable",
-      "dom.iterable",
-      "deno.ns"
-    ],
-    "types": [
-      "npm:@types/luxon@3.7.1"
-    ]
+    "jsxPrecompileSkipElements": ["a", "img", "source", "body", "html", "head"],
+    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"],
+    "types": ["npm:@types/luxon@3.7.1"]
   },
-  "exclude": [
-    "**/_fresh/*",
-    "**/data/*"
-  ],
+  "exclude": ["**/_fresh/*", "**/data/*"],
   "exports": {
     ".": "./main.ts"
   },
@@ -36,37 +19,36 @@
     "useTabs": false
   },
   "imports": {
-    "@fresh/plugin-tailwind": "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9",
-    "@kitsuyui/luxon-ext": "npm:@kitsuyui/luxon-ext@0.2.1",
-    "@preact/signals": "npm:@preact/signals@2.2.1",
+    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@^0.9.0",
+    "@kitsuyui/luxon-ext": "npm:@kitsuyui/luxon-ext@^0.2.1",
+    "@preact/signals": "npm:@preact/signals@^2.3.0",
     "@std/assert": "jsr:@std/assert@1",
     "@std/fs": "jsr:@std/fs@1",
     "@std/path": "jsr:@std/path@1",
+    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.1.12",
     "daisyui": "npm:daisyui@^5.0.50",
-    "deep-diff": "npm:deep-diff@1.0.2",
+    "deep-diff": "npm:deep-diff@^1.0.2",
     "fresh": "jsr:@fresh/core@2.0.0-alpha.58",
-    "luxon": "npm:luxon@3.7.1",
-    "preact": "npm:preact@10.27.0",
+    "luxon": "npm:luxon@^3.7.1",
+    "preact": "npm:preact@^10.27.1",
     "rss": "npm:rss@1.2.2",
-    "tailwindcss": "npm:tailwindcss@^4.1.11"
+    "tailwindcss": "npm:tailwindcss@^4.1.12",
+    "vite": "npm:vite@^7.1.3"
   },
   "lint": {
     "rules": {
-      "tags": [
-        "fresh",
-        "recommended"
-      ]
+      "tags": ["fresh", "recommended"]
     }
   },
   "name": "orw-deno",
   "nodeModulesDir": "auto",
   "tasks": {
-    "build": "deno run --allow-all dev.ts build",
-    "check": "deno check components islands lib routes server static tests main.ts dev.ts",
+    "build": "vite build",
+    "check": "deno check components islands lib routes server static tests main.ts utils.ts",
     "check-deps": "deno run -A jsr:@check/deps --allow-unused",
     "compile": "false && deno task build && deno compile --output orw.bin --include static --include _fresh --include deno.json -A main.ts",
     "coverage": "deno coverage --include=\"routes/\" --include=\"server/\"",
-    "dev": "deno run --allow-all --watch=components/,islands/,lib/,routes/,server/,static/,main.ts dev.ts",
+    "dev": "vite",
     "fmt": "deno fmt",
     "lint": "deno lint",
     "pre-commit": "deno task fmt && deno task lint && deno task check && deno task test",
