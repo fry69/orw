@@ -4,8 +4,8 @@
     "jsr:@deno/esbuild-plugin@^1.2.0": "1.2.0",
     "jsr:@deno/loader@~0.3.3": "0.3.5",
     "jsr:@fresh/build-id@1": "1.0.1",
-    "jsr:@fresh/core@2.0.0-alpha.59": "2.0.0-alpha.59",
-    "jsr:@fresh/core@^2.0.0-alpha.37": "2.0.0-alpha.59",
+    "jsr:@fresh/core@2.0.0-alpha.60": "2.0.0-alpha.60",
+    "jsr:@fresh/core@^2.0.0-alpha.37": "2.0.0-alpha.60",
     "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9": "0.0.1-alpha.9",
     "jsr:@std/assert@1": "1.0.14",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
@@ -62,8 +62,8 @@
         "jsr:@std/encoding@^1.0.10"
       ]
     },
-    "@fresh/core@2.0.0-alpha.59": {
-      "integrity": "4525d4c0cc200b04d703a08310489087f1465833ff64806997a1f8af3ff2d0c1",
+    "@fresh/core@2.0.0-alpha.60": {
+      "integrity": "4f5ba71ab6704486307f298aa3351abc5a0d3a2e33577f2be9127a14f5119c11",
       "dependencies": [
         "jsr:@deno/esbuild-plugin",
         "jsr:@fresh/build-id",
@@ -885,7 +885,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@fresh/core@2.0.0-alpha.59",
+      "jsr:@fresh/core@2.0.0-alpha.60",
       "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9",
       "jsr:@std/assert@1",
       "jsr:@std/fs@1",
