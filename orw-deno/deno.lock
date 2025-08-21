@@ -2,8 +2,8 @@
   "version": "5",
   "specifiers": {
     "jsr:@deno/esbuild-plugin@^1.2.0": "1.2.0",
-    "jsr:@deno/loader@~0.3.3": "0.3.4",
-    "jsr:@fresh/build-id@1": "1.0.0",
+    "jsr:@deno/loader@~0.3.3": "0.3.5",
+    "jsr:@fresh/build-id@1": "1.0.1",
     "jsr:@fresh/core@2.0.0-alpha.59": "2.0.0-alpha.59",
     "jsr:@fresh/core@^2.0.0-alpha.37": "2.0.0-alpha.59",
     "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9": "0.0.1-alpha.9",
@@ -30,7 +30,7 @@
     "npm:@preact/signals@^2.2.1": "2.3.1_preact@10.27.1",
     "npm:@tailwindcss/postcss@^4.1.10": "4.1.12",
     "npm:@types/luxon@3.7.1": "3.7.1",
-    "npm:@types/node@*": "22.15.15",
+    "npm:@types/node@*": "24.2.0",
     "npm:daisyui@^5.0.50": "5.0.50",
     "npm:deep-diff@1.0.2": "1.0.2",
     "npm:esbuild-wasm@0.25.7": "0.25.7",
@@ -38,7 +38,7 @@
     "npm:esbuild@~0.25.5": "0.25.9",
     "npm:luxon@3.7.1": "3.7.1",
     "npm:postcss@8.5.6": "8.5.6",
-    "npm:preact-render-to-string@^6.5.11": "6.6.0_preact@10.27.1",
+    "npm:preact-render-to-string@^6.5.11": "6.6.1_preact@10.27.1",
     "npm:preact@10.27.1": "10.27.1",
     "npm:preact@^10.27.0": "10.27.1",
     "npm:rss@1.2.2": "1.2.2",
@@ -53,11 +53,11 @@
         "npm:esbuild@~0.25.5"
       ]
     },
-    "@deno/loader@0.3.4": {
-      "integrity": "c56003bc7027606301c3fe62704723b207a9e508c9fb154cf5131abb9d4d2673"
+    "@deno/loader@0.3.5": {
+      "integrity": "72f6ce9c6e7242c6e070705dbd8a838884dd236d5dd0bd907d08bece92db5722"
     },
-    "@fresh/build-id@1.0.0": {
-      "integrity": "c42a1dab0b0b8bcddf93657edf03f404d537ba8e1d44144b3c749727c5671d5a",
+    "@fresh/build-id@1.0.1": {
+      "integrity": "12a2ec25fd52ae9ec68c26848a5696cd1c9b537f7c983c7e56e4fb1e7e816c20",
       "dependencies": [
         "jsr:@std/encoding@^1.0.10"
       ]
@@ -618,8 +618,8 @@
     "@types/luxon@3.7.1": {
       "integrity": "sha512-H3iskjFIAn5SlJU7OuxUmTEpebK6TKB8rxZShDslBMZJ5u9S//KM1sbdAisiSrqwLQncVjnpi2OK2J51h+4lsg=="
     },
-    "@types/node@22.15.15": {
-      "integrity": "sha512-R5muMcZob3/Jjchn5LcO8jdKwSCbzqmPB6ruBxMcf9kbxtniZHP327s6C37iOfuw8mbKK3cAQa7sEl7afLrQ8A==",
+    "@types/node@24.2.0": {
+      "integrity": "sha512-3xyG3pMCq3oYCNg7/ZP+E1ooTaGB4cG8JWRsqqOYQdbWNY4zbaV0Ennrd7stjiJEFZCaybcIgpTjJWHRfBSIDw==",
       "dependencies": [
         "undici-types"
       ]
@@ -834,8 +834,8 @@
         "source-map-js"
       ]
     },
-    "preact-render-to-string@6.6.0_preact@10.27.1": {
-      "integrity": "sha512-O8zGUHcgx4STtNjVuixhR35Qpqzs+P51cgOSvw1mreTle4jgPkR1umylDS/nLvt/W/QHM+7yHmXQqr/lE3yiig==",
+    "preact-render-to-string@6.6.1_preact@10.27.1": {
+      "integrity": "sha512-IIMfXRjmbSP9QmG18WJLQa4Z4yx3J0VC9QN5q9z2XYlWSzFlJ+bSm/AyLyyV/YFwjof1OXFX2Mz6Ao60LXudJg==",
       "dependencies": [
         "preact"
       ]
@@ -873,8 +873,8 @@
     "tslib@2.8.1": {
       "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="
     },
-    "undici-types@6.21.0": {
-      "integrity": "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="
+    "undici-types@7.10.0": {
+      "integrity": "sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag=="
     },
     "xml@1.0.1": {
       "integrity": "sha512-huCv9IH9Tcf95zuYCsQraZtWnJvBtLVE0QHMOs8bWyZAFZNDcYjsPq1nEx8jKA9y+Beo9v+7OBPRisQTjinQMw=="

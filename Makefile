@@ -177,3 +177,6 @@ screenshot:
 # Upload screenshot to S3/R2 bucket
 upload:
 	wrangler r2 object put $(ORW_STORAGE_BUCKET)/screenshot.png -f temp/screenshot.png --remote
+
+pull:
+	$(DOCKER) pull docker.io/denoland/deno:latest
