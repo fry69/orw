@@ -160,7 +160,7 @@ versions:
 
 # Pre-commit checking and sanitizing
 pre:
-	@cd $(PROJECT_DIR) && deno task pre-commit
+	@cd $(PROJECT_DIR) && deno install && deno task pre-commit
 
 # Start the development server
 dev:
@@ -177,3 +177,11 @@ screenshot:
 # Upload screenshot to S3/R2 bucket
 upload:
 	wrangler r2 object put $(ORW_STORAGE_BUCKET)/screenshot.png -f temp/screenshot.png --remote
+
+.PHONY: vendor
+vendor:
+	@mkdir -p $(PROJECT_DIR)/vendor
+	rm -fR $(PROJECT_DIR)/vendor/plugin-vite && cp -a ../../denoland/fresh/packages/plugin-vite $(PROJECT_DIR)/vendor
+
+pull:
+	$(DOCKER) pull docker.io/denoland/deno:latest

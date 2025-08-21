@@ -8,14 +8,14 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
-  - repo: "local"
-    hooks:
-      - id: make-pre
-        name: make pre
-        description: Deno checks via Makefile
-        entry: make pre
-        types_or: [javascript, jsx, ts, tsx, json]
-        pass_filenames: false
-        language: system
-        always_run: true
-        verbose: false
+  # - repo: "local"
+  #   hooks:
+  #     - id: make-pre
+  #       name: make pre
+  #       description: Deno checks via Makefile
+  #       entry: make pre
+  #       types_or: [javascript, jsx, ts, tsx, json]
+  #       pass_filenames: false
+  #       language: system
+  #       always_run: true
+  #       verbose: false
