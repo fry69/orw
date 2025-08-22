@@ -104,17 +104,12 @@ async function generateAtomFeed(): Promise<string> {
       atom: `${baseURL}atom`,
     },
     feed_url: `${baseURL}atom`,
-    favicon: `${baseURL}favicon.svg`,
+    favicon: `${baseURL}favicon.png`,
     language: "en",
     ttl: 60,
     date: watcherStatus.dbLastChange,
     copyright: "MIT",
   };
-
-  // Add docs URL only if repository URL is configured
-  // if (config.repositoryUrl) {
-  //   feedOptions.docs = config.repositoryUrl;
-  // }
 
   const feed = new Feed(feedOptions);
 
@@ -144,6 +139,7 @@ async function generateAtomFeed(): Promise<string> {
       content: renderChangeSnippetHTML(change),
       link: `${baseURL}model/${encodeURIComponent(change.id)}`,
       date: new Date(change.timestamp),
+      published: new Date(change.timestamp),
       id: `${baseURL}model/${encodeURIComponent(change.id)}#${change.timestamp}`, // Unique identifier for each change
     });
   }

@@ -17,7 +17,8 @@
       "deno.ns"
     ],
     "types": [
-      "npm:@types/luxon@3.7.1"
+      "npm:@types/luxon@3.7.1",
+      "npm:@types/rss@0.0.32"
     ]
   },
   "exclude": [

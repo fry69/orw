@@ -92,23 +92,18 @@ async function generateRSSFeed(): Promise<string> {
   }
 
   // Get the base URL from config
-  const baseURL = config.publicUrl;
+  const baseURL = new URL(config.publicUrl);
 
-  const feedOptions: Record<string, unknown> = {
+  const feedOptions: RSS.FeedOptions = {
     title: "OpenRouter Model Changes",
     description: "Feed for detected changes in the OpenRouter model list",
-    feed_url: `${baseURL}/rss`,
-    site_url: baseURL,
-    image_url: `${baseURL}/favicon.svg`,
+    feed_url: `${baseURL}rss`,
+    site_url: `${baseURL}`,
+    image_url: `${baseURL}favicon.png`,
     language: "en",
     ttl: 60,
     pubDate: watcherStatus.dbLastChange,
   };
-
-  // Add docs URL only if repository URL is configured
-  if (config.repositoryUrl) {
-    feedOptions.docs = config.repositoryUrl;
-  }
 
   const feed = new RSS(feedOptions);
 
@@ -135,13 +130,13 @@ async function generateRSSFeed(): Promise<string> {
     feed.item({
       title: `Model ${change.id} ${changeTypeText}`,
       description: renderChangeSnippetHTML(change),
-      url: `${baseURL}/model/${encodeURIComponent(change.id)}`,
+      url: `${baseURL}model/${encodeURIComponent(change.id)}`,
       date: new Date(change.timestamp),
-      guid: `${change.id}-${change.timestamp}`, // Unique identifier for each change
+      guid: `${baseURL}model/${encodeURIComponent(change.id)}#${change.timestamp}`, // Unique identifier for each change
     });
   }
 
-  const xml = feed.xml();
+  const xml = feed.xml({ indent: "  " });
 
   // Update cache
   rssCache = {
