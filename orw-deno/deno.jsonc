@@ -47,6 +47,7 @@
     "fresh": "jsr:@fresh/core@2.0.0-alpha.60",
     "luxon": "npm:luxon@3.7.1",
     "preact": "npm:preact@10.27.1",
+    "feed": "npm:feed@5.1.0",
     "rss": "npm:rss@1.2.2",
     "tailwindcss": "npm:tailwindcss@4.1.12"
   },
