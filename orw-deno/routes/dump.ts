@@ -1,6 +1,6 @@
 import { define } from "../utils.ts";
 import { getWatcher } from "../server/index.ts";
-import { join, basename } from "@std/path";
+import { basename, join } from "@std/path";
 
 export const handler = define.handlers({
   async GET(_req) {
