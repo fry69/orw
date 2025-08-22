@@ -6,7 +6,7 @@ ENV DENO_DIR=/deno-dir/
 WORKDIR /app
 
 COPY deno.jsonc deno.lock ./
-COPY vendor/ ./vendor/
+# COPY vendor/ ./vendor/
 RUN deno install --allow-scripts
 
 ARG GIT_REVISION
