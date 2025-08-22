@@ -807,13 +807,13 @@ export class OpenRouterAPIWatcher {
       this.status.apiLastCheckStatus = "failed";
       this.error("empty model list from API after retry, skipping check");
     } else {
-      await this.backupDatabase();
       const oldModels = this.lists.models;
       const changes = this.findChanges(newModels, oldModels);
       this.status.apiLastCheckStatus = "success";
       this.updateAPILastCheck();
 
       if (changes.length > 0) {
+        await this.backupDatabase();
         const timestamp = new Date();
         this.storeModelList(newModels, timestamp);
         this.storeChanges(changes);

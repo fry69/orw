@@ -19,9 +19,8 @@
     "editor.insertSpaces": true,
     "editor.tabSize": 2
   },
-  "css.customData": [
-    ".vscode/tailwind.json"
-  ],
+  "css.customData": [".vscode/tailwind.json"],
+  "deno.cacheOnSave": false,
   "deno.enable": true,
   "deno.lint": true,
   "files.associations": {
