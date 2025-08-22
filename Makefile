@@ -79,7 +79,7 @@ config:
 	@echo "  NODE_ENV:           $(NODE_ENV)"
 
 # Build all images
-build:
+build: pre
 	$(COMPOSE) build
 	$(COMPOSE) --profile seed build
 
@@ -128,7 +128,7 @@ clean:
 # Remove generated files (should not be necessary with .dockerignore)
 prune:
 # 	rm -rf $(PROJECT_DIR)/node_modules $(PROJECT_DIR)/_fresh $(PROJECT_DIR)/data
-	rm -rf $(PROJECT_DIR)/node_modules $(PROJECT_DIR)/_fresh
+	rm -rf $(PROJECT_DIR)/node_modules $(PROJECT_DIR)/_fresh $(PROJECT_DIR)/deno.lock
 
 # Reset volume (destructive)
 reset: down
@@ -160,11 +160,15 @@ versions:
 
 # Pre-commit checking and sanitizing
 pre:
-	@cd $(PROJECT_DIR) && deno install && deno task pre-commit
+	@cd $(PROJECT_DIR) && deno install --allow-scripts && deno task build && deno task pre-commit
 
 # Start the development server
 dev:
-	@cd $(PROJECT_DIR) && ORW_PUBLIC_URL=http://localhost:8000 deno task dev
+	@cd $(PROJECT_DIR) 	&& ORW_PUBLIC_URL=http://localhost:5173 deno task dev
+
+# Start the production server
+serve:
+	@cd $(PROJECT_DIR) && ORW_PUBLIC_URL=http://localhost:8000 deno task serve
 
 # Find all emojis using ripgrep
 emoji:
