@@ -64,17 +64,13 @@
     "build": "deno run --allow-all dev.ts build",
     "check": "deno check components islands lib routes server static tests main.ts dev.ts",
     "check-deps": "deno run -A jsr:@check/deps --allow-unused",
-    "compile": "false && deno task build && deno compile --output orw.bin --include static --include _fresh --include deno.json -A main.ts",
-    "coverage": "deno coverage --include=\"routes/\" --include=\"server/\"",
     "dev": "deno run --allow-all --watch=components/,islands/,lib/,routes/,server/,static/,main.ts dev.ts",
     "fmt": "deno fmt",
     "lint": "deno lint",
     "pre-commit": "deno task fmt && deno task lint && deno task check && deno task test",
     "serve": "deno task build && deno serve --allow-all --env-file=.env _fresh/server.js",
     "serve-prod": "deno serve --allow-all _fresh/server.js",
-    "test": "deno test --allow-all --reporter=dot tests/",
-    "test-cov": "deno test --allow-all --reporter=dot --coverage --coverage-raw-data-only tests/",
-    "update": "deno run -A -r jsr:@fresh/update ."
+    "test": "deno test --allow-all --reporter=dot tests/"
   },
   "version": "0.6.0"
 }
