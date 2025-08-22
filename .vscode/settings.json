@@ -22,6 +22,7 @@
   "css.customData": [
     ".vscode/tailwind.json"
   ],
+  "deno.cacheOnSave": false,
   "deno.enable": true,
   "deno.lint": true,
   "files.associations": {
