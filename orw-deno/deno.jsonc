@@ -19,7 +19,7 @@
     "useTabs": false
   },
   "imports": {
-    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@0.9.2",
+    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@0.9.3",
     "@kitsuyui/luxon-ext": "npm:@kitsuyui/luxon-ext@0.2.1",
     "@preact/signals": "npm:@preact/signals@2.3.1",
     "@std/assert": "jsr:@std/assert@1",
@@ -28,7 +28,7 @@
     "@tailwindcss/vite": "npm:@tailwindcss/vite@4.1.12",
     "daisyui": "npm:daisyui@5.0.50",
     "deep-diff": "npm:deep-diff@1.0.2",
-    "fresh": "jsr:@fresh/core@2.0.0-alpha.60",
+    "fresh": "jsr:@fresh/core@2.0.0-alpha.61",
     "luxon": "npm:luxon@3.7.1",
     "preact": "npm:preact@10.27.1",
     "feed": "npm:feed@5.1.0",
