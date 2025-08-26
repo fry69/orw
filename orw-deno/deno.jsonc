@@ -8,23 +8,20 @@
       "source",
       "body",
       "html",
-      "head"
+      "head",
+      "title",
+      "meta",
+      "script",
+      "link",
+      "style",
+      "base",
+      "noscript",
+      "template"
     ],
-    "lib": [
-      "dom",
-      "dom.asynciterable",
-      "dom.iterable",
-      "deno.ns"
-    ],
-    "types": [
-      "npm:@types/luxon@3.7.1",
-      "npm:@types/rss@0.0.32"
-    ]
+    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"],
+    "types": ["npm:@types/luxon@3.7.1", "npm:@types/rss@0.0.32"]
   },
-  "exclude": [
-    "**/_fresh/*",
-    "**/data/*"
-  ],
+  "exclude": ["**/_fresh/*", "**/data/*"],
   "exports": {
     ".": "./main.ts"
   },
@@ -54,10 +51,7 @@
   },
   "lint": {
     "rules": {
-      "tags": [
-        "fresh",
-        "recommended"
-      ]
+      "tags": ["fresh", "recommended"]
     }
   },
   "name": "orw-deno",
