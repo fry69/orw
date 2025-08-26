@@ -1,11 +1,11 @@
 # Variables
-DOCKER ?= podman
-COMPOSE := $(DOCKER)-compose -f ./compose.yaml
+DOCKER ?= docker
+COMPOSE := docker-buildx bake -f ./compose.yaml
 PROJECT_DIR := orw-deno
 IMAGE_NAME := orw
 VOLUME_NAME := orw_data
-SEED_IMAGE := orw_seed
-SEED_DB_FILE := orw.new.20250731.db
+# SEED_IMAGE := orw_seed
+# SEED_DB_FILE := orw.new.20250731.db
 
 # S3/R2 configuration
 ORW_STORAGE_BUCKET := dev-orw-all
@@ -79,26 +79,26 @@ config:
 	@echo "  NODE_ENV:           $(NODE_ENV)"
 
 # Build all images
-build: pre
-	$(COMPOSE) build
-	$(COMPOSE) --profile seed build
+build:
+	$(COMPOSE) --no-cache app
+# $(COMPOSE) --profile seed
 
 # Start services
 up:
 	$(COMPOSE) up --detach
 
 # Smart startup: seed if needed, then start services
-smart-up:
-	@echo "Checking if database seeding is needed..."
-	@if ! $(DOCKER) run --rm -v $(VOLUME_NAME):/data alpine test -f /data/orw.db 2>/dev/null; then \
-		echo "Database not found, seeding..."; \
-		$(MAKE) seed; \
-		echo "Seeding complete."; \
-	else \
-		echo "Database exists, skipping seed."; \
-	fi
-	@echo "Starting services..."
-	$(COMPOSE) up --detach
+# smart-up:
+# 	@echo "Checking if database seeding is needed..."
+# 	@if ! $(DOCKER) run --rm -v $(VOLUME_NAME):/data alpine test -f /data/orw.db 2>/dev/null; then \
+# 		echo "Database not found, seeding..."; \
+# 		$(MAKE) seed; \
+# 		echo "Seeding complete."; \
+# 	else \
+# 		echo "Database exists, skipping seed."; \
+# 	fi
+# 	@echo "Starting services..."
+# 	$(COMPOSE) up --detach
 
 # Start services with rebuild
 rebuild: down
@@ -136,9 +136,9 @@ reset: down
 	$(DOCKER) volume create $(VOLUME_NAME)
 
 # Seed database with initial data
-seed:
-	$(COMPOSE) --profile seed build seed
-	$(COMPOSE) --profile seed run --rm seed
+# seed:
+# 	$(COMPOSE) --profile seed build seed
+# 	$(COMPOSE) --profile seed run --rm seed
 
 # Reset everything for clean rebuild (destructive)
 nuke: down clean
