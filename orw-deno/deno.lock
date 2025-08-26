@@ -5,9 +5,9 @@
     "jsr:@deno/loader@~0.3.2": "0.3.5",
     "jsr:@deno/loader@~0.3.3": "0.3.5",
     "jsr:@fresh/build-id@1": "1.0.1",
-    "jsr:@fresh/core@2.0.0-alpha.61": "2.0.0-alpha.61",
-    "jsr:@fresh/core@^2.0.0-alpha.60": "2.0.0-alpha.61",
-    "jsr:@fresh/plugin-vite@0.9.3": "0.9.3",
+    "jsr:@fresh/core@2.0.0-alpha.63": "2.0.0-alpha.63",
+    "jsr:@fresh/core@^2.0.0-alpha.60": "2.0.0-alpha.63",
+    "jsr:@fresh/plugin-vite@0.9.4": "0.9.4",
     "jsr:@std/assert@1": "1.0.14",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
     "jsr:@std/encoding@1": "1.0.10",
@@ -36,7 +36,7 @@
     "npm:@types/luxon@3.7.1": "3.7.1",
     "npm:@types/node@*": "24.2.0",
     "npm:@types/rss@0.0.32": "0.0.32",
-    "npm:daisyui@5.0.50": "5.0.50",
+    "npm:daisyui@5.0.51": "5.0.51",
     "npm:deep-diff@1.0.2": "1.0.2",
     "npm:esbuild-wasm@0.25.7": "0.25.7",
     "npm:esbuild@0.25.7": "0.25.7",
@@ -69,8 +69,8 @@
         "jsr:@std/encoding@^1.0.10"
       ]
     },
-    "@fresh/core@2.0.0-alpha.61": {
-      "integrity": "5552c41892296183268b697c171a80b67cb07ae7316d5abbdae9f40e3f47ba7a",
+    "@fresh/core@2.0.0-alpha.63": {
+      "integrity": "adac4860447b42eb8e33362d6ec47052c923444ef44bcb6ea3a4c193e150046a",
       "dependencies": [
         "jsr:@deno/esbuild-plugin",
         "jsr:@fresh/build-id",
@@ -92,8 +92,8 @@
         "npm:preact@^10.27.0"
       ]
     },
-    "@fresh/plugin-vite@0.9.3": {
-      "integrity": "ab1e16dee07a1eb627848e0a7eadc829fe50e2798d5a9289c1d15fab965a89b9",
+    "@fresh/plugin-vite@0.9.4": {
+      "integrity": "393a13a8dec7f1b44045967aa63f116b9fd6d93098921ea3c9d393cf5014c050",
       "dependencies": [
         "jsr:@deno/loader@~0.3.2",
         "jsr:@fresh/core@^2.0.0-alpha.60",
@@ -984,8 +984,8 @@
     "convert-source-map@2.0.0": {
       "integrity": "sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg=="
     },
-    "daisyui@5.0.50": {
-      "integrity": "sha512-c1PweK5RI1C76q58FKvbS4jzgyNJSP6CGTQ+KkZYzADdJoERnOxFoeLfDHmQgxLpjEzlYhFMXCeodQNLCC9bow=="
+    "daisyui@5.0.51": {
+      "integrity": "sha512-lhB0BBOjt43/t5S1my0XChMy3ClXfmGlDU/XmSlx+N0h2y7cyWF+cnheeemguxNHb9TjqI66mxKI9qiFsOU3mA=="
     },
     "debug@4.4.1": {
       "integrity": "sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==",
@@ -1406,8 +1406,8 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@fresh/core@2.0.0-alpha.61",
-      "jsr:@fresh/plugin-vite@0.9.3",
+      "jsr:@fresh/core@2.0.0-alpha.63",
+      "jsr:@fresh/plugin-vite@0.9.4",
       "jsr:@std/assert@1",
       "jsr:@std/fs@1",
       "jsr:@std/path@1",
@@ -1416,7 +1416,7 @@
       "npm:@tailwindcss/vite@4.1.12",
       "npm:@types/luxon@3.7.1",
       "npm:@types/rss@0.0.32",
-      "npm:daisyui@5.0.50",
+      "npm:daisyui@5.0.51",
       "npm:deep-diff@1.0.2",
       "npm:feed@5.1.0",
       "npm:luxon@3.7.1",
