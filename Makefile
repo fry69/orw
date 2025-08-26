@@ -189,3 +189,6 @@ vendor:
 
 pull:
 	$(DOCKER) pull docker.io/denoland/deno:latest
+
+inspect:
+	npx serve $(PROJECT_DIR)/.vite-inspect

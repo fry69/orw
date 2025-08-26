@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [
     fresh(),
     tailwind(),
-    inspect(),
+    inspect({
+      build: true,
+      outputDir: ".vite-inspect",
+    }),
   ],
 });
