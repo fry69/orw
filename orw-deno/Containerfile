@@ -3,6 +3,8 @@ FROM docker.io/denoland/deno:latest
 ## Deno cache folder
 ENV DENO_DIR=/deno-dir/
 
+RUN deno upgrade canary
+
 WORKDIR /app
 
 COPY deno.jsonc deno.lock ./
