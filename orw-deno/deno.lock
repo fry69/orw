@@ -4,8 +4,8 @@
     "jsr:@deno/esbuild-plugin@^1.2.0": "1.2.0",
     "jsr:@deno/loader@~0.3.3": "0.3.5",
     "jsr:@fresh/build-id@1": "1.0.1",
-    "jsr:@fresh/core@2.0.0-alpha.63": "2.0.0-alpha.63",
-    "jsr:@fresh/core@^2.0.0-alpha.37": "2.0.0-alpha.63",
+    "jsr:@fresh/core@2.0.0-beta.1": "2.0.0-beta.1",
+    "jsr:@fresh/core@^2.0.0-alpha.37": "2.0.0-beta.1",
     "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9": "0.0.1-alpha.9",
     "jsr:@std/assert@1": "1.0.14",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
@@ -64,8 +64,8 @@
         "jsr:@std/encoding@^1.0.10"
       ]
     },
-    "@fresh/core@2.0.0-alpha.63": {
-      "integrity": "adac4860447b42eb8e33362d6ec47052c923444ef44bcb6ea3a4c193e150046a",
+    "@fresh/core@2.0.0-beta.1": {
+      "integrity": "d6047c993a8d953d06acbcf12d5976fc003e7dfda43bd5b4df38b468b66e0d9d",
       "dependencies": [
         "jsr:@deno/esbuild-plugin",
         "jsr:@fresh/build-id",
@@ -164,7 +164,7 @@
     "@emnapi/core@1.4.5": {
       "integrity": "sha512-XsLw1dEOpkSX/WucdqUhPWP7hDxSvZiY+fsUC14h+FtQ2Ifni4znbBt8punRX+Uj2JG/uDb8nEHVKvrVlvdZ5Q==",
       "dependencies": [
-        "@emnapi/wasi-threads",
+        "@emnapi/wasi-threads@1.0.4",
         "tslib"
       ]
     },
@@ -176,6 +176,12 @@
     },
     "@emnapi/wasi-threads@1.0.4": {
       "integrity": "sha512-PJR+bOmMOPH8AtcTGAyYNiuJ3/Fcoj2XN/gBEWzDIKh254XO+mM9XoXHk5GNEhodxeMznbg7BlRojVbKN+gC6g==",
+      "dependencies": [
+        "tslib"
+      ]
+    },
+    "@emnapi/wasi-threads@1.1.0": {
+      "integrity": "sha512-WI0DdZ8xFSbgMjR1sFsKABJ/C5OnRrjT06JXbZKexJGrDuPTzZdDYfFlsgcCXCyf+suG5QU2e/y1Wo2V/OapLQ==",
       "dependencies": [
         "tslib"
       ]
@@ -562,7 +568,7 @@
       "dependencies": [
         "@emnapi/core",
         "@emnapi/runtime",
-        "@emnapi/wasi-threads",
+        "@emnapi/wasi-threads@1.1.0",
         "@napi-rs/wasm-runtime",
         "@tybys/wasm-util",
         "tslib"
@@ -906,7 +912,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@fresh/core@2.0.0-alpha.63",
+      "jsr:@fresh/core@2.0.0-beta.1",
       "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9",
       "jsr:@std/assert@1",
       "jsr:@std/fs@1",
