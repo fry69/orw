@@ -4,8 +4,8 @@
     "jsr:@deno/esbuild-plugin@^1.2.0": "1.2.0",
     "jsr:@deno/loader@~0.3.3": "0.3.5",
     "jsr:@fresh/build-id@1": "1.0.1",
-    "jsr:@fresh/core@2.0.0-beta.1": "2.0.0-beta.1",
-    "jsr:@fresh/core@^2.0.0-alpha.37": "2.0.0-beta.1",
+    "jsr:@fresh/core@2.0.0-beta.2": "2.0.0-beta.2",
+    "jsr:@fresh/core@^2.0.0-alpha.37": "2.0.0-beta.2",
     "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9": "0.0.1-alpha.9",
     "jsr:@std/assert@1": "1.0.14",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
@@ -64,8 +64,8 @@
         "jsr:@std/encoding@^1.0.10"
       ]
     },
-    "@fresh/core@2.0.0-beta.1": {
-      "integrity": "d6047c993a8d953d06acbcf12d5976fc003e7dfda43bd5b4df38b468b66e0d9d",
+    "@fresh/core@2.0.0-beta.2": {
+      "integrity": "2063ff56de6fbf89b34f1e297690547fe93a58f2d2b1f8c65dbdbffab9482a9b",
       "dependencies": [
         "jsr:@deno/esbuild-plugin",
         "jsr:@fresh/build-id",
@@ -161,21 +161,15 @@
     "@alloc/quick-lru@5.2.0": {
       "integrity": "sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw=="
     },
-    "@emnapi/core@1.4.5": {
-      "integrity": "sha512-XsLw1dEOpkSX/WucdqUhPWP7hDxSvZiY+fsUC14h+FtQ2Ifni4znbBt8punRX+Uj2JG/uDb8nEHVKvrVlvdZ5Q==",
+    "@emnapi/core@1.5.0": {
+      "integrity": "sha512-sbP8GzB1WDzacS8fgNPpHlp6C9VZe+SJP3F90W9rLemaQj2PzIuTEl1qDOYQf58YIpyjViI24y9aPWCjEzY2cg==",
       "dependencies": [
-        "@emnapi/wasi-threads@1.0.4",
+        "@emnapi/wasi-threads",
         "tslib"
       ]
     },
-    "@emnapi/runtime@1.4.5": {
-      "integrity": "sha512-++LApOtY0pEEz1zrd9vy1/zXVaVJJ/EbAF3u0fXIzPJEDtnITsBGbbK0EkM72amhl/R5b+5xx0Y/QhcVOpuulg==",
-      "dependencies": [
-        "tslib"
-      ]
-    },
-    "@emnapi/wasi-threads@1.0.4": {
-      "integrity": "sha512-PJR+bOmMOPH8AtcTGAyYNiuJ3/Fcoj2XN/gBEWzDIKh254XO+mM9XoXHk5GNEhodxeMznbg7BlRojVbKN+gC6g==",
+    "@emnapi/runtime@1.5.0": {
+      "integrity": "sha512-97/BJ3iXHww3djw6hYIfErCZFee7qCtrneuLa20UXFCOTCfBM2cvQHjWJ2EG0s0MtdNwInarqCTz35i4wWXHsQ==",
       "dependencies": [
         "tslib"
       ]
@@ -568,7 +562,7 @@
       "dependencies": [
         "@emnapi/core",
         "@emnapi/runtime",
-        "@emnapi/wasi-threads@1.1.0",
+        "@emnapi/wasi-threads",
         "@napi-rs/wasm-runtime",
         "@tybys/wasm-util",
         "tslib"
@@ -912,7 +906,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@fresh/core@2.0.0-beta.1",
+      "jsr:@fresh/core@2.0.0-beta.2",
       "jsr:@fresh/plugin-tailwind@0.0.1-alpha.9",
       "jsr:@std/assert@1",
       "jsr:@std/fs@1",
