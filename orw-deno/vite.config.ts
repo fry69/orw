@@ -9,7 +9,7 @@ export default defineConfig({
     tailwind(),
     inspect({
       build: true,
-      outputDir: ".vite-inspect",
+      outputDir: "static/.vite-inspect",
     }),
   ],
 });
