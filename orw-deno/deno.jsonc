@@ -4,7 +4,7 @@
     "jsxImportSource": "preact",
     "jsxPrecompileSkipElements": ["a", "img", "source", "body", "html", "head"],
     "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"],
-    "types": ["npm:@types/luxon@3.7.1", "npm:@types/rss@0.0.32"]
+    "types": ["npm:@types/luxon@3.7.1", "npm:@types/rss@0.0.32", "npm:@types/deep-diff@1.0.2"]
   },
   "exclude": ["**/_fresh/*", "**/data/*"],
   "exports": {
@@ -28,7 +28,7 @@
     "@tailwindcss/vite": "npm:@tailwindcss/vite@4.1.13",
     "daisyui": "npm:daisyui@5.1.8",
     "deep-diff": "npm:deep-diff@1.0.2",
-    "fresh": "jsr:@fresh/core@2.0.0-beta.3",
+    "fresh": "jsr:@fresh/core@2.0.0-beta.4",
     "luxon": "npm:luxon@3.7.2",
     "preact": "npm:preact@10.27.1",
     "feed": "npm:feed@5.1.0",
@@ -44,7 +44,7 @@
     }
   },
   "name": "orw-deno",
-  "nodeModulesDir": "auto",
+  "nodeModulesDir": "manual",
   "tasks": {
     "build": "vite build",
     "check": "deno check components islands lib routes server static tests main.ts utils.ts",
