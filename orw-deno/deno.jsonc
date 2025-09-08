@@ -4,7 +4,11 @@
     "jsxImportSource": "preact",
     "jsxPrecompileSkipElements": ["a", "img", "source", "body", "html", "head"],
     "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"],
-    "types": ["npm:@types/luxon@3.7.1", "npm:@types/rss@0.0.32", "npm:@types/deep-diff@1.0.2"]
+    "types": [
+      "npm:@types/luxon@3.7.1",
+      "npm:@types/rss@0.0.32",
+      "npm:@types/deep-diff@1.0.2"
+    ]
   },
   "exclude": ["**/_fresh/*", "**/data/*"],
   "exports": {
