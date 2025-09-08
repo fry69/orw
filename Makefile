@@ -192,3 +192,6 @@ pull:
 
 inspect:
 	npx serve $(PROJECT_DIR)/.vite-inspect
+
+shell:
+	$(DOCKER) exec -it orw_app_1 sh

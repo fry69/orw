@@ -55,6 +55,7 @@ orw
 # Fresh build directory
 _fresh/
 .vite-inspect/
+vite-inspect/
 
 # npm + other dependencies
 node_modules/
