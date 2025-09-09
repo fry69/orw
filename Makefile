@@ -155,8 +155,8 @@ endef
 # Show depenency versions to alert for outdated packages
 versions:
 	@cd $(PROJECT_DIR) && deno task check-deps || true
-	$(call get_latest_version,@fresh/core)
-	$(call get_latest_version,@fresh/plugin-tailwind)
+# 	$(call get_latest_version,@fresh/core)
+# 	$(call get_latest_version,@fresh/plugin-tailwind)
 
 # Pre-commit checking and sanitizing
 pre:
