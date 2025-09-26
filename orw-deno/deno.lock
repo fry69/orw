@@ -9,7 +9,7 @@
     "jsr:@fresh/core@2.1.1": "2.1.1",
     "jsr:@fresh/core@^2.1.1": "2.1.1",
     "jsr:@fresh/plugin-vite@1.0.4": "1.0.4",
-    "jsr:@fry69/deep-diff@0.1.7": "0.1.7",
+    "jsr:@fry69/deep-diff@0.1.9": "0.1.9",
     "jsr:@std/assert@1": "1.0.14",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
     "jsr:@std/dotenv@~0.225.5": "0.225.5",
@@ -115,8 +115,8 @@
         "npm:vite@^7.1.4"
       ]
     },
-    "@fry69/deep-diff@0.1.7": {
-      "integrity": "fc4c2c6bd6aebdfeee68cb2194e9d528051fbae172d6b1da7c9b9593ed5c640f"
+    "@fry69/deep-diff@0.1.9": {
+      "integrity": "942b78961548ac5da6b4e6c1cc5a8e11b0a02bd070d1220016c9d9b760ba6547"
     },
     "@std/assert@1.0.14": {
       "integrity": "68d0d4a43b365abc927f45a9b85c639ea18a9fab96ad92281e493e4ed84abaa4",
@@ -1552,7 +1552,7 @@
     "dependencies": [
       "jsr:@fresh/core@2.1.1",
       "jsr:@fresh/plugin-vite@1.0.4",
-      "jsr:@fry69/deep-diff@0.1.7",
+      "jsr:@fry69/deep-diff@0.1.9",
       "jsr:@std/assert@1",
       "jsr:@std/fs@1",
       "jsr:@std/path@1",
