@@ -3,12 +3,7 @@
     "jsx": "precompile",
     "jsxImportSource": "preact",
     "jsxPrecompileSkipElements": ["a", "img", "source", "body", "html", "head"],
-    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"],
-    "types": [
-      "npm:@types/luxon@3.7.1",
-      "npm:@types/rss@0.0.32",
-      "npm:@types/deep-diff@1.0.2"
-    ]
+    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"]
   },
   "exclude": ["**/_fresh/*", "**/data/*"],
   "exports": {
@@ -30,18 +25,19 @@
     "@std/fs": "jsr:@std/fs@1",
     "@std/path": "jsr:@std/path@1",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@4.1.13",
-    "daisyui": "npm:daisyui@5.1.18",
-    "deep-diff": "npm:deep-diff@1.0.2",
+    "daisyui": "npm:daisyui@5.1.23",
+    "deep-diff": "jsr:@fry69/deep-diff@0.1.7",
     "fresh": "jsr:@fresh/core@2.1.1",
     "luxon": "npm:luxon@3.7.2",
+    "@types/luxon": "npm:@types/luxon@3.7.1",
     "preact": "npm:preact@10.27.2",
     "feed": "npm:feed@5.1.0",
     "rss": "npm:rss@1.2.2",
+    "@types/rss": "npm:@types/rss@0.0.32",
     "tailwindcss": "npm:tailwindcss@4.1.13",
     "vite": "npm:vite@7.1.7",
     "vite-plugin-inspect": "npm:vite-plugin-inspect@11.3.3"
   },
-  // "links": ["./vendor/plugin-vite"],
   "lint": {
     "rules": {
       "tags": ["fresh", "recommended"]
