@@ -1,6 +1,6 @@
 // routes/_middleware.ts - Load common data for all pages
 import { define, getAppConfig } from "../../utils.ts";
-import { getWatcher } from "../../server/index.ts";
+import { getWatcher } from "@orw/server";
 import { WATCHER_INTERVAL_MS } from "../../lib/constants.ts";
 
 /**

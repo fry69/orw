@@ -1,0 +1,68 @@
+{
+  "nodeModulesDir": "manual",
+  "workspace": ["./packages/*"],
+  "tasks": {
+    "test": "deno test -A --parallel",
+    "screenshot": "deno run -A www/utils/screenshot.ts",
+    "check:types": "deno check --allow-import",
+    "ok": "deno fmt --check && deno lint && deno task check:types && deno task test"
+  },
+  "exclude": [
+    "**/_fresh/*",
+    "**/tmp/*",
+    "**/temp/*",
+    "**/data/*",
+    "**/tools/*"
+  ],
+  "imports": {
+    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@1.0.4",
+    "@kitsuyui/luxon-ext": "npm:@kitsuyui/luxon-ext@0.2.1",
+    "@preact/signals": "npm:@preact/signals@2.3.1",
+    "@std/assert": "jsr:@std/assert@1",
+    "@std/fs": "jsr:@std/fs@1",
+    "@std/path": "jsr:@std/path@1",
+    "@tailwindcss/vite": "npm:@tailwindcss/vite@4.1.13",
+    "daisyui": "npm:daisyui@5.1.24",
+    "deep-diff": "jsr:@fry69/deep-diff@0.1.9",
+    "fresh": "jsr:@fresh/core@2.1.1",
+    "luxon": "npm:luxon@3.7.2",
+    "@types/luxon": "npm:@types/luxon@3.7.1",
+    "preact": "npm:preact@10.27.2",
+    "feed": "npm:feed@5.1.0",
+    "rss": "npm:rss@1.2.2",
+    "@types/rss": "npm:@types/rss@0.0.32",
+    "tailwindcss": "npm:tailwindcss@4.1.13",
+    "vite": "npm:vite@7.1.7"
+  },
+  "links": ["../../denoland/fresh"],
+  "compilerOptions": {
+    "lib": ["dom", "dom.asynciterable", "deno.ns", "deno.unstable"],
+    "jsx": "precompile",
+    "jsxImportSource": "preact",
+    "jsxPrecompileSkipElements": [
+      "a",
+      "img",
+      "source",
+      "body",
+      "html",
+      "head",
+      "title",
+      "meta",
+      "script",
+      "link",
+      "style",
+      "base",
+      "noscript",
+      "template"
+    ],
+    "types": ["vite/client"]
+  },
+  "fmt": {
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "proseWrap": "preserve",
+    "semiColons": true,
+    "singleQuote": false,
+    "useTabs": false
+  }
+}

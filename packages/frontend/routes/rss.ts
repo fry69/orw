@@ -1,20 +1,20 @@
-// routes/atom.ts - Atom feed endpoint for OpenRouter model changes
+// routes/rss.ts - RSS feed endpoint for OpenRouter model changes
 import { define, getAppConfig } from "../utils.ts";
-import { getWatcher } from "../server/index.ts";
-import { Feed } from "feed";
+import { getWatcher } from "@orw/server";
+import RSS from "rss";
 import type { ModelDiff } from "../lib/types.ts";
 import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
 import { calculatePercentageChange, formatChangeValue } from "../lib/utils.ts";
 
-// Cache for Atom feed to avoid regenerating on every request
-let atomCache: {
+// Cache for RSS feed to avoid regenerating on every request
+let rssCache: {
   xml: string;
   lastGenerated: Date;
   dbLastChange: Date;
 } | null = null;
 
 /**
- * Renders a change snippet as HTML for Atom feed description
+ * Renders a change snippet as HTML for RSS feed description
  */
 function renderChangeSnippetHTML(change: ModelDiff): string {
   if (change.type === "added") {
@@ -34,7 +34,7 @@ function renderChangeSnippetHTML(change: ModelDiff): string {
   if (change.type === "changed" && change.changes) {
     const changeEntries = Object.entries(change.changes);
     const changesHTML = changeEntries
-      .slice(0, 5) // Show first 5 changes in Atom
+      .slice(0, 5) // Show first 5 changes in RSS
       .map(([path, changeItem]) => {
         const oldFormatted = formatChangeValue(changeItem.old, path);
         const newFormatted = formatChangeValue(changeItem.new, path);
@@ -59,8 +59,8 @@ function renderChangeSnippetHTML(change: ModelDiff): string {
 }
 
 /**
- * Calculates the time left until the next API check, which is when Atom feed might change.
- * This provides intelligent cache timing: Atom clients cache until just before new changes could appear.
+ * Calculates the time left until the next API check, which is when RSS feed might change.
+ * This provides intelligent cache timing: RSS clients cache until just before new changes could appear.
  */
 function calculateCacheMaxAge(watcherStatus: { apiLastCheck: Date }): number {
   const timeSinceLastCheck = Date.now() - watcherStatus.apiLastCheck.getTime();
@@ -76,50 +76,44 @@ function calculateCacheMaxAge(watcherStatus: { apiLastCheck: Date }): number {
 }
 
 /**
- * Generates Atom feed XML
+ * Generates RSS feed XML
  */
-async function generateAtomFeed(): Promise<string> {
+async function generateRSSFeed(): Promise<string> {
   const watcher = await getWatcher();
   const watcherStatus = watcher.watcherStatus;
   const config = getAppConfig();
 
   // Check if we can use cached version
   if (
-    atomCache &&
-    atomCache.dbLastChange.getTime() === watcherStatus.dbLastChange.getTime()
+    rssCache &&
+    rssCache.dbLastChange.getTime() === watcherStatus.dbLastChange.getTime()
   ) {
-    return atomCache.xml;
+    return rssCache.xml;
   }
 
   // Get the base URL from config
   const baseURL = new URL(config.publicUrl);
 
-  const feedOptions = {
+  const feedOptions: RSS.FeedOptions = {
     title: "OpenRouter Model Changes",
     description: "Feed for detected changes in the OpenRouter model list",
-    author: { name: "fry69", link: "https://fry69.dev/" },
-    id: `${baseURL}`,
-    link: `${baseURL}`,
-    feedLinks: {
-      atom: `${baseURL}atom`,
-    },
-    feed_url: `${baseURL}atom`,
-    favicon: `${baseURL}favicon.png`,
+    feed_url: `${baseURL}rss`,
+    site_url: `${baseURL}`,
+    image_url: `${baseURL}favicon.png`,
     language: "en",
     ttl: 60,
-    date: watcherStatus.dbLastChange,
-    copyright: "MIT",
+    pubDate: watcherStatus.dbLastChange,
   };
 
-  const feed = new Feed(feedOptions);
+  const feed = new RSS(feedOptions);
 
   // Get last 50 changes, sorted newest first
   const lists = watcher.allLists;
-  const changesForAtom = lists.changes
+  const changesForRSS = lists.changes
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, 50);
 
-  for (const change of changesForAtom) {
+  for (const change of changesForRSS) {
     let changeTypeText: string;
 
     switch (change.type) {
@@ -133,21 +127,20 @@ async function generateAtomFeed(): Promise<string> {
         changeTypeText = "updated";
     }
 
-    feed.addItem({
+    const changeURL = `${baseURL}model/${encodeURIComponent(change.id)}`;
+    feed.item({
       title: `Model ${change.id} ${changeTypeText}`,
-      description: `Model ${change.id} ${changeTypeText} on ${change.timestamp}`,
-      content: renderChangeSnippetHTML(change),
-      link: `${baseURL}model/${encodeURIComponent(change.id)}`,
+      description: renderChangeSnippetHTML(change),
+      url: changeURL,
       date: new Date(change.timestamp),
-      published: new Date(change.timestamp),
-      id: `${baseURL}model/${encodeURIComponent(change.id)}#${change.timestamp}`, // Unique identifier for each change
+      guid: `${changeURL}#${change.timestamp}`, // Unique identifier for each change
     });
   }
 
-  const xml = feed.atom1();
+  const xml = feed.xml({ indent: "  " });
 
   // Update cache
-  atomCache = {
+  rssCache = {
     xml,
     lastGenerated: new Date(),
     dbLastChange: watcherStatus.dbLastChange,
@@ -162,22 +155,22 @@ export const handler = define.handlers({
       const watcher = await getWatcher();
       const watcherStatus = watcher.watcherStatus;
 
-      const atomXML = await generateAtomFeed();
+      const rssXML = await generateRSSFeed();
 
       // Calculate dynamic cache time based on when next API check will happen
       const cacheMaxAge = calculateCacheMaxAge(watcherStatus);
 
-      return new Response(atomXML, {
+      return new Response(rssXML, {
         headers: {
-          "Content-Type": "application/atom+xml; charset=utf-8",
+          "Content-Type": "application/rss+xml; charset=utf-8",
           "Cache-Control": `public, max-age=${cacheMaxAge}`,
         },
       });
     } catch (error) {
-      console.error("Error generating Atom feed:", error);
+      console.error("Error generating RSS feed:", error);
 
       return new Response(
-        "Error generating Atom feed",
+        "Error generating RSS feed",
         {
           status: 500,
           headers: { "Content-Type": "text/plain" },

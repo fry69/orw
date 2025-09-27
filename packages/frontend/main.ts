@@ -1,8 +1,8 @@
 import { App, staticFiles } from "fresh";
 import type { State } from "./utils.ts";
-import { initializeWatcher } from "./server/index.ts";
+import { initializeWatcher } from "@orw/server";
 
-export const app = new App<State>();
+export const app: App<State> = new App<State>();
 
 app.use(staticFiles());
 
