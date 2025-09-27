@@ -1,6 +1,6 @@
 import { App, staticFiles } from "fresh";
 import type { State } from "./utils.ts";
-import { initializeWatcher } from "@orw/server";
+import { initializeWatcher } from "@orw/watcher";
 
 export const app: App<State> = new App<State>();
 

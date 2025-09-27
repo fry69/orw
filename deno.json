@@ -1,12 +1,7 @@
 {
   "nodeModulesDir": "manual",
   "workspace": ["./packages/*"],
-  "tasks": {
-    "test": "deno test -A --parallel",
-    "screenshot": "deno run -A www/utils/screenshot.ts",
-    "check:types": "deno check --allow-import",
-    "ok": "deno fmt --check && deno lint && deno task check:types && deno task test"
-  },
+  "tasks": {},
   "exclude": [
     "**/_fresh/*",
     "**/tmp/*",

@@ -1,5 +1,5 @@
 import { define } from "../utils.ts";
-import { getWatcher } from "@orw/server";
+import { getWatcher } from "@orw/watcher";
 import { basename, join } from "@std/path";
 
 export const handler = define.handlers({

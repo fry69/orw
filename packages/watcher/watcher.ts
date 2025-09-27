@@ -3,8 +3,8 @@ import type { DatabaseSync } from "node:sqlite";
 import { dirname, join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import deepDiff from "deep-diff";
-import type { Lists, Model, ModelChangeType, ModelDiff } from "../frontend/lib/types.ts";
-import { FETCH_TIMEOUT_MS, OPENROUTER_API_URL, WATCHER_INTERVAL_MS } from "../frontend/lib/constants.ts";
+import type { Lists, Model, ModelChangeType, ModelDiff } from "@orw/frontend";
+import { FETCH_TIMEOUT_MS, OPENROUTER_API_URL, WATCHER_INTERVAL_MS } from "@orw/frontend";
 
 const isDevelopment = Deno.env.get("NODE_ENV") === "development" ||
   Deno.env.get("NODE_ENV") === "test" || false;

@@ -31,6 +31,7 @@ deno task serve
 ```
 
 This will start:
+
 - HTTP server on http://localhost:8000 (configurable via `.env` file)
 - Background watcher that checks for API changes every hour
 

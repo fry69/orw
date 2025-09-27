@@ -1,6 +1,6 @@
 // routes/rss.ts - RSS feed endpoint for OpenRouter model changes
 import { define, getAppConfig } from "../utils.ts";
-import { getWatcher } from "@orw/server";
+import { getWatcher } from "@orw/watcher";
 import RSS from "rss";
 import type { ModelDiff } from "../lib/types.ts";
 import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";

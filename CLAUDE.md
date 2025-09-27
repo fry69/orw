@@ -34,6 +34,7 @@ cd orw-deno && deno task pre-commit
 ```
 
 Alternative using Makefile from root:
+
 ```bash
 make dev        # Start development server
 make pre        # Run pre-commit checks
@@ -101,6 +102,7 @@ orw-deno/
 ## Environment Configuration
 
 Key environment variables (see `.env.example`):
+
 - `ORW_DATA_PATH`: Data directory path (default: `./data`)
 - `ORW_DISABLE_WATCHER`: Set to "true" to disable background API polling
 - `ORW_PUBLIC_URL`: Public URL for RSS feed links

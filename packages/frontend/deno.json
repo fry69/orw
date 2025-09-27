@@ -1,6 +1,6 @@
 {
   "exports": {
-    ".": "./main.ts"
+    ".": "./lib/index.ts"
   },
   "imports": {},
   "name": "@orw/frontend",
