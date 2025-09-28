@@ -2,6 +2,7 @@
 DOCKER ?= podman
 COMPOSE := $(DOCKER)-compose -f ./compose.yaml
 PROJECT_DIR := packages/frontend
+VENDOR_DIR := ./vendor
 IMAGE_NAME := orw
 VOLUME_NAME := orw_data
 
@@ -158,8 +159,13 @@ upload:
 
 .PHONY: vendor
 vendor:
-	@mkdir -p $(PROJECT_DIR)/vendor
-	rm -fR $(PROJECT_DIR)/vendor/plugin-vite && cp -a ../../denoland/fresh/packages/plugin-vite $(PROJECT_DIR)/vendor
+	@rm -fR $(VENDOR_DIR)/fresh
+	@mkdir -p $(VENDOR_DIR)/fresh
+	@cp -a ../../denoland/fresh/deno.* ../../denoland/fresh/packages $(VENDOR_DIR)/fresh
+	@mkdir -p $(VENDOR_DIR)/fresh/www
+	@cp ../../denoland/fresh/www/deno.json $(VENDOR_DIR)/fresh/www
+	@echo "Vendored fresh into $(VENDOR_DIR)/fresh"
+	@echo "Size: $$(du -sh $(VENDOR_DIR)/fresh | cut -f1)"
 
 pull:
 	$(DOCKER) pull docker.io/denoland/deno:latest

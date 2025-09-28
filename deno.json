@@ -4,10 +4,11 @@
   "tasks": {},
   "exclude": [
     "**/_fresh/*",
+    "**/data/*",
     "**/tmp/*",
     "**/temp/*",
-    "**/data/*",
-    "**/tools/*"
+    "**/tools/*",
+    "**/vendor/*"
   ],
   "imports": {
     "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@1.0.4",
@@ -29,7 +30,7 @@
     "tailwindcss": "npm:tailwindcss@4.1.13",
     "vite": "npm:vite@7.1.7"
   },
-  "links": ["../../denoland/fresh"],
+  "links": ["./vendor/fresh"],
   "compilerOptions": {
     "lib": ["dom", "dom.asynciterable", "deno.ns", "deno.unstable"],
     "jsx": "precompile",

@@ -1,22 +1,27 @@
-FROM docker.io/denoland/deno:latest
+FROM docker.io/denoland/deno:latest AS build
 
 ## Deno cache folder
 ENV DENO_DIR=/deno-dir/
 
 # RUN deno upgrade canary
 
-WORKDIR /app
-
-COPY deno.jsonc deno.lock ./
-# COPY vendor/ ./vendor/
-RUN deno install --allow-scripts
-
 ARG GIT_REVISION
 ENV DENO_DEPLOYMENT_ID=${GIT_REVISION}
 
-COPY . .
+WORKDIR /app
 
-RUN deno task build
+COPY . .
+RUN deno install --allow-scripts
+
+RUN cd packages/frontend && deno task build
+
+##
+## Final image
+##
+
+FROM docker.io/denoland/deno:latest
+WORKDIR /app
+COPY --from=build /app/packages/frontend/_fresh ./_fresh
 
 ## Official docs still recommend 'deno cache' -> https://fresh.deno.dev/docs/canary/deployment/docker
 RUN deno cache --allow-scripts _fresh/server.js
