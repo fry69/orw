@@ -1,9 +1,7 @@
-version: "3.8"
-
 services:
   app:
     build:
-      context: ./${PROJECT_DIR}
+      context: .
       dockerfile: Containerfile
       args:
         GIT_REVISION: ${GIT_REVISION}
@@ -15,18 +13,12 @@ services:
     # Volume mounts
     volumes:
       - data_volume:/app/data
-    # - .:/app # Mount current directory to /app
-    # - ${HOME}/.deno:/deno-dir # Mount Deno cache directory
 
     # Port mappings (host:container)
     ports:
       - "${EXTERNAL_PORT}:8000"
-      # - "127.0.0.1:${EXTERNAL_PORT}:8000" # Bind to localhost only
 
     # Environment variables
-    # Override these in your shell environment or .env file:
-    # export ORW_PUBLIC_URL="https://your-domain.com"
-    # export ORW_REPOSITORY_URL="https://github.com/your-username/your-repo"
     environment:
       - ORW_PUBLIC_URL=${ORW_PUBLIC_URL:-http://localhost:8000}
       - ORW_REPOSITORY_URL=${ORW_REPOSITORY_URL:-}
@@ -35,22 +27,6 @@ services:
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=8000
 
-    # extra_hosts:
-    #   - "openrouter.ai:host-gateway"
-
-  seed:
-    build:
-      context: .
-      dockerfile: Containerfile
-      args:
-        SEED_DB_FILE: ${SEED_DB_FILE}
-    image: ${SEED_IMAGE}:latest
-    volumes:
-      - data_volume:/data
-    command: ["cp", "/seed/orw.db", "/data/"]
-    profiles:
-      - seed  # Only runs when explicitly requested
-
 ## always set 'external: true' and give the volume a static name, to NOT let *-compose handle volumes
 ## otherwise the volume name gets drived from the parent directory name etc
 ## if you suddenly get greeted by an empty DB, you now know why
@@ -58,14 +34,3 @@ volumes:
   data_volume:
     external: true
     name: "${VOLUME_NAME}"
-
-# Optional: Environment variables
-# environment:
-#   - DENO_DIR=/deno-dir
-
-# Optional: Command override
-# command: ["deno", "run", "--allow-all", "main.ts"]
-
-# Optional: Keep container running for development
-# stdin_open: true
-# tty: true

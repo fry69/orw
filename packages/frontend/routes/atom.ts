@@ -1,6 +1,6 @@
 // routes/atom.ts - Atom feed endpoint for OpenRouter model changes
 import { define, getAppConfig } from "../utils.ts";
-import { getWatcher } from "../server/index.ts";
+import { getWatcher } from "@orw/watcher";
 import { Feed } from "feed";
 import type { ModelDiff } from "../lib/types.ts";
 import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";

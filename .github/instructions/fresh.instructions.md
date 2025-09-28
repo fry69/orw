@@ -1,6 +1,7 @@
 ---
 applyTo: "**"
 ---
+
 # Fresh 2 canary
 
 Here is a list of notable Fresh 2 online documentation links to be used with Deno 2:

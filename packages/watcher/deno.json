@@ -1,0 +1,7 @@
+{
+  "exports": {
+    ".": "./index.ts"
+  },
+  "name": "@orw/watcher",
+  "version": "0.1.0"
+}
