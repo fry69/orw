@@ -1,8 +1,8 @@
 // islands/DataInitializer.tsx - Initialize global state with server data
 import { useEffect } from "preact/hooks";
 import { clientConfig, clientLists, clientStatus, currentRoute } from "../lib/state.ts";
-import type { AppConfig, Lists, WatcherStatus } from "../lib/types.ts";
-import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
+import type { AppConfig, Lists, WatcherStatus } from "@orw/lib/types";
+import { WATCHER_INTERVAL_MS } from "@orw/lib/constants";
 
 interface DataInitializerProps {
   initialData?: {

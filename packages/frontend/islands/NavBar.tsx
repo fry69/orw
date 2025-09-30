@@ -7,7 +7,7 @@ import {
   currentRoute,
   navBarDurations,
 } from "../lib/state.ts";
-import { UI_REFRESH_MS } from "../lib/constants.ts";
+import { UI_REFRESH_MS } from "@orw/lib/constants";
 import { GitHubIcon } from "../components/Icons.tsx";
 import NavLinks from "../components/navbar/NavLinks.tsx";
 import StatusInfo from "../components/navbar/StatusInfo.tsx";

@@ -1,6 +1,6 @@
 // islands/ChangeList.tsx - Interactive change history list
 import { clientLists, filteredChanges } from "../lib/state.ts";
-import type { ModelDiff } from "../lib/types.ts";
+import type { ModelDiff } from "@orw/lib/types";
 import { duration, formatDateTime } from "../lib/utils.ts";
 import { ChangeView } from "../components/ChangeView.tsx";
 

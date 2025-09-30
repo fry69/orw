@@ -73,7 +73,7 @@ config:
 	@echo "  NODE_ENV:           $(NODE_ENV)"
 
 # Build all images
-build: pre
+build:
 	$(COMPOSE) build
 
 # Start services
@@ -108,7 +108,7 @@ clean:
 # Remove generated files (should not be necessary with .dockerignore)
 prune:
 # 	rm -rf $(PROJECT_DIR)/node_modules $(PROJECT_DIR)/_fresh $(PROJECT_DIR)/data
-	rm -rf $(PROJECT_DIR)/node_modules $(PROJECT_DIR)/_fresh $(PROJECT_DIR)/deno.lock
+	rm -rf node_modules deno.lock $(PROJECT_DIR)/_fresh
 
 # Reset volume (destructive)
 reset: down
@@ -129,17 +129,17 @@ nuke: down clean
 
 # Show depenency versions to alert for outdated packages
 versions:
-	@cd $(PROJECT_DIR) && deno task check-deps || true
+	deno task check-deps || true
 # 	$(call get_latest_version,@fresh/core)
 # 	$(call get_latest_version,@fresh/plugin-tailwind)
 
 # Pre-commit checking and sanitizing
 pre:
-	@cd $(PROJECT_DIR) && deno install --allow-scripts && deno task build && deno task pre-commit
+	deno task pre-commit
 
 # Start the development server
 dev:
-	@cd $(PROJECT_DIR) 	&& ORW_PUBLIC_URL=http://localhost:5173 deno task dev
+	@cd $(PROJECT_DIR) && ORW_PUBLIC_URL=http://localhost:5173 deno task dev
 
 # Start the production server
 serve:
@@ -175,3 +175,6 @@ inspect:
 
 shell:
 	$(DOCKER) exec -it orw_app_1 sh
+
+check:
+	deno task -r check

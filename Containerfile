@@ -1,3 +1,7 @@
+##
+## Build stage
+##
+
 FROM docker.io/denoland/deno:latest AS build
 
 ## Deno cache folder
@@ -16,26 +20,19 @@ RUN deno install --allow-scripts
 RUN cd packages/frontend && deno task build
 
 ##
-## Final image
+## Copy only built artifacts to run the final image
 ##
 
 FROM docker.io/denoland/deno:latest
 WORKDIR /app
 COPY --from=build /app/packages/frontend/_fresh ./_fresh
 
-## Official docs still recommend 'deno cache' -> https://fresh.deno.dev/docs/canary/deployment/docker
-RUN deno cache --allow-scripts _fresh/server.js
-# RUN deno install --allow-scripts--entrypoint _fresh/server.js
-
-# RUN deno cache --allow-scripts dev.ts
+RUN deno install --allow-scripts --entrypoint _fresh/server.js
 
 EXPOSE 8000
 
-## Production version
 CMD ["serve", "-A", "_fresh/server.js"]
 
-# CMD ["task", "dev"]
-
-##
+## Health check works only with Docker Engine, not with Podman
 # HEALTHCHECK --interval=30s --timeout=3s \
 #   CMD deno eval "try { await fetch('http://localhost:8000/health'); } catch { Deno.exit(1); }"

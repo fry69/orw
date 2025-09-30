@@ -1,0 +1,11 @@
+{
+  "tasks": {
+    "check": "deno check constants.ts types.ts"
+  },
+  "exports": {
+    "./constants": "./constants.ts",
+    "./types": "./types.ts"
+  },
+  "name": "@orw/lib",
+  "version": "0.1.0"
+}

@@ -1,7 +1,7 @@
 // routes/_middleware.ts - Load common data for all pages
 import { define, getAppConfig } from "../../utils.ts";
 import { getWatcher } from "@orw/watcher";
-import { WATCHER_INTERVAL_MS } from "../../lib/constants.ts";
+import { WATCHER_INTERVAL_MS } from "@orw/lib/constants";
 
 /**
  * Calculate cache max-age based on when the next API check will happen.

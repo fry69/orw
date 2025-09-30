@@ -1,7 +1,7 @@
 // islands/ModelList.tsx - Interactive model list with search and sorting
 import { useState } from "preact/hooks";
 import { clientLists, filteredModels, filteredRemovedModels } from "../lib/state.ts";
-import type { Model } from "../lib/types.ts";
+import type { Model } from "@orw/lib/types";
 import { duration, showPricePerMillion } from "../lib/utils.ts";
 import { InfoIcon } from "../components/Icons.tsx";
 

@@ -1,5 +1,5 @@
 // components/ChangeView.tsx - Renders a complete ModelDiff object
-import type { ModelDiff } from "../lib/types.ts";
+import type { ModelDiff } from "@orw/lib/types";
 import { ChangeItem } from "./ChangeItem.tsx";
 
 interface ChangeViewProps {

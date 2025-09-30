@@ -1,7 +1,7 @@
 // islands/ModelDetail.tsx - Interactive model detail view
 import { useEffect, useState } from "preact/hooks";
 import { clientLists } from "../lib/state.ts";
-import type { Model, ModelDiff } from "../lib/types.ts";
+import type { Model, ModelDiff } from "@orw/lib/types";
 import { duration, formatDateTime, showPricePerMillion } from "../lib/utils.ts";
 import { ChangeView } from "../components/ChangeView.tsx";
 import JsonHighlighter from "../components/JsonHighlighter.tsx";

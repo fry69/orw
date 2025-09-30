@@ -1,20 +1,14 @@
 {
   "exports": {
-    ".": "./lib/index.ts"
+    ".": "./main.ts"
   },
   "imports": {},
   "name": "@orw/frontend",
   "tasks": {
     "build": "vite build",
-    "check": "deno check components islands lib routes static tests main.ts utils.ts",
-    "check-deps": "deno run -A jsr:@check/deps --allow-unused",
+    "check": "deno check components islands lib routes static tailwind tests main.ts utils.ts vite.config.ts",
     "dev": "vite",
-    "fmt": "deno fmt",
-    "lint": "deno lint",
-    "pre-commit": "deno task fmt && deno task lint && deno task check && deno task test",
-    "serve": "deno task build && deno serve --allow-all --env-file=.env _fresh/server.js",
-    "serve-prod": "deno serve --allow-all _fresh/server.js",
-    "test": "deno test --allow-all --reporter=dot tests/"
+    "serve": "deno serve --allow-all --env-file=.env _fresh/server.js"
   },
   "version": "0.6.0"
 }

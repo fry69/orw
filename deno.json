@@ -1,7 +1,10 @@
 {
   "nodeModulesDir": "manual",
-  "workspace": ["./packages/*"],
-  "tasks": {},
+  "workspace": ["./packages/frontend", "./packages/watcher", "./packages/lib"],
+  "tasks": {
+    "check-deps": "deno run -A jsr:@check/deps --allow-unused",
+    "pre-commit": "deno install --allow-scripts && deno fmt && deno lint && deno check && deno test -A"
+  },
   "exclude": [
     "**/_fresh/*",
     "**/data/*",
@@ -18,7 +21,7 @@
     "@std/fs": "jsr:@std/fs@1",
     "@std/path": "jsr:@std/path@1",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@4.1.13",
-    "daisyui": "npm:daisyui@5.1.24",
+    "daisyui": "npm:daisyui@5.1.25",
     "deep-diff": "jsr:@fry69/deep-diff@0.1.9",
     "fresh": "jsr:@fresh/core@2.1.1",
     "luxon": "npm:luxon@3.7.2",

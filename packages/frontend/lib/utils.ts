@@ -1,7 +1,7 @@
 // lib/utils.ts - Centralized utility functions
 import { DateTime } from "luxon";
 import { toHumanDurationExtended } from "@kitsuyui/luxon-ext";
-import { WATCHER_INTERVAL_MS } from "./constants.ts";
+import { WATCHER_INTERVAL_MS } from "@orw/lib/constants";
 
 /**
  * Converts a timestamp string to a formatted, locale-specific date and time string.

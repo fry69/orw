@@ -2,8 +2,8 @@
 import { define, getAppConfig } from "../utils.ts";
 import { getWatcher } from "@orw/watcher";
 import { Feed } from "feed";
-import type { ModelDiff } from "../lib/types.ts";
-import { WATCHER_INTERVAL_MS } from "../lib/constants.ts";
+import type { ModelDiff } from "@orw/lib/types";
+import { WATCHER_INTERVAL_MS } from "@orw/lib/constants";
 import { calculatePercentageChange, formatChangeValue } from "../lib/utils.ts";
 
 // Cache for Atom feed to avoid regenerating on every request

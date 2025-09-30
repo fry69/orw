@@ -1,8 +1,8 @@
 // orw-deno/components/navbar/StatusInfo.tsx
 
 import { DateTime } from "luxon";
-import { VERSION } from "../../lib/constants.ts";
-import type { Lists, WatcherStatus } from "../../lib/types.ts";
+import { VERSION } from "@orw/lib/constants";
+import type { Lists, WatcherStatus } from "@orw/lib/types";
 import { InfoIcon } from "../Icons.tsx";
 
 interface StatusInfoProps {
