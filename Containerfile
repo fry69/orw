@@ -7,7 +7,7 @@ FROM docker.io/denoland/deno:latest AS build
 ## Deno cache folder
 ENV DENO_DIR=/deno-dir/
 
-# RUN deno upgrade canary
+# RUN deno upgrade canary && deno --version
 
 ARG GIT_REVISION
 ENV DENO_DEPLOYMENT_ID=${GIT_REVISION}
