@@ -12,6 +12,7 @@
     "jsr:@deno/loader@~0.3.2": "0.3.6",
     "jsr:@deno/loader@~0.3.3": "0.3.6",
     "jsr:@fry69/deep-diff@0.1.9": "0.1.9",
+    "jsr:@fry69/vite-plugin-localcaddy@~0.1.4": "0.1.4",
     "jsr:@marvinh-test/fresh-island@^0.0.3": "0.0.3",
     "jsr:@marvinh-test/import-json@^0.0.1": "0.0.1",
     "jsr:@std/assert@1": "1.0.14",
@@ -31,6 +32,7 @@
     "jsr:@std/encoding@1": "1.0.10",
     "jsr:@std/encoding@^1.0.10": "1.0.10",
     "jsr:@std/expect@^1.0.16": "1.0.17",
+    "jsr:@std/fmt@1": "1.0.8",
     "jsr:@std/fmt@1.0.3": "1.0.3",
     "jsr:@std/fmt@^1.0.3": "1.0.8",
     "jsr:@std/fmt@^1.0.7": "1.0.8",
@@ -188,6 +190,13 @@
     },
     "@fry69/deep-diff@0.1.9": {
       "integrity": "942b78961548ac5da6b4e6c1cc5a8e11b0a02bd070d1220016c9d9b760ba6547"
+    },
+    "@fry69/vite-plugin-localcaddy@0.1.4": {
+      "integrity": "7afafbce9fede89695fadab60f1b18634c7753b57cf378050d6ff387dfa2babb",
+      "dependencies": [
+        "jsr:@std/fmt@1",
+        "jsr:@std/path@1"
+      ]
     },
     "@marvinh-test/fresh-island@0.0.3": {
       "integrity": "6d06b6009b7dfba9bba28e941e03e6ff652c4ef4f2fbfdf4b78741abd6c6c1c6",
@@ -3761,6 +3770,7 @@
       "jsr:@fresh/core@2.1.1",
       "jsr:@fresh/plugin-vite@1.0.4",
       "jsr:@fry69/deep-diff@0.1.9",
+      "jsr:@fry69/vite-plugin-localcaddy@~0.1.4",
       "jsr:@std/assert@1",
       "jsr:@std/fs@1",
       "jsr:@std/path@1",
