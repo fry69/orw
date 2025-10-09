@@ -14,17 +14,17 @@
     "**/vendor/*"
   ],
   "imports": {
-    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@1.0.4",
-    "@fry69/vite-plugin-localcaddy": "jsr:@fry69/vite-plugin-localcaddy@^0.1.4",
+    "@fresh/plugin-vite": "jsr:@fresh/plugin-vite@1.0.5",
+    "@fry69/vite-plugin-localcaddy": "jsr:@fry69/vite-plugin-localcaddy@0.1.6",
     "@kitsuyui/luxon-ext": "npm:@kitsuyui/luxon-ext@0.2.1",
-    "@preact/signals": "npm:@preact/signals@2.3.1",
+    "@preact/signals": "npm:@preact/signals@2.3.2",
     "@std/assert": "jsr:@std/assert@1",
     "@std/fs": "jsr:@std/fs@1",
     "@std/path": "jsr:@std/path@1",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@4.1.14",
-    "daisyui": "npm:daisyui@5.1.26",
-    "deep-diff": "jsr:@fry69/deep-diff@0.1.9",
-    "fresh": "jsr:@fresh/core@2.1.1",
+    "daisyui": "npm:daisyui@5.1.29",
+    "deep-diff": "jsr:@fry69/deep-diff@0.1.10",
+    "fresh": "jsr:@fresh/core@2.1.2",
     "luxon": "npm:luxon@3.7.2",
     "@types/luxon": "npm:@types/luxon@3.7.1",
     "preact": "npm:preact@10.27.2",
@@ -34,7 +34,6 @@
     "tailwindcss": "npm:tailwindcss@4.1.14",
     "vite": "npm:vite@7.1.9"
   },
-  "links": ["./vendor/fresh"],
   "compilerOptions": {
     "lib": ["dom", "dom.asynciterable", "deno.ns", "deno.unstable"],
     "jsx": "precompile",
