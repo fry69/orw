@@ -22,7 +22,7 @@
     "@std/fs": "jsr:@std/fs@1",
     "@std/path": "jsr:@std/path@1",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@4.1.14",
-    "daisyui": "npm:daisyui@5.1.29",
+    "daisyui": "npm:daisyui@5.2.3",
     "deep-diff": "jsr:@fry69/deep-diff@0.1.10",
     "fresh": "jsr:@fresh/core@2.1.2",
     "luxon": "npm:luxon@3.7.2",
