@@ -13,6 +13,7 @@ services:
     # Volume mounts
     volumes:
       - data_volume:/app/data
+      - deno_dir:/deno-dir
 
     # Port mappings (host:container)
     ports:
@@ -34,3 +35,6 @@ volumes:
   data_volume:
     external: true
     name: "${VOLUME_NAME}"
+  deno_dir:
+    external: true
+    name: "deno_dir"
