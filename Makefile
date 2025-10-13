@@ -116,10 +116,15 @@ reset: down
 	$(DOCKER) volume create $(VOLUME_NAME)
 
 # Reset everything for clean rebuild (destructive)
-nuke: down clean
+nuke-db: down clean
 	$(DOCKER) volume rm $(VOLUME_NAME) 2>/dev/null || true
 	$(DOCKER) image rm $(IMAGE_NAME) 2>/dev/null || true
 	$(DOCKER) volume create $(VOLUME_NAME)
+
+# Reset Deno cache (destructive)
+nuke-cache:
+	$(DOCKER) volume rm deno_dir 2>/dev/null || true
+	$(DOCKER) volume create deno_dir
 
 # Helper function for printing lastest version from jsr.io for a package
 # define get_latest_version
