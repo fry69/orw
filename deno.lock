@@ -52,7 +52,7 @@
     "npm:@types/node@*": "24.2.0",
     "npm:@types/prismjs@^1.26.5": "1.26.5",
     "npm:@types/rss@0.0.32": "0.0.32",
-    "npm:daisyui@5.3.8": "5.3.8",
+    "npm:daisyui@5.3.10": "5.3.10",
     "npm:esbuild-wasm@0.25.7": "0.25.7",
     "npm:esbuild@0.25.7": "0.25.7",
     "npm:esbuild@~0.25.5": "0.25.11",
@@ -1029,8 +1029,8 @@
     "convert-source-map@2.0.0": {
       "integrity": "sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg=="
     },
-    "daisyui@5.3.8": {
-      "integrity": "sha512-ihDXb07IzM/2ugkwBWdy2LFCaepdn1oGsKIsR3gNG/VuTAmS60+HUG9rskjR5BzyJOVVUDDpWoiX3PBDIT3DYQ=="
+    "daisyui@5.3.10": {
+      "integrity": "sha512-vmjyPmm0hvFhA95KB6uiGmWakziB2pBv6CUcs5Ka/3iMBMn9S+C3SZYx9G9l2JrgTZ1EFn61F/HrPcwaUm2kLQ=="
     },
     "debug@4.4.3": {
       "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==",
@@ -1525,7 +1525,7 @@
       "npm:@tailwindcss/vite@4.1.16",
       "npm:@types/luxon@3.7.1",
       "npm:@types/rss@0.0.32",
-      "npm:daisyui@5.3.8",
+      "npm:daisyui@5.3.10",
       "npm:feed@5.1.0",
       "npm:luxon@3.7.2",
       "npm:preact@10.27.2",
